@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MedicalRecordsApi", "back_end_structure\MedicalRecordsApi.csproj", "{BD1FA0DD-63CF-4A18-9D38-A0C75B8E5800}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MedicalRecordsApi", "MedicalRecordsApi\MedicalRecordsApi.csproj", "{BD1FA0DD-63CF-4A18-9D38-A0C75B8E5800}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

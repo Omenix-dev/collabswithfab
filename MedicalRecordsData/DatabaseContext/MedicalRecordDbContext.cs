@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using MedicalRecordsData.Entities;
+using MedicalRecordsData.Entities.MedicalRecordsEntity;
 
 namespace MedicalRecordsData.DatabaseContext
 {
@@ -25,6 +26,19 @@ namespace MedicalRecordsData.DatabaseContext
 		public DbSet<UserRoles> UserRoles { get; set; }
 		public DbSet<Roles> Roles { get; set; }
 		public DbSet<Resources> Resources { get; set; }
+
+		//Patient DbSets
+		public virtual DbSet<Patient> Patients { get; set; }
+		public virtual DbSet<PatientReferrer> PatientReferrers { get; set; }
+		public virtual DbSet<Treatment> Treatments { get; set; }
+		public virtual DbSet<Visit> Visits { get; set; }
+		public virtual DbSet<MedicalRecord> MedicalRecords { get; set; }
+		public virtual DbSet<Medication> Medications { get; set; }
+		public virtual DbSet<Immunization> Immunizations { get; set; }
+		public virtual DbSet<ImmunizationDocument> ImmunizationDocuments { get; set; }
+		public virtual DbSet<EmergencyContact> EmergencyContacts { get; set; }
+		public virtual DbSet<Contact> Contacts { get; set; }
+
 
 
 		//Regenerate Models and DBContext using CodeFirst From Database

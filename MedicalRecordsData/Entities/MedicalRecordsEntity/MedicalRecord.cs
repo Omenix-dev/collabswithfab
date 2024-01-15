@@ -11,12 +11,18 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public string Name { get; set; }
 		public string Comment { get; set; }
 
+
+		//Navigation Properties
+		public int PatientId { get; set; }
+		public virtual Patient Patient { get; set; }
 	}
 
 	public enum MedicalRecordType
 	{
 		Allergy,
 		PastIllness,
-		SurgicalHistory
+		ChronicConditions,
+		SurgicalHistory,
+		FamilyMedicalHistory
 	}
 }

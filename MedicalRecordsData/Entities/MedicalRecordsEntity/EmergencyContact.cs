@@ -17,5 +17,9 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public string LGA { get; set; }
 		public string City { get; set; }
 		public string AltPhone { get; set; }
+
+
+		//Navigation Properties
+		public int PatientId { get; set; }
 	}
 }

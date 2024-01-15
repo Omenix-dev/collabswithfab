@@ -76,8 +76,8 @@ namespace MedicalRecordsApi.Controllers
             if (user_auth != null)
             {
                 var role = "";
-                var URole = (from ur1 in _context.Roles 
-                             
+                var URole = (from ur1 in _context.Roles
+
                              where ur1.Id == user_auth.RoleId
                              select new
                              {

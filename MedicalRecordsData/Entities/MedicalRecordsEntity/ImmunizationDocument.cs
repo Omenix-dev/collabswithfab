@@ -9,5 +9,12 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 	{
 		public string DocName { get; set; }
 		public string DocPath { get; set; }
+
+
+
+
+		//Navigation Properties
+		public int ImmunizationId { get; set; }
+		public virtual Immunization Immunization { get; set; }
 	}
 }

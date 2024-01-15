@@ -14,5 +14,8 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public string Phone { get; set; }
 		public string AltPhone { get; set; }
 		public string Email { get; set; }
+
+		//Navigation Properties
+		public int PatientId { get; set; }
 	}
 }

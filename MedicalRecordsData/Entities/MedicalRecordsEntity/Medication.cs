@@ -7,7 +7,11 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 {
 	public partial class Medication : Base
 	{
-		public string TreatmentId { get; set; }
 		public string Name { get; set; }
+
+
+		//Navigation Properties
+		public int TreatmentId { get; set; }
+		public virtual Treatment Treatment { get; set; }
 	}
 }

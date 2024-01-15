@@ -7,7 +7,11 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 {
 	public partial class PatientReferrer : Base
 	{
-		public string ClinicId { get; set; }
+		public int ClinicId { get; set; }
 		public string Notes { get; set; }
+
+
+		//Navigation Properties
+		public int PatientId { get; set; }
 	}
 }

@@ -1,5 +1,5 @@
-﻿using back_end_structure.Data;
-using back_end_structure.Utils;
+﻿using MedicalRecordsApi.Utils;
+using MedicalRecordsData.DatabaseContext;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,20 +11,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace back_end_structure.Controllers
+namespace MedicalRecordsApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly MedicalRecordsContext _context;
+        private readonly MedicalRecordDbContext _context;
 
         private readonly IConfiguration _configuration;
 
         private readonly ILogger<AuthController> logger;
         private static ILogger staticLogger = Utils.ApplicationLogging.CreateLogger<AuthController>();
 
-        public AuthController(MedicalRecordsContext context, IConfiguration configuration, ILogger<AuthController> logger)
+        public AuthController(MedicalRecordDbContext context, IConfiguration configuration, ILogger<AuthController> logger)
         {
             _context = context;
             _configuration = configuration;

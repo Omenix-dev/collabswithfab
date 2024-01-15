@@ -10,13 +10,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using back_end_structure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using MedicalRecordsData.DatabaseContext;
+using MedicalRecordsApi.Models;
+using MedicalRecordsRepository;
 
-namespace back_end_structure
+namespace MedicalRecordsApi
 {
     public class Startup
     {
@@ -32,8 +34,8 @@ namespace back_end_structure
         {
             services.AddControllers();
 
-            services.AddDbContext<MedicalRecordsContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("back_end_structureContext")));
+            services.AddDbContext<MedicalRecordDbContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("MedicalRecords")));
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -51,14 +53,19 @@ namespace back_end_structure
                 };
             });
 
-            services.AddSwaggerGen(c =>
+            //Services
+            services.AddCoreRepository();
+			services.AddConfigSettings(Configuration);
+
+
+			services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "EDOERP Requisition Manager Module.",
+                    Title = "Greenzone Medical Records API",
                     Version = "v1",
-                    Description = "Requisition Manager Module with API endpoints for Requisition Operations."
-                });
+                    Description = "Greenzone Medical Records API with endpoints for Medical Records."
+				});
 
                 var securityScheme = new OpenApiSecurityScheme
                 {

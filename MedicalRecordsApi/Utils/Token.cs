@@ -8,7 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace back_end_structure.Utils
+namespace MedicalRecordsApi.Utils
 {
     public class Token
     {

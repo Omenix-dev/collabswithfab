@@ -13,5 +13,9 @@ namespace MedicalRecordsData.Entities.BaseEntity
 		public DateTime? UpdatedAt { get; set; }
 		public DateTime? DeletedAt { get; set; }
 		public bool IsDeleted { get; set; }
+		public int Status { get; set; }
+		public int CreatedBy { get; set; }
+		public int ModifiedBy { get; set; }
+		public string ActionTaken { get; set; }
 	}
 }

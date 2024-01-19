@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using MedicalRecordsData.Entities;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
+using MedicalRecordsData.Entities.AuthEntity;
 
 namespace MedicalRecordsData.DatabaseContext
 {
@@ -21,11 +22,12 @@ namespace MedicalRecordsData.DatabaseContext
 		}
 
 		//Base DbSet by Edward
-		public DbSet<Employees> Employees { get; set; }
-		public DbSet<Sample> Sample { get; set; }
-		public DbSet<UserRoles> UserRoles { get; set; }
-		public DbSet<Roles> Roles { get; set; }
-		public DbSet<Resources> Resources { get; set; }
+		public virtual DbSet<Role> Roles { get; set; }
+		public virtual DbSet<Resources> Resources { get; set; }
+		public virtual DbSet<Clinic> Clinics { get; set; }
+		public virtual DbSet<Department> Departments { get; set; }
+		public virtual DbSet<UserRole> UserRoles { get; set; }
+		public virtual DbSet<Employee> Employees { get; set; }
 
 		//Patient DbSets
 		public virtual DbSet<Patient> Patients { get; set; }

@@ -68,5 +68,12 @@ namespace MedicalRecordsRepository.Interfaces
 		IQueryable<T> OrderByText(IQueryable<T> data, Order order, Expression<Func<T, string>> expression);
 
 		IQueryable<T> OrderByDate(IQueryable<T> data, Order order, Expression<Func<T, DateTime>> expression);
+
+		//Others
+		Task<T> FirstOrDefault(Expression<Func<T, bool>> predicate);
+
+		Task<T> Insert(T entity);
+
+		Task Update(T entity);
 	}
 }

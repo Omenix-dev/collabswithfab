@@ -1,5 +1,8 @@
-﻿using MedicalRecordsApi.Utils;
+﻿using MedicalRecordsApi.Managers.Auth;
+using MedicalRecordsApi.Utils;
 using MedicalRecordsData.DatabaseContext;
+using MedicalRecordsData.Entities.AuthEntity;
+using MedicalRecordsRepository.DTO.AuthDTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,97 +19,152 @@ namespace MedicalRecordsApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
-    {
-        private readonly MedicalRecordDbContext _context;
+	{
+		private IAuthManager _auth;
 
-        private readonly IConfiguration _configuration;
+		private readonly MedicalRecordDbContext _Context;
 
-        private readonly ILogger<AuthController> logger;
-        private static ILogger staticLogger = Utils.ApplicationLogging.CreateLogger<AuthController>();
+		public AuthController(MedicalRecordDbContext context, IAuthManager auth)
+		{
+			_Context = context;
+			_auth = auth;
+		}
 
-        public AuthController(MedicalRecordDbContext context, IConfiguration configuration, ILogger<AuthController> logger)
-        {
-            _context = context;
-            _configuration = configuration;
-            this.logger = logger;
-        }
+		//api/<AuthController>
+		[HttpPost]
+		[AllowAnonymous]
+		public async Task<IActionResult> Login(UserDTO user)
+		{
+			var response = new APIResponse();
+			response.ApiMessage = $"Error: User credentials in correct!";
+			response.StatusCode = "01";
+			response.Result = null;
+			var jwt = await _auth.LogUserIn(user);
+			if (jwt != null)
+			{
+				response.Result = jwt;
+				response.StatusCode = "00";
+				response.ApiMessage = "Successful Login!";
+				return Ok(response);
+			}
 
-        public class auth
-        {
-            public string email { get; set; }
-            public string password { get; set; }
-        }
+			return BadRequest(response);
+		}
 
-        [HttpPost("signin")]
-        [AllowAnonymous]
-        public async Task<object> SignIn(auth data)
-        {
-            Token token = new Token(_configuration);
-            var user_auth = await _context.Employees.Where(s => s.Email == data.email).FirstOrDefaultAsync();
-            var res = await _context.Resources.Take(1).SingleOrDefaultAsync();
-            if (user_auth != null)
-            {
-                return Ok(new
-                {
-                    Id = user_auth.Id,
-                    FirstName = user_auth.FirstName,
-                    LastName = user_auth.LastName,
-                    Role = "Request tester",
-                    Email = user_auth.Email,
-                    Picture = user_auth.ProfilePicture,
-                    token = token.BuildToken(user_auth.Id.ToString(), "new"),
-                    homeurl = res.HomeLink
-                });
-            }
+		[HttpPost("signin")]
+		[AllowAnonymous]
+		public async Task<IActionResult> SignIn(int id)
+		{
+			var response = new APIResponse();
+			response.ApiMessage = $"Error: User credentials in correct!";
+			response.StatusCode = "01";
+			response.Result = null;
 
-            return Ok(new
-            {
-                code = 0,
-                message = "Record not found"
-            });
-        }
+			var link = await _Context.Resources.SingleOrDefaultAsync();
+			var user_auth = await _Context.Employees.Where(s => s.Id == id).FirstOrDefaultAsync();
+			if (user_auth != null)
+			{
+				User data = new User
+				{
+					Id = user_auth.Id,
+					FirstName = user_auth.FirstName,
+					LastName = user_auth.LastName,
+					Role = "",
+					Email = user_auth.Email,
+					HomeLink = link.HomeLink,
 
-        [HttpPost("authorization")]
-        [AllowAnonymous]
-        public async Task<object> MainLogin(string urltoken)
-        {
-            Token token = new Token(_configuration);
-            var user_auth = await _context.Employees.Where(s => s.AuthenticationToken == urltoken).FirstOrDefaultAsync();
-            var res = await _context.Resources.Take(1).SingleOrDefaultAsync();
-            if (user_auth != null)
-            {
-                var role = "";
-                var URole = (from ur1 in _context.Roles
+					ClinicName = await _Context.Clinics.Where(x => x.Id == user_auth.ClinicId).Select(m => m.Name).FirstOrDefaultAsync(),
+					ClinicAddress = await _Context.Clinics.Where(x => x.Id == user_auth.ClinicId).Select(m => m.Location).FirstOrDefaultAsync(),
 
-                             where ur1.Id == user_auth.RoleId
-                             select new
-                             {
-                                 Id = ur1.Id,
-                                 Name = ur1.Name
-                             }).FirstOrDefault();
+				};
 
-                if (URole != null) { if (URole.Id > 0) { role = URole.Name; } }
+				var jwt = _auth.SignInUser(data);
+				if (jwt != null)
+				{
+					response.Result = jwt;
+					response.StatusCode = "00";
+					response.ApiMessage = "Successful Login!";
+					return Ok(response);
+				}
+			}
+			return Ok(response);
 
-                //dynamic obj = new System.Dynamic.ExpandoObject();
+		}
 
-                return Ok(new
-                {
-                    Id = user_auth.Id,
-                    FirstName = user_auth.FirstName,
-                    LastName = user_auth.LastName,
-                    Role = role,
-                    Email = user_auth.Email,
-                    Picture = user_auth.ProfilePicture,
-                    token = token.BuildToken(user_auth.Id.ToString(), $"{user_auth.FirstName} {user_auth.LastName}"),
-                    homeurl = res.HomeLink
-                });
+		[HttpPost("authorization")]
+		[AllowAnonymous]
+		public async Task<IActionResult> MainLogin(string urltoken)
+		{
+			var response = new APIResponse();
+			response.ApiMessage = $"Error: User credentials in correct!";
+			response.StatusCode = "01";
+			response.Result = null;
 
-            }
-            return Ok(new
-            {
-                code = 0,
-                message = "Record not found"
-            });
-        }
-    }
+
+			var user_auth = await _Context.Employees.Where(s => s.AuthenticationToken == urltoken).FirstOrDefaultAsync();
+			if (user_auth != null)
+			{
+				var role = "";
+				var URole = (from ur1 in _Context.UserRoles
+							 join r1 in _Context.Roles on ur1.RoleId equals r1.Id
+							 where ur1.UserId == user_auth.Id && ur1.Status == 1
+							 select new
+							 {
+								 Id = ur1.RoleId,
+								 Name = r1.Name
+							 }).FirstOrDefault();
+
+				if (URole != null) { if (URole.Id > 0) { role = URole.Name; } }
+
+				var link = await _Context.Resources.SingleOrDefaultAsync();
+
+				User data = new User
+				{
+					Id = user_auth.Id,
+					FirstName = user_auth.FirstName,
+					LastName = user_auth.LastName,
+					Role = role,
+					Email = user_auth.Email,
+					Picture = user_auth.ProfilePicture,
+					HomeLink = link.HomeLink,
+					ClinicName = await _Context.Clinics.Where(x => x.Id == user_auth.ClinicId).Select(m => m.Name).FirstOrDefaultAsync(),
+					ClinicAddress = await _Context.Clinics.Where(x => x.Id == user_auth.ClinicId).Select(m => m.Location).FirstOrDefaultAsync(),
+				};
+
+
+				var jwt = _auth.SignInUser(data);
+
+				if (jwt != null)
+				{
+					response.Result = jwt;
+					response.StatusCode = "00";
+					response.ApiMessage = "Successful Login!";
+					return Ok(response);
+				}
+			}
+			return Ok(response);
+
+		}
+
+		[HttpPost("register")]
+		[AllowAnonymous]
+		public async Task<IActionResult> Register(UserDTO userdto)
+		{
+			var response = new APIResponse();
+			response.StatusCode = "01";
+			response.Result = null;
+			var (user, message) = await _auth.RegisterUser(userdto); ;
+			if (user != null)
+			{
+				response.Result = user;
+				response.StatusCode = "00";
+				response.ApiMessage = message;
+				return Ok(response);
+			}
+			response.ApiMessage = message;
+
+			return BadRequest(response);
+		}
+
+	}
 }

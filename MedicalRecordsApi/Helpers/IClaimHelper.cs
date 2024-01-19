@@ -6,12 +6,6 @@
 
         string GetPublicUser();
 
-        string GetInternalLoggedInUser();
-
-        string GetLoggedInAgent();
-
-        string GetLoggedInPartner();
-
         string GetUserEmail();
 
         string GetUserPhoneNumber();

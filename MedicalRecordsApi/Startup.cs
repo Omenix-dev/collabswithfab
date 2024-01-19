@@ -17,6 +17,12 @@ using Microsoft.OpenApi.Models;
 using MedicalRecordsData.DatabaseContext;
 using MedicalRecordsApi.Models;
 using MedicalRecordsRepository;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using MedicalRecordsApi.Managers.Auth;
+using RequisitionManagerApi.ExtentionManagers;
+using MedicalRecordsRepository.Interfaces;
+using MedicalRecordsData.Entities.AuthEntity;
 
 namespace MedicalRecordsApi
 {
@@ -31,32 +37,26 @@ namespace MedicalRecordsApi
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddControllers();
+		{
+			var connstr = Configuration.GetConnectionString("MedicalRecords");
+			services.AddControllers();
 
-            services.AddDbContext<MedicalRecordDbContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("MedicalRecords")));
+			services.AddDbContextPool<MedicalRecordDbContext>(
+				 dbContextOptions => dbContextOptions
+					 .UseSqlServer(connstr)
+			        // TODO: Please remove when develop is over.
+			        //.EnableSensitiveDataLogging()
+			        //.EnableDetailedErrors()
+			);
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = Configuration["Jwt:Issuer"],
-                    ValidAudience = Configuration["Jwt:Issuer"],
+			services.AddAppAuthentication(Configuration);
 
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("edsgrequestmanager232322423132323"))
-                };
-            });
+			//Services
+			services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+			services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
 
-            //Services
-            services.AddCoreRepository();
+			services.AddCoreRepository();
 			services.AddConfigSettings(Configuration);
-
 
 			services.AddSwaggerGen(c =>
             {
@@ -89,27 +89,49 @@ namespace MedicalRecordsApi
                 });
 
             });
-            services.AddCors(options => options.AddPolicy("AllowFromAll", builder => builder.WithMethods("GET", "POST", "DELETE", "PUT").AllowAnyOrigin().AllowAnyHeader()));
 
-        }
+			#region Setup Managers
+
+			services.AddScoped<IAuthManager, AuthManager>();
+
+			#endregion
+
+			services.AddHttpContextAccessor();
+
+			services.AddCors(options => options.AddPolicy("AllowFromAll", builder => builder.WithMethods("GET", "POST", "DELETE", "PUT").AllowAnyOrigin().AllowAnyHeader()));
+			
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+			
+            services.AddControllers(config =>
+			{
+				var policy = new AuthorizationPolicyBuilder()
+								 .RequireAuthenticatedUser()
+								 .Build();
+				config.Filters.Add(new AuthorizeFilter(policy));
+			});
+		}
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+		{
+			if (env.IsDevelopment())
+			{
+				app.UseDeveloperExceptionPage();
+			}
+			app.UseDeveloperExceptionPage();
 
-            app.UseRouting();
+			//app.UseStaticFiles();
+			app.UseHttpsRedirection();
+			app.UseRouting();
+			app.UseCors("AllowFromAll");
+			// loggerFactory.AddLog4Net(); // << Add this line
 
-           // loggerFactory.AddLog4Net(); // << Add this line
+			// Utils.ApplicationLogging.LoggerFactory = loggerFactory;
 
-           // Utils.ApplicationLogging.LoggerFactory = loggerFactory;
+			app.UseAuthentication();
+			app.UseAuthorization();
 
-            app.UseAuthorization();
-
-            app.UseSwagger();
+			app.UseSwagger();
 
             app.UseSwaggerUI(c =>
             {

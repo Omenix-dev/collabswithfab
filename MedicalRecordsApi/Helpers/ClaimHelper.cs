@@ -17,24 +17,9 @@ namespace MedicalRecordsApi.Helpers
             return GetClaimValue("UserId");
         }
 
-        public string GetInternalLoggedInUser()
-        {
-            return GetClaimValue("WellaHealth");
-        }
-
-        public string GetLoggedInAgent()
-        {
-            return GetClaimValue("Agent");
-        }
-
-        public string GetLoggedInPartner()
-        {
-            return GetClaimValue("Partner");
-        }
-
         public string GetUserEmail()
         {
-            return GetClaimValue("Name");
+            return GetClaimValue("Email");
         }
 
         public string GetUserPhoneNumber()

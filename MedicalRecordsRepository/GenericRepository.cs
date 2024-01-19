@@ -491,6 +491,50 @@ namespace MedicalRecordsRepository
 
 			return paginated;
 		}
+
+
+		//Others
+		public Task<T> FirstOrDefault(Expression<Func<T, bool>> predicate)
+			=> _db.Set<T>().FirstOrDefaultAsync(predicate);
+
+		public async Task<T> Insert(T entity)
+		{
+			if (entity == null) throw new ArgumentNullException($"{nameof(Insert)} entity cannot be null");
+			try
+			{
+				await _db.Set<T>().AddAsync(entity);
+				await _db.SaveChangesAsync();
+				_logger.LogInformation($"Successfully Saved {entity}");
+
+				return entity;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{ex}");
+				throw new Exception($"{nameof(entity)} could not be saved: {ex}");
+			}
+		}
+
+		public async Task Update(T entity)
+		{
+			if (entity == null) throw new ArgumentNullException($"{nameof(Update)} entity cannot be null");
+			// In case AsNoTracking is used
+			try
+			{
+				//Context.Attach(entity);
+				//Context.Entry(entity).State = EntityState.Modified;
+				//Context.Set<T>().Update(entity);
+
+				_db.Update(entity);
+				await _db.SaveChangesAsync();
+
+				_logger.LogInformation($"Successfully Updated {entity}");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{ex}");
+			}
+		}
 	}
 
 }

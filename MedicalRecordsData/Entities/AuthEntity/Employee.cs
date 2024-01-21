@@ -44,8 +44,6 @@ namespace MedicalRecordsData.Entities.AuthEntity
         public int? RoleId { get; set; }
 
 
-		public string NIN { get; set; }
-		public string BVN { get; set; }
 		public string WorkGrade { get; set; }
 		public string ResumptionDate { get; set; }
 		public DateTime? LastLoginTime { get; set; }

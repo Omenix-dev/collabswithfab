@@ -23,7 +23,7 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 		/// This gets the patients assigned to a particular doctor
 		/// </summary>
 		/// <returns>Returns a <see cref="ServiceResponse{List{AssignedPatientsDTO}}"/> object.</returns>
-		Task<ServiceResponse<List<AssignedPatientsDTO>>> GetAssignedPatientsAsync(int userId);
+		Task<ServiceResponse<IEnumerable<AssignedPatientsDTO>>> GetAssignedPatientsAsync(int userId);
 		/// <summary>
 		/// This gets the patients record of a particular patient
 		/// </summary>

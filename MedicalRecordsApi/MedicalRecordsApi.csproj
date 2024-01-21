@@ -23,13 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\DoctorsEndpoints\" />
-    <Folder Include="Controllers\NursesEndpoints\" />
     <Folder Include="Models\DTO\" />
-    <Folder Include="Services\Abstract\DoctorsInterfaces\" />
-    <Folder Include="Services\Abstract\NursesInterfaces\" />
-    <Folder Include="Services\Implementation\DoctorsInterfaces\" />
-    <Folder Include="Services\Implementation\NursesInterfaces\" />
   </ItemGroup>
 
 

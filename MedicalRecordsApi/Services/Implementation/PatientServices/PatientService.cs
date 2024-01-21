@@ -1,12 +1,18 @@
 ﻿using AutoMapper;
+using MedicalRecordsApi.Constants;
 using MedicalRecordsApi.Models.DTO.Request;
 using MedicalRecordsApi.Models.DTO.Responses;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
 using MedicalRecordsApi.Services.Common.Interfaces;
+using MedicalRecordsData.DatabaseContext;
+using MedicalRecordsData.Entities.AuthEntity;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
 using MedicalRecordsRepository.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MedicalRecordsApi.Services.Implementation.PatientServices
@@ -15,7 +21,9 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
     {
 		#region config
 		private readonly IMapper _mapper;
+		private readonly MedicalRecordDbContext _dbContext;
 		private readonly IGenericRepository<Patient> _patientRepository;
+		private readonly IGenericRepository<Employee> _employeeRepository;
 		private readonly IGenericRepository<Contact> _contactRepository;
 		private readonly IGenericRepository<EmergencyContact> _emrgencyContactRepository;
 		private readonly IGenericRepository<Immunization> _immunizationRepository;
@@ -28,14 +36,15 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 		private readonly IConfiguration _configuration;
 
 		public PatientService(IGenericRepository<Patient> patientRepository,
-			IMapper mapper, IConfiguration configuration, IGenericRepository<Contact> contactRepository, 
-			IGenericRepository<EmergencyContact> emrgencyContactRepository, 
-			IGenericRepository<Immunization> immunizationRepository, 
-			IGenericRepository<ImmunizationDocument> immunizationDocumentRepository, 
-			IGenericRepository<MedicalRecord> medicalRecordRepository, 
-			IGenericRepository<Medication> medicationRepository, 
-			IGenericRepository<PatientReferrer> patientReferrerRepository, 
-			IGenericRepository<Treatment> treatmentRepository, IGenericRepository<Visit> visitRepository)
+			IMapper mapper, IConfiguration configuration, IGenericRepository<Contact> contactRepository,
+			IGenericRepository<EmergencyContact> emrgencyContactRepository,
+			IGenericRepository<Immunization> immunizationRepository,
+			IGenericRepository<ImmunizationDocument> immunizationDocumentRepository,
+			IGenericRepository<MedicalRecord> medicalRecordRepository,
+			IGenericRepository<Medication> medicationRepository,
+			IGenericRepository<PatientReferrer> patientReferrerRepository,
+			IGenericRepository<Treatment> treatmentRepository, IGenericRepository<Visit> visitRepository,
+			MedicalRecordDbContext dbContext, IGenericRepository<Employee> employeeRepository)
 		{
 			_patientRepository = patientRepository;
 			_mapper = mapper;
@@ -49,14 +58,45 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			_patientReferrerRepository = patientReferrerRepository;
 			_treatmentRepository = treatmentRepository;
 			_visitRepository = visitRepository;
+			_dbContext = dbContext;
+			_employeeRepository = employeeRepository;
 		}
 		#endregion
 
 
 
-		public Task<ServiceResponse<string>> AddPrescriptionAsync(CreatePatientPrescriptionDTO prescriptionDTO)
+		public async Task<ServiceResponse<string>> AddPrescriptionAsync(CreatePatientPrescriptionDTO prescriptionDTO)
 		{
-			throw new System.NotImplementedException();
+			if (prescriptionDTO == null)
+			{
+				return new ServiceResponse<string>(String.Empty, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+			}
+
+			var patient = await _patientRepository.Query()
+											.Include(x => x.Visits)
+											.FirstOrDefaultAsync(x => x.Id == prescriptionDTO.PatientId);
+
+			if (patient == null)
+			{
+				return new ServiceResponse<string>(String.Empty, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+			}
+
+			Treatment treatment = new Treatment()
+			{
+				DateOfVisit = prescriptionDTO.DateOfVisit,
+				Diagnosis = prescriptionDTO.Diagnosis,
+				Temperature = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Temperature,
+				Age = CalculateAge(patient.DateOfBirth),
+				Weight = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Weight,
+				PatientId = prescriptionDTO.PatientId,
+				Medications = prescriptionDTO.Medication.Select(med => new Medication { Name = med }).ToList()
+			};
+
+			patient.Treatments.Add(treatment);
+
+			await _patientRepository.SaveChangesToDbAsync();
+
+			return new ServiceResponse<string>("Successful", InternalCode.Success);
 		}
 
 		public Task<ServiceResponse<string>> AddToPatientNoteAsync(CreatePatientNoteDTO patientNoteDTO)
@@ -64,14 +104,99 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			throw new System.NotImplementedException();
 		}
 
-		public Task<ServiceResponse<List<AssignedPatientsDTO>>> GetAssignedPatientsAsync(int userId)
+		public async Task<ServiceResponse<IEnumerable<AssignedPatientsDTO>>> GetAssignedPatientsAsync(int userId)
 		{
-			throw new System.NotImplementedException();
+			if (userId <= 0)
+			{
+				return new ServiceResponse<IEnumerable<AssignedPatientsDTO>>(Enumerable.Empty<AssignedPatientsDTO>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+			}
+
+			var patients = await _patientRepository.Query()
+												  .AsNoTracking()
+												  .Include(x => x.Visits)
+												  .Where(x => x.DoctorId == userId).ToListAsync();
+
+			if (!patients.Any())
+			{
+				return new ServiceResponse<IEnumerable<AssignedPatientsDTO>>(Enumerable.Empty<AssignedPatientsDTO>(), InternalCode.Success, ServiceErrorMessages.Success);
+			}
+
+			List<AssignedPatientsDTO> assignedPatientsDTOs = new List<AssignedPatientsDTO>();
+
+			foreach (var patient in patients)
+			{
+				AssignedPatientsDTO assignedPatient = new AssignedPatientsDTO()
+				{
+					PatientId = patient.PatientId,
+					FirstName = patient.FirstName,
+					LastName = patient.LastName,
+					AssignedNurse = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patient.NurseId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync(),
+					Age = CalculateAge(patient.DateOfBirth),
+					DateCreated = patient.CreatedAt.ToString("dd MMMM yyyy"),
+					Weight = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Weight,
+					Height = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Height,
+					Temperature = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Temperature,
+					Heart = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Height,
+					Resp = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Respiratory
+				};
+
+				assignedPatientsDTOs.Add(assignedPatient);
+			}
+
+			return new ServiceResponse<IEnumerable<AssignedPatientsDTO>>(assignedPatientsDTOs, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 		}
 
-		public Task<ServiceResponse<ReadPatientDTO>> GetPatientDataAsync(int patientId)
+		public async Task<ServiceResponse<ReadPatientDTO>> GetPatientDataAsync(int patientId)
 		{
-			throw new System.NotImplementedException();
+			if (patientId <= 0)
+			{
+				return new ServiceResponse<ReadPatientDTO>(null, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+			}
+
+			var patient = await _patientRepository.Query()
+												  .AsNoTracking()
+												  .Include(x => x.Contact).Include(x => x.EmergencyContact)
+												  .Include(x => x.Immunizations).Include(x => x.MedicalRecords)
+												  .Include(x => x.Contact).Include(x => x.Contact)
+												  .Include(x => x.Contact).Include(x => x.Contact)
+												  .FirstOrDefaultAsync(x => x.Id == patientId);
+
+			if (patient == null)
+			{
+				return new ServiceResponse<ReadPatientDTO>(null, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+			}
+
+			var patientdata = _mapper.Map<ReadPatientDTO>(patient);
+
+			return new ServiceResponse<ReadPatientDTO>(patientdata, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 		}
+
+
+
+
+
+		#region Helpers
+		public static string CalculateAge(DateTime dateOfBirth)
+		{
+			// Get the current date
+			DateTime currentDate = DateTime.Now;
+
+			// Calculate the difference in years and months
+			int years = currentDate.Year - dateOfBirth.Year;
+			int months = currentDate.Month - dateOfBirth.Month;
+
+			// Adjust the age if the birthday has not occurred yet this year
+			if (currentDate.Month < dateOfBirth.Month || (currentDate.Month == dateOfBirth.Month && currentDate.Day < dateOfBirth.Day))
+			{
+				years--;
+				months += 12; // Add 12 months to represent the remaining months until the birthday
+			}
+
+			// Construct the age string
+			string ageString = $"{(years > 0 ? $"{years} {(years == 1 ? "year" : "years")}" : "")}{(years > 0 && months > 0 ? ", " : "")}{(months > 0 ? $"{months} {(months == 1 ? "month" : "months")}" : "")}";
+
+			return ageString;
+		}
+		#endregion
 	}
 }

@@ -26,10 +26,10 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		/// <summary>
 		/// This gets the patients assigned to a particular doctor
 		/// </summary>
-		/// <returns>Returns a <see cref="ServiceResponse{List{AssignedPatientsDTO}}"/> object.</returns>
+		/// <returns>Returns a <see cref="ServiceResponse{IEnumerable{AssignedPatientsDTO}}"/> object.</returns>
 		[HttpGet]
 		[Route("assignedtodoctor")]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<List<AssignedPatientsDTO>>))]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<AssignedPatientsDTO>>))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
@@ -40,7 +40,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		{
 			int userId = int.Parse(User.FindFirst("Id").Value);
 
-			ServiceResponse<List<AssignedPatientsDTO>> result = await _service.GetAssignedPatientsAsync(userId);
+			ServiceResponse<IEnumerable<AssignedPatientsDTO>> result = await _service.GetAssignedPatientsAsync(userId);
 
 			return result.FormatResponse();
 		}

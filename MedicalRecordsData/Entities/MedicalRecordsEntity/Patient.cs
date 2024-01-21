@@ -29,7 +29,7 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 
 		//PatientAuth
 		public int UserId { get; set; }
-		public int PatientId { get; set; }
+		public string PatientId { get; set; }
 
 		//Staff taking care of patient
 		public int NurseId { get; set; }

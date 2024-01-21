@@ -1,15 +1,20 @@
 ﻿using AutoMapper;
+using MedicalRecordsApi.Models.DTO.Request;
+using MedicalRecordsApi.Models.DTO.Responses;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
 using MedicalRecordsApi.Services.Common.Interfaces;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
 using MedicalRecordsRepository.Interfaces;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MedicalRecordsApi.Services.Implementation.PatientServices
 {
     public class PatientService : IPatientService
     {
-        private readonly IMapper _mapper;
+		#region config
+		private readonly IMapper _mapper;
 		private readonly IGenericRepository<Patient> _patientRepository;
 		private readonly IGenericRepository<Contact> _contactRepository;
 		private readonly IGenericRepository<EmergencyContact> _emrgencyContactRepository;
@@ -45,6 +50,28 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			_treatmentRepository = treatmentRepository;
 			_visitRepository = visitRepository;
 		}
+		#endregion
 
+
+
+		public Task<ServiceResponse<string>> AddPrescriptionAsync(CreatePatientPrescriptionDTO prescriptionDTO)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public Task<ServiceResponse<string>> AddToPatientNoteAsync(CreatePatientNoteDTO patientNoteDTO)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public Task<ServiceResponse<List<AssignedPatientsDTO>>> GetAssignedPatientsAsync(int userId)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public Task<ServiceResponse<ReadPatientDTO>> GetPatientDataAsync(int patientId)
+		{
+			throw new System.NotImplementedException();
+		}
 	}
 }

@@ -116,9 +116,6 @@ namespace MedicalRecordsData.Migrations
                     b.Property<string>("AuthenticationToken")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("BVN")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Bvn")
                         .HasColumnType("nvarchar(max)");
 
@@ -162,9 +159,6 @@ namespace MedicalRecordsData.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("MotherMaidenName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NIN")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("NationalityId")

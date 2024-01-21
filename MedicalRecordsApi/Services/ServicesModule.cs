@@ -1,6 +1,10 @@
 ﻿using MedicalRecordsApi.Helpers;
+using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
 using MedicalRecordsApi.Services.Common;
 using MedicalRecordsApi.Services.Common.Interfaces;
+using MedicalRecordsApi.Services.Implementation.PatientServices;
+using MedicalRecordsData.Entities.MedicalRecordsEntity;
+using MedicalRecordsRepository.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MedicalRecordsApi.Services
@@ -19,6 +23,20 @@ namespace MedicalRecordsApi.Services
             //Helpers
             services.AddSingleton<IClaimHelper, ClaimHelper>();
 
-        }
+			//Doctors
+			services.AddScoped<IPatientService, PatientService>();
+
+			//Generic class instantiations
+			services.AddScoped<IGenericService<Patient>, GenericService<Patient>>();
+			services.AddScoped<IGenericService<Contact>, GenericService<Contact>>();
+			services.AddScoped<IGenericService<EmergencyContact>, GenericService<EmergencyContact>>();
+			services.AddScoped<IGenericService<Immunization>, GenericService<Immunization>>();
+			services.AddScoped<IGenericService<ImmunizationDocument>, GenericService<ImmunizationDocument>>();
+			services.AddScoped<IGenericService<MedicalRecord>, GenericService<MedicalRecord>>();
+			services.AddScoped<IGenericService<Medication>, GenericService<Medication>>();
+			services.AddScoped<IGenericService<PatientReferrer>, GenericService<PatientReferrer>>();
+			services.AddScoped<IGenericService<Treatment>, GenericService<Treatment>>();
+			services.AddScoped<IGenericService<Visit>, GenericService<Visit>>();
+		}
     }
 }

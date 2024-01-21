@@ -1,9 +1,17 @@
 ﻿using AutoMapper;
+using MedicalRecordsApi.Models;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
 using MedicalRecordsApi.Services.Common.Interfaces;
+using MedicalRecordsApi.Utils;
+using MedicalRecordsData.Entities.AuthEntity;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
+using MedicalRecordsRepository.DTO.AuthDTO;
 using MedicalRecordsRepository.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace MedicalRecordsApi.Services.Implementation.PatientServices
 {
@@ -20,9 +28,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 		private readonly IGenericRepository<PatientReferrer> _patientReferrerRepository;
 		private readonly IGenericRepository<Treatment> _treatmentRepository;
 		private readonly IGenericRepository<Visit> _visitRepository;
-		private readonly IConfiguration _configuration;
+        private readonly IGenericRepository<User> _userRepository;
+        private readonly IConfiguration _configuration;
 
-		public PatientService(IGenericRepository<Patient> patientRepository,
+
+        public PatientService(IGenericRepository<Patient> patientRepository,
 			IMapper mapper, IConfiguration configuration, IGenericRepository<Contact> contactRepository, 
 			IGenericRepository<EmergencyContact> emrgencyContactRepository, 
 			IGenericRepository<Immunization> immunizationRepository, 
@@ -30,7 +40,10 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			IGenericRepository<MedicalRecord> medicalRecordRepository, 
 			IGenericRepository<Medication> medicationRepository, 
 			IGenericRepository<PatientReferrer> patientReferrerRepository, 
-			IGenericRepository<Treatment> treatmentRepository, IGenericRepository<Visit> visitRepository)
+			IGenericRepository<Treatment> treatmentRepository, 
+			IGenericRepository<Visit> visitRepository,
+            IGenericRepository<User> userRepository
+			)
 		{
 			_patientRepository = patientRepository;
 			_mapper = mapper;
@@ -44,7 +57,35 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			_patientReferrerRepository = patientReferrerRepository;
 			_treatmentRepository = treatmentRepository;
 			_visitRepository = visitRepository;
-		}
+            _userRepository = userRepository;
+        }
 
-	}
+        public async Task<APIResponse> CreatePatientProfile(CreatePatientProfileDto profileDto, int userId)
+        {
+			var ApiResponse = new APIResponse();
+
+			var userExists = await _userRepository.FirstOrDefault(r => r.Email == profileDto.Email);
+			if (userExists != null)
+			{
+				ApiResponse.StatusCode = "01";
+				ApiResponse.ApiMessage = $"user already {profileDto.Email} exist";
+				ApiResponse.Result = null;
+				return ApiResponse;
+			}
+			var userDetails = _mapper.Map<User>(profileDto);
+			AuthUtil.CreatePasswordHash(profileDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+			userDetails.CreatedAt = DateTime.UtcNow;
+            userDetails.PasswordHash = passwordHash;
+            userDetails.PasswordSalt = passwordSalt;
+            userDetails.Email = profileDto.Email;
+			userDetails.CreatedBy = userId;
+
+            await _userRepository.Insert(userDetails);
+            ApiResponse.StatusCode = "01";
+            ApiResponse.ApiMessage = $"user created successfully";
+            ApiResponse.Result = profileDto.Email;
+
+            return ApiResponse;
+        }
+    }
 }

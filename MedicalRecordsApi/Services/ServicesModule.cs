@@ -3,6 +3,7 @@ using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
 using MedicalRecordsApi.Services.Common;
 using MedicalRecordsApi.Services.Common.Interfaces;
 using MedicalRecordsApi.Services.Implementation.PatientServices;
+using MedicalRecordsApi.Utils;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
 using MedicalRecordsRepository.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +38,7 @@ namespace MedicalRecordsApi.Services
 			services.AddScoped<IGenericService<PatientReferrer>, GenericService<PatientReferrer>>();
 			services.AddScoped<IGenericService<Treatment>, GenericService<Treatment>>();
 			services.AddScoped<IGenericService<Visit>, GenericService<Visit>>();
-		}
+            services.AddAutoMapper(typeof(PatientProfileMapper));
+        }
     }
 }

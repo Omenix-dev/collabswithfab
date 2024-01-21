@@ -26,9 +26,10 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public string LGA { get; set; }
 		public string PlaceOfBirth { get; set; }
 		public string MaritalStatus { get; set; }
+        public string Nationality { get; set; }
 
-		//PatientAuth
-		public int UserId { get; set; }
+        //PatientAuth
+        public int UserId { get; set; }
 
 		//Staff taking care of patient
 		public int NurseId { get; set; }

@@ -23,6 +23,8 @@ using MedicalRecordsApi.Managers.Auth;
 using RequisitionManagerApi.ExtentionManagers;
 using MedicalRecordsRepository.Interfaces;
 using MedicalRecordsData.Entities.AuthEntity;
+using MedicalRecordsApi.Utils;
+using MedicalRecordsApi.Services;
 
 namespace MedicalRecordsApi
 {
@@ -54,8 +56,9 @@ namespace MedicalRecordsApi
 			//Services
 			services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 			services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
+            services.AddServices();
 
-			services.AddCoreRepository();
+            services.AddCoreRepository();
 			services.AddConfigSettings(Configuration);
 
 			services.AddSwaggerGen(c =>

@@ -52,7 +52,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		/// <param name="patientId"></param>
 		/// <returns>Returns a <see cref="ServiceResponse{ReadPatientDTO}"/> object.</returns>
 		[HttpGet]
-		[Route("data")]
+		[Route("{patientId}/data")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ReadPatientDTO>))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
@@ -126,7 +126,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		/// <param name="patientId"></param>
 		/// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadVisitHistoryDTO}}"/> object.</returns>
 		[HttpGet]
-		[Route("admission/history")]
+		[Route("{patientId}/admission/history")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]

@@ -99,9 +99,26 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			return new ServiceResponse<string>("Successful", InternalCode.Success);
 		}
 
-		public Task<ServiceResponse<string>> AddToPatientNoteAsync(CreatePatientNoteDTO patientNoteDTO)
+		public async Task<ServiceResponse<string>> AddToPatientNoteAsync(CreatePatientNoteDTO patientNoteDTO)
 		{
-			throw new System.NotImplementedException();
+			if (patientNoteDTO == null)
+			{
+				return new ServiceResponse<string>(String.Empty, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+			}
+
+			var treatment = await _treatmentRepository.Query()
+											.FirstOrDefaultAsync(x => x.Id == patientNoteDTO.TreatmentId);
+
+			if (treatment == null)
+			{
+				return new ServiceResponse<string>(String.Empty, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+			}
+
+			treatment.AdditonalNote = patientNoteDTO.AdditonalNoteOnTreatment;
+
+			await _patientRepository.SaveChangesToDbAsync();
+
+			return new ServiceResponse<string>("Successful", InternalCode.Success);
 		}
 
 		public async Task<ServiceResponse<IEnumerable<AssignedPatientsDTO>>> GetAssignedPatientsAsync(int userId)
@@ -121,27 +138,46 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 				return new ServiceResponse<IEnumerable<AssignedPatientsDTO>>(Enumerable.Empty<AssignedPatientsDTO>(), InternalCode.Success, ServiceErrorMessages.Success);
 			}
 
-			List<AssignedPatientsDTO> assignedPatientsDTOs = new List<AssignedPatientsDTO>();
-
-			foreach (var patient in patients)
+			List<AssignedPatientsDTO> assignedPatientsDTOs = patients.Select(patient => new AssignedPatientsDTO
 			{
-				AssignedPatientsDTO assignedPatient = new AssignedPatientsDTO()
-				{
-					PatientId = patient.PatientId,
-					FirstName = patient.FirstName,
-					LastName = patient.LastName,
-					AssignedNurse = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patient.NurseId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync(),
-					Age = CalculateAge(patient.DateOfBirth),
-					DateCreated = patient.CreatedAt.ToString("dd MMMM yyyy"),
-					Weight = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Weight,
-					Height = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Height,
-					Temperature = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Temperature,
-					Heart = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Height,
-					Resp = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Respiratory
-				};
+				PatientId = patient.PatientId,
+				FirstName = patient.FirstName,
+				LastName = patient.LastName,
+				AssignedNurse = _employeeRepository.Query()
+								.AsNoTracking()
+								.Where(x => x.Id == patient.NurseId)
+								.Select(s => $"{s.FirstName} {s.LastName}")
+								.FirstOrDefaultAsync()
+								.Result, // Use .Result to get the result synchronously, assuming this is an asynchronous operation
+				Age = CalculateAge(patient.DateOfBirth),
+				DateCreated = patient.CreatedAt.ToString("dd MMMM yyyy"),
+				Weight = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Weight,
+				Height = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Height,
+				Temperature = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Temperature,
+				Heart = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Height,
+				Resp = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Respiratory
+			}).ToList();
+			//List<AssignedPatientsDTO> assignedPatientsDTOs = new List<AssignedPatientsDTO>();
 
-				assignedPatientsDTOs.Add(assignedPatient);
-			}
+			//foreach (var patient in patients)
+			//{
+			//	AssignedPatientsDTO assignedPatient = new AssignedPatientsDTO()
+			//	{
+			//		PatientId = patient.PatientId,
+			//		FirstName = patient.FirstName,
+			//		LastName = patient.LastName,
+			//		AssignedNurse = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patient.NurseId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync(),
+			//		Age = CalculateAge(patient.DateOfBirth),
+			//		DateCreated = patient.CreatedAt.ToString("dd MMMM yyyy"),
+			//		Weight = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Weight,
+			//		Height = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Height,
+			//		Temperature = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Temperature,
+			//		Heart = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Height,
+			//		Resp = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Respiratory
+			//	};
+
+			//	assignedPatientsDTOs.Add(assignedPatient);
+			//}
 
 			return new ServiceResponse<IEnumerable<AssignedPatientsDTO>>(assignedPatientsDTOs, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 		}
@@ -168,25 +204,52 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
 			var patientdata = _mapper.Map<ReadPatientDTO>(patient);
 
+			patientdata.NurseName = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patientdata.NurseId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync();
+			patientdata.DoctorName = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patientdata.DoctorId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync();
+
 			return new ServiceResponse<ReadPatientDTO>(patientdata, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+		}
+
+		public async Task<ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>> GetAllAdmissionHistoryAsync(int patientId)
+		{
+			if (patientId <= 0)
+			{
+				return new ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>(Enumerable.Empty<ReadVisitHistoryDTO>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+			}
+
+			var patient = await _patientRepository.Query()
+												  .AsNoTracking()
+												  .Include(x => x.Visits)
+												  .FirstOrDefaultAsync(x => x.Id == patientId);
+
+			if (patient == null)
+			{
+				return new ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>(Enumerable.Empty<ReadVisitHistoryDTO>(), InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+			}
+
+			var visitsdata = _mapper.Map<IEnumerable<ReadVisitHistoryDTO>>(patient.Visits);
+
+			// Update Age for each visit
+			visitsdata.ToList().ForEach(visit => visit.Age = CalculateAge(patient.DateOfBirth, visit.DateOfVisit));
+
+			return new ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>(visitsdata, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 		}
 
 
 
 
-
 		#region Helpers
-		public static string CalculateAge(DateTime dateOfBirth)
+		public static string CalculateAge(DateTime dateOfBirth, DateTime? currentDate = null)
 		{
 			// Get the current date
-			DateTime currentDate = DateTime.Now;
+			currentDate ??= DateTime.Now;
 
 			// Calculate the difference in years and months
-			int years = currentDate.Year - dateOfBirth.Year;
-			int months = currentDate.Month - dateOfBirth.Month;
+			int years = currentDate.Value.Year - dateOfBirth.Year;
+			int months = currentDate.Value.Month - dateOfBirth.Month;
 
 			// Adjust the age if the birthday has not occurred yet this year
-			if (currentDate.Month < dateOfBirth.Month || (currentDate.Month == dateOfBirth.Month && currentDate.Day < dateOfBirth.Day))
+			if (currentDate.Value.Month < dateOfBirth.Month || (currentDate.Value.Month == dateOfBirth.Month && currentDate.Value.Day < dateOfBirth.Day))
 			{
 				years--;
 				months += 12; // Add 12 months to represent the remaining months until the birthday

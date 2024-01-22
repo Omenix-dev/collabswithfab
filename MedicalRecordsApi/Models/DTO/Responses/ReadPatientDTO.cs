@@ -28,6 +28,8 @@ namespace MedicalRecordsApi.Models.DTO.Responses
 		//Staff taking care of patient
 		public string NurseName { get; set; }
 		public string DoctorName { get; set; }
+		public int NurseId { get; set; }
+		public int DoctorId { get; set; }
 
 		//Navigation Properties
 		public Contact Contact { get; set; }

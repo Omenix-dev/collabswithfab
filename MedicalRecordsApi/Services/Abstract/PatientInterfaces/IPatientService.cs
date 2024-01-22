@@ -20,6 +20,12 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 		/// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
 		Task<ServiceResponse<string>> AddToPatientNoteAsync(CreatePatientNoteDTO patientNoteDTO);
 		/// <summary>
+		/// This gets the patients admission history for quick evaluation
+		/// </summary>
+		/// <param name="patientId"></param>
+		/// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadVisitHistoryDTO}}"/> object.</returns>
+		Task<ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>> GetAllAdmissionHistoryAsync(int patientId);
+		/// <summary>
 		/// This gets the patients assigned to a particular doctor
 		/// </summary>
 		/// <returns>Returns a <see cref="ServiceResponse{List{AssignedPatientsDTO}}"/> object.</returns>

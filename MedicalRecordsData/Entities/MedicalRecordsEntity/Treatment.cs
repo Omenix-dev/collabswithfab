@@ -18,6 +18,7 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public string Age { get; set; }
 		public double Weight { get; set; }
 		public string Diagnosis { get; set; }
+		public string AdditonalNote { get; set; }
 
 
 		//Navigation Properties

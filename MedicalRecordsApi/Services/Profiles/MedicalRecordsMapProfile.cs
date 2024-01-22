@@ -12,6 +12,7 @@ namespace MedicalRecordsApi.Services.Profiles
 		{
 			CreateMap<UserDTO, Employee>().ReverseMap();
 			CreateMap<ReadPatientDTO, Patient>().ReverseMap();
+			CreateMap<ReadVisitHistoryDTO, Visit>().ReverseMap();
 		}
     }
 }

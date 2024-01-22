@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MedicalRecordsApi.Controllers.PatientEndpoints
 {
-    [Route("api/[controller]")]
+    [Route("api/patients")]
     [ApiController]
     public class PatientController : ControllerBase
     {
@@ -35,7 +35,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
-		// GET api/patient/assignedtodoctor
+		// GET api/patients/assignedtodoctor
 		public async Task<IActionResult> Get()
 		{
 			int userId = int.Parse(User.FindFirst("Id").Value);
@@ -52,14 +52,14 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		/// <param name="patientId"></param>
 		/// <returns>Returns a <see cref="ServiceResponse{ReadPatientDTO}"/> object.</returns>
 		[HttpGet]
-		[Route("data")]
+		[Route("{patientId}/data")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ReadPatientDTO>))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
-		// GET api/patient/data/5
+		// GET api/patients/data/5
 		public async Task<IActionResult> Get([FromRoute] int patientId)
 		{
 			ServiceResponse<ReadPatientDTO> result = await _service.GetPatientDataAsync(patientId);
@@ -84,7 +84,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
-		// POST api/patient/addpatientnote
+		// POST api/patients/addpatientnote
 		public async Task<IActionResult> Post([FromBody] CreatePatientNoteDTO patientNoteDTO)
 		{
 			ServiceResponse<string> result = await _service.AddToPatientNoteAsync(patientNoteDTO);
@@ -109,7 +109,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
-		// POST api/patient/addprescription
+		// POST api/patients/addprescription
 		public async Task<IActionResult> Post([FromBody]CreatePatientPrescriptionDTO prescriptionDTO)
 		{
 			ServiceResponse<string> result = await _service.AddPrescriptionAsync(prescriptionDTO);
@@ -118,7 +118,28 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		}
 
 		//7. GetLabNote
+
 		//8. GetAllAdmissionHistory
+		/// <summary>
+		/// This gets the patients admission history for quick evaluation
+		/// </summary>
+		/// <param name="patientId"></param>
+		/// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadVisitHistoryDTO}}"/> object.</returns>
+		[HttpGet]
+		[Route("{patientId}/admission/history")]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>))]
+		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+		[Consumes(MediaTypeNames.Application.Json)]
+		[Produces(MediaTypeNames.Application.Json)]
+		// GET api/patients/admission/history/5
+		public async Task<IActionResult> GetHistory([FromRoute] int patientId)
+		{
+			ServiceResponse<IEnumerable<ReadVisitHistoryDTO>> result = await _service.GetAllAdmissionHistoryAsync(patientId);
+
+			return result.FormatResponse();
+		}
 
 	}
 }

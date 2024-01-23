@@ -232,6 +232,24 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			// Update Age for each visit
 			visitsdata.ToList().ForEach(visit => visit.Age = CalculateAge(patient.DateOfBirth, visit.DateOfVisit));
 
+			//Update with doctors and nurses names
+			foreach (var visit in visitsdata)
+			{
+				visit.DoctorName = _employeeRepository.Query()
+													  .AsNoTracking()
+													  .Where(x => x.Id == visit.DoctorId)
+													  .Select(s => $"{s.FirstName} {s.LastName}")
+													  .FirstOrDefaultAsync()
+													  .Result;
+
+				visit.NurseName = _employeeRepository.Query()
+													  .AsNoTracking()
+													  .Where(x => x.Id == visit.NurseId)
+													  .Select(s => $"{s.FirstName} {s.LastName}")
+													  .FirstOrDefaultAsync()
+													  .Result;
+			}
+
 			return new ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>(visitsdata, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 		}
 

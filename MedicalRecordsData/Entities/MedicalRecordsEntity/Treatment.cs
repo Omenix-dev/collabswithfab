@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace MedicalRecordsData.Entities.MedicalRecordsEntity
@@ -25,6 +26,8 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public int PatientId { get; set; }
 		public virtual Patient Patient { get; set; }
 
+		public int VisitId { get; set; }
+		public virtual Visit Visit { get; set; }
 
 		public virtual ICollection<Medication> Medications { get; set; }
 	}

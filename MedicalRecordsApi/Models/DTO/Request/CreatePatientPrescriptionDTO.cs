@@ -7,7 +7,6 @@ namespace MedicalRecordsApi.Models.DTO.Request
 	{
 		public DateTime DateOfVisit { get; set; }
 		public string Diagnosis { get; set; }
-		public int PatientId { get; set; }
 		public List<string> Medication { get; set; }
 	}
 }

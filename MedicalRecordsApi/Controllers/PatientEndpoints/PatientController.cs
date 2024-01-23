@@ -21,7 +21,6 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             _service = service;
         }
 
-		//Patients
 		//1. GetAssignedPatients
 		/// <summary>
 		/// This gets the patients assigned to a particular doctor
@@ -59,7 +58,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
-		// GET api/patients/data/5
+		// GET api/patients/5/data
 		public async Task<IActionResult> Get([FromRoute] int patientId)
 		{
 			ServiceResponse<ReadPatientDTO> result = await _service.GetPatientDataAsync(patientId);
@@ -68,15 +67,37 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		}
 
 		//3. GetNurseNote
+		/// <summary>
+		/// This gets nurses notes for a particular visit of a patient
+		/// </summary>
+		/// <param name="patientId"></param>
+		/// <param name="visitId"></param>
+		/// <returns>Returns a <see cref="ServiceResponse{ReadNurseNotesDTO}"/> object.</returns>
+		[HttpGet]
+		[Route("{patientId}/nursenotes/{visitId}")]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ReadNurseNotesDTO>))]
+		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+		[Consumes(MediaTypeNames.Application.Json)]
+		[Produces(MediaTypeNames.Application.Json)]
+		// GET api/patients/5/nursenotes/2
+		public async Task<IActionResult> Get([FromRoute] int patientId, [FromRoute] int visitId)
+		{
+			ServiceResponse<ReadNurseNotesDTO> result = await _service.GetNurseNoteAsync(patientId, visitId);
+
+			return result.FormatResponse();
+		}
 
 		//4. AddToPatientNote
 		/// <summary>
 		/// This adds to the patient note in the patients record
 		/// </summary>
+		/// <param name="patientId"></param>
 		/// <param name="patientNoteDTO"></param>
 		/// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
 		[HttpPost]
-		[Route("addpatientnote")]
+		[Route("{patientId}/addpatientnote")]
 		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(string))]
 		[ProducesResponseType((int)HttpStatusCode.Created)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -84,10 +105,10 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
-		// POST api/patients/addpatientnote
-		public async Task<IActionResult> Post([FromBody] CreatePatientNoteDTO patientNoteDTO)
+		// POST api/patients/5/addpatientnote
+		public async Task<IActionResult> Post([FromRoute] int patientId, [FromBody] CreatePatientNoteDTO patientNoteDTO)
 		{
-			ServiceResponse<string> result = await _service.AddToPatientNoteAsync(patientNoteDTO);
+			ServiceResponse<string> result = await _service.AddToPatientNoteAsync(patientId, patientNoteDTO);
 
 			return result.FormatResponse();
 		}
@@ -98,10 +119,11 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		/// <summary>
 		/// This adds to the prescription data in the patients record
 		/// </summary>
+		/// <param name="patientId"></param>
 		/// <param name="prescriptionDTO"></param>
 		/// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
 		[HttpPost]
-		[Route("addprescription")]
+		[Route("{patientId}/addprescription")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
 		[ProducesResponseType((int)HttpStatusCode.Created)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -109,10 +131,10 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
-		// POST api/patients/addprescription
-		public async Task<IActionResult> Post([FromBody]CreatePatientPrescriptionDTO prescriptionDTO)
+		// POST api/patients/5/addprescription
+		public async Task<IActionResult> Post([FromRoute] int patientId, [FromBody]CreatePatientPrescriptionDTO prescriptionDTO)
 		{
-			ServiceResponse<string> result = await _service.AddPrescriptionAsync(prescriptionDTO);
+			ServiceResponse<string> result = await _service.AddPrescriptionAsync(patientId, prescriptionDTO);
 
 			return result.FormatResponse();
 		}

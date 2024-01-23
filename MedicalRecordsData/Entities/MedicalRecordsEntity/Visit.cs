@@ -1,13 +1,19 @@
 ﻿using MedicalRecordsData.Entities.BaseEntity;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 {
 	public partial class Visit : Base
 	{
-		public DateTime DateOfVisit { get; set; }
+        public Visit()
+		{
+			NurseNotes = new HashSet<NurseNote>();
+		}
+
+        public DateTime DateOfVisit { get; set; }
 		public double Temperature { get; set; }
 		public string BloodPressure { get; set; }
 		public int HeartPulse { get; set; }
@@ -16,11 +22,15 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public int Weight { get; set; }
 		public int DoctorId { get; set; }
 		public int NurseId { get; set; }
-		public string Notes { get; set; }
 
 
 		//Navigation Properties
 		public int PatientId { get; set; }
 		public virtual Patient Patient { get; set; }
+
+		public int TreatmentId { get; set; }
+		public virtual Treatment Treatment { get; set; }
+
+		public virtual ICollection<NurseNote> NurseNotes { get; set; }
 	}
 }

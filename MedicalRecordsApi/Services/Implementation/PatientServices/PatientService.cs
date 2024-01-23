@@ -65,7 +65,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
 
 
-		public async Task<ServiceResponse<string>> AddPrescriptionAsync(CreatePatientPrescriptionDTO prescriptionDTO)
+		public async Task<ServiceResponse<string>> AddPrescriptionAsync(int patientId, CreatePatientPrescriptionDTO prescriptionDTO)
 		{
 			if (prescriptionDTO == null)
 			{
@@ -74,7 +74,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
 			var patient = await _patientRepository.Query()
 											.Include(x => x.Visits)
-											.FirstOrDefaultAsync(x => x.Id == prescriptionDTO.PatientId);
+											.FirstOrDefaultAsync(x => x.Id == patientId);
 
 			if (patient == null)
 			{
@@ -88,7 +88,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 				Temperature = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Temperature,
 				Age = CalculateAge(patient.DateOfBirth),
 				Weight = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Weight,
-				PatientId = prescriptionDTO.PatientId,
+				PatientId = patientId,
 				Medications = prescriptionDTO.Medication.Select(med => new Medication { Name = med }).ToList()
 			};
 
@@ -99,22 +99,24 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			return new ServiceResponse<string>("Successful", InternalCode.Success);
 		}
 
-		public async Task<ServiceResponse<string>> AddToPatientNoteAsync(CreatePatientNoteDTO patientNoteDTO)
+		public async Task<ServiceResponse<string>> AddToPatientNoteAsync(int patientId, CreatePatientNoteDTO patientNoteDTO)
 		{
 			if (patientNoteDTO == null)
 			{
 				return new ServiceResponse<string>(String.Empty, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 			}
 
-			var treatment = await _treatmentRepository.Query()
-											.FirstOrDefaultAsync(x => x.Id == patientNoteDTO.TreatmentId);
+			var patient = await _patientRepository.Query()
+												  .AsNoTracking()
+												  .Include(x => x.Treatments.FirstOrDefault(x => x.Id == patientNoteDTO.TreatmentId))
+												  .FirstOrDefaultAsync(x => x.Id == patientId);
 
-			if (treatment == null)
+			if (patient == null)
 			{
 				return new ServiceResponse<string>(String.Empty, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
 			}
 
-			treatment.AdditonalNote = patientNoteDTO.AdditonalNoteOnTreatment;
+			patient.Treatments.First().AdditonalNote = patientNoteDTO.AdditonalNoteOnTreatment;
 
 			await _patientRepository.SaveChangesToDbAsync();
 
@@ -251,6 +253,37 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			}
 
 			return new ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>(visitsdata, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+		}
+
+		public async Task<ServiceResponse<ReadNurseNotesDTO>> GetNurseNoteAsync(int patientId, int visitId)
+		{
+			if (patientId <= 0 || visitId <= 0)
+			{
+				return new ServiceResponse<ReadNurseNotesDTO>(null, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+			}
+
+			var patient = await _patientRepository.Query()
+												  .AsNoTracking()
+												  .Include(x => x.Visits.FirstOrDefault(x => x.Id == visitId))
+												  .ThenInclude(visit => visit.NurseNotes)
+												  .FirstOrDefaultAsync(x => x.Id == patientId);
+
+			if (patient == null)
+			{
+				return new ServiceResponse<ReadNurseNotesDTO>(null, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+			}
+
+			var visitsdata = _mapper.Map<IEnumerable<ReadVisitHistoryDTO>>(patient.Visits);
+
+			ReadNurseNotesDTO readNurseNotesDTO = new ReadNurseNotesDTO
+			{
+				Visit = visitsdata.First(),
+				Notes = patient.Visits.First().NurseNotes
+									  .Select(notes => new NurseNotesDTO { Note = notes.Note })
+									  .ToList()
+			};
+
+			return new ServiceResponse<ReadNurseNotesDTO>(readNurseNotesDTO, InternalCode.Success);
 		}
 
 

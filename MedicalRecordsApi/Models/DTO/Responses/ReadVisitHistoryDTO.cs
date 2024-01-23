@@ -16,6 +16,5 @@ namespace MedicalRecordsApi.Models.DTO.Responses
 		public int NurseId { get; set; }
 		public string DoctorName { get; set; }
 		public string NurseName { get; set; }
-		public string Notes { get; set; }
 	}
 }

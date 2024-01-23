@@ -14,6 +14,8 @@ namespace MedicalRecordsApi.Models.DTO.Responses
 		public int Weight { get; set; }
 		public int DoctorId { get; set; }
 		public int NurseId { get; set; }
+		public string DoctorName { get; set; }
+		public string NurseName { get; set; }
 		public string Notes { get; set; }
 	}
 }

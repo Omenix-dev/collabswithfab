@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 {
-	public class NurseNote : Base
+	public partial class NurseNote : Base
 	{
 		public string Note { get; set; }
 

@@ -36,7 +36,8 @@ namespace MedicalRecordsApi.Services
 			services.AddScoped<IGenericService<Medication>, GenericService<Medication>>();
 			services.AddScoped<IGenericService<PatientReferrer>, GenericService<PatientReferrer>>();
 			services.AddScoped<IGenericService<Treatment>, GenericService<Treatment>>();
-			services.AddScoped<IGenericService<Visit>, GenericService<Visit>>();
-		}
+            services.AddScoped<IGenericService<Visit>, GenericService<Visit>>();
+            services.AddScoped<IGenericService<Lab>, GenericService<Lab>>();
+        }
     }
 }

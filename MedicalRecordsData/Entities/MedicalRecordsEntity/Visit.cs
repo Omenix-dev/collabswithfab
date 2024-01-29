@@ -11,6 +11,7 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
         public Visit()
 		{
 			NurseNotes = new HashSet<NurseNote>();
+			Labs = new HashSet<Lab>();
 		}
 
         public DateTime DateOfVisit { get; set; }
@@ -32,5 +33,6 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public virtual Treatment Treatment { get; set; }
 
 		public virtual ICollection<NurseNote> NurseNotes { get; set; }
+		public virtual ICollection<Lab> Labs { get; set; }
 	}
 }

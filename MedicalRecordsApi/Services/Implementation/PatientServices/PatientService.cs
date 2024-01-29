@@ -32,40 +32,40 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 		private readonly IGenericRepository<Medication> _medicationRepository;
 		private readonly IGenericRepository<PatientReferrer> _patientReferrerRepository;
 		private readonly IGenericRepository<Treatment> _treatmentRepository;
-		private readonly IGenericRepository<Visit> _visitRepository;
-		private readonly IConfiguration _configuration;
+        private readonly IGenericRepository<Visit> _visitRepository;
+        private readonly IGenericRepository<Lab> _labRepository;
+        private readonly IConfiguration _configuration;
 
-		public PatientService(IGenericRepository<Patient> patientRepository,
-			IMapper mapper, IConfiguration configuration, IGenericRepository<Contact> contactRepository,
-			IGenericRepository<EmergencyContact> emrgencyContactRepository,
-			IGenericRepository<Immunization> immunizationRepository,
-			IGenericRepository<ImmunizationDocument> immunizationDocumentRepository,
-			IGenericRepository<MedicalRecord> medicalRecordRepository,
-			IGenericRepository<Medication> medicationRepository,
-			IGenericRepository<PatientReferrer> patientReferrerRepository,
-			IGenericRepository<Treatment> treatmentRepository, IGenericRepository<Visit> visitRepository,
-			MedicalRecordDbContext dbContext, IGenericRepository<Employee> employeeRepository)
-		{
-			_patientRepository = patientRepository;
-			_mapper = mapper;
-			_configuration = configuration;
-			_contactRepository = contactRepository;
-			_emrgencyContactRepository = emrgencyContactRepository;
-			_immunizationRepository = immunizationRepository;
-			_immunizationDocumentRepository = immunizationDocumentRepository;
-			_medicalRecordRepository = medicalRecordRepository;
-			_medicationRepository = medicationRepository;
-			_patientReferrerRepository = patientReferrerRepository;
-			_treatmentRepository = treatmentRepository;
-			_visitRepository = visitRepository;
-			_dbContext = dbContext;
-			_employeeRepository = employeeRepository;
-		}
-		#endregion
+        public PatientService(IGenericRepository<Patient> patientRepository,
+            IMapper mapper, IConfiguration configuration, IGenericRepository<Contact> contactRepository,
+            IGenericRepository<EmergencyContact> emrgencyContactRepository,
+            IGenericRepository<Immunization> immunizationRepository,
+            IGenericRepository<ImmunizationDocument> immunizationDocumentRepository,
+            IGenericRepository<MedicalRecord> medicalRecordRepository,
+            IGenericRepository<Medication> medicationRepository,
+            IGenericRepository<PatientReferrer> patientReferrerRepository,
+            IGenericRepository<Treatment> treatmentRepository, IGenericRepository<Visit> visitRepository,
+            MedicalRecordDbContext dbContext, IGenericRepository<Employee> employeeRepository, IGenericRepository<Lab> labRepository)
+        {
+            _patientRepository = patientRepository;
+            _mapper = mapper;
+            _configuration = configuration;
+            _contactRepository = contactRepository;
+            _emrgencyContactRepository = emrgencyContactRepository;
+            _immunizationRepository = immunizationRepository;
+            _immunizationDocumentRepository = immunizationDocumentRepository;
+            _medicalRecordRepository = medicalRecordRepository;
+            _medicationRepository = medicationRepository;
+            _patientReferrerRepository = patientReferrerRepository;
+            _treatmentRepository = treatmentRepository;
+            _visitRepository = visitRepository;
+            _dbContext = dbContext;
+            _employeeRepository = employeeRepository;
+            _labRepository = labRepository;
+        }
+        #endregion
 
-
-
-		public async Task<ServiceResponse<string>> AddPrescriptionAsync(int patientId, CreatePatientPrescriptionDTO prescriptionDTO)
+        public async Task<ServiceResponse<string>> AddPrescriptionAsync(int patientId, CreatePatientPrescriptionDTO prescriptionDTO)
 		{
 			if (prescriptionDTO == null)
 			{
@@ -286,11 +286,55 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			return new ServiceResponse<ReadNurseNotesDTO>(readNurseNotesDTO, InternalCode.Success);
 		}
 
+        public async Task<ServiceResponse<string>> GetLabNoteAsync(int patientId, int labId)
+        {
+            if (patientId <= 0 || labId <= 0)
+            {
+                return new ServiceResponse<string>(String.Empty, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+            }
+
+            var lab = await _labRepository.Query()
+										  .AsNoTracking()
+										  .Where(lab => lab.Visit.PatientId == patientId && lab.Id == labId)
+										  .FirstOrDefaultAsync();
+
+			if (lab == null)
+			{
+				return new ServiceResponse<string>(String.Empty, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+			}
+
+            return new ServiceResponse<string>(lab.LabNote, InternalCode.Success);
+        }
+
+        public async Task<ServiceResponse<string>> ReferPatientAsync(int patientId, int visitId, CreateLabReferDTO labReferDTO)
+        {
+            if (labReferDTO == null || patientId <= 0 || visitId <= 0)
+            {
+                return new ServiceResponse<string>(String.Empty, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+            }
+
+            var patient = await _patientRepository.Query()
+                                                  .AsNoTracking()
+                                                  .Include(x => x.Visits.FirstOrDefault(x => x.Id == visitId))
+                                                  .FirstOrDefaultAsync(x => x.Id == patientId);
+
+            if (patient == null)
+            {
+                return new ServiceResponse<string>(String.Empty, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+            }
+
+			var lab = _mapper.Map<Lab>(labReferDTO);
+
+			patient.Visits.First().Labs.Add(lab);
+
+            await _patientRepository.SaveChangesToDbAsync();
+
+            return new ServiceResponse<string>("Successful", InternalCode.Success);
+        }
 
 
-
-		#region Helpers
-		public static string CalculateAge(DateTime dateOfBirth, DateTime? currentDate = null)
+        #region Helpers
+        public static string CalculateAge(DateTime dateOfBirth, DateTime? currentDate = null)
 		{
 			// Get the current date
 			currentDate ??= DateTime.Now;
@@ -311,6 +355,6 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
 			return ageString;
 		}
-		#endregion
-	}
+        #endregion
+    }
 }

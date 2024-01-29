@@ -113,16 +113,39 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 			return result.FormatResponse();
 		}
 
-		//5. ReferPatient
+        //5. ReferPatient
+        /// <summary>
+        /// This adds to the lab table thereby referring the patient to the lab
+        /// </summary>
+        /// <param name="patientId"></param>
+        /// <param name="visitId"></param>
+        /// <param name="labReferDTO"></param>
+        /// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
+        [HttpPost]
+        [Route("{patientId}/visit/{visitId}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType((int)HttpStatusCode.Created)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        // POST api/patients/5/visit/3
+        public async Task<IActionResult> Post([FromRoute] int patientId, [FromRoute] int visitId, [FromBody] CreateLabReferDTO labReferDTO)
+        {
+            ServiceResponse<string> result = await _service.ReferPatientAsync(patientId, visitId, labReferDTO);
 
-		//6. AddPrescription
-		/// <summary>
-		/// This adds to the prescription data in the patients record
-		/// </summary>
-		/// <param name="patientId"></param>
-		/// <param name="prescriptionDTO"></param>
-		/// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
-		[HttpPost]
+            return result.FormatResponse();
+        }
+
+        //6. AddPrescription
+        /// <summary>
+        /// This adds to the prescription data in the patients record
+        /// </summary>
+        /// <param name="patientId"></param>
+        /// <param name="prescriptionDTO"></param>
+        /// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
+        [HttpPost]
 		[Route("{patientId}/addprescription")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
 		[ProducesResponseType((int)HttpStatusCode.Created)]
@@ -139,15 +162,36 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 			return result.FormatResponse();
 		}
 
-		//7. GetLabNote
+        //7. GetLabNote
+        /// <summary>
+        /// This gets the lab note of a patient
+        /// </summary>
+        /// <param name="patientId"></param>
+        /// <param name="labId"></param>
+        /// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
+        [HttpGet]
+        [Route("{patientId}/lab/{labId}/note")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<string>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        // GET api/patients/5/lab/1/note
+        public async Task<IActionResult> GetLabNote([FromRoute] int patientId, [FromRoute] int labId)
+        {
+            ServiceResponse<string> result = await _service.GetLabNoteAsync(patientId, labId);
 
-		//8. GetAllAdmissionHistory
-		/// <summary>
-		/// This gets the patients admission history for quick evaluation
-		/// </summary>
-		/// <param name="patientId"></param>
-		/// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadVisitHistoryDTO}}"/> object.</returns>
-		[HttpGet]
+            return result.FormatResponse();
+        }
+
+        //8. GetAllAdmissionHistory
+        /// <summary>
+        /// This gets the patients admission history for quick evaluation
+        /// </summary>
+        /// <param name="patientId"></param>
+        /// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadVisitHistoryDTO}}"/> object.</returns>
+        [HttpGet]
 		[Route("{patientId}/admission/history")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -155,13 +199,12 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
-		// GET api/patients/admission/history/5
+		// GET api/patients/5/admission/history
 		public async Task<IActionResult> GetHistory([FromRoute] int patientId)
 		{
 			ServiceResponse<IEnumerable<ReadVisitHistoryDTO>> result = await _service.GetAllAdmissionHistoryAsync(patientId);
 
 			return result.FormatResponse();
 		}
-
 	}
 }

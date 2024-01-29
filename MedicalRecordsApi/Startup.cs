@@ -139,6 +139,7 @@ namespace MedicalRecordsApi
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("v1/swagger.json", " Medical Records Module V1");
+                //c.RoutePrefix = string.Empty;
             });
 
             app.UseEndpoints(endpoints =>

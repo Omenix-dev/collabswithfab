@@ -1,8 +1,16 @@
-﻿using MedicalRecordsApi.Models.DTO.Request;
+﻿using MedicalRecordsApi.Models;
+using MedicalRecordsApi.Utils;
+using MedicalRecordsRepository.DTO.AuthDTO;
+using System.Threading.Tasks;
+
+using MedicalRecordsApi.Models.DTO.Request;
 using MedicalRecordsApi.Models.DTO.Responses;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MedicalRecordsRepository.DTO.PatientDto;
+using MedicalRecordsApi.Services;
+using MedicalRecordsRepository.DTO.MedicalDto;
 
 namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 {
@@ -61,5 +69,34 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
         /// <param name="labReferDTO"></param>
         /// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
         Task<ServiceResponse<string>> ReferPatientAsync(int patientId, int visitId, CreateLabReferDTO labReferDTO);
+    
+
+
+
+
+        Task<ServiceResponse<string>> CreatePatientProfile(CreatePatientProfileDto profileDto, int userId);
+		/// <summary>
+		/// used to add the patient 
+		/// </summary>
+		/// <param name="patientDto"></param>
+		/// <param name="userId"></param>
+		/// <returns></returns>
+		Task<ServiceResponse<string>> AddPatient(CreatePatientRequestDto patientDto, int userId);
+        Task<ServiceResponse<string>> UpdateContact(updateContactDto contactDto, int userId);
+        Task<ServiceResponse<string>> UpdateEmergencyContact(UpdateEmergencyContactDto emergencyContactDto, int userId);
+
+		//servoce for the medical records
+		Task<ServiceResponse<List<MedicalRecordsDto>>> GetAllMedicalReportByPatientId(int patientId);
+		Task<ServiceResponse<string>> DeleteMedicalReport(int RecordId);
+		Task<ServiceResponse<string>> AddMedicalReport(MedicalRecordsDto MedicalRecords, int userId);
+
+		//services for the immunization records
+		Task<ServiceResponse<List<ImmunizationDto>>> GetAllImmunizatiobByPatientId(int patientId);
+		Task<ServiceResponse<string>> DeleteImmunizationRecord(int RecordId);
+		Task<ServiceResponse<string>> AddImmunizationRecords(ImmunizationDto ImmunizationRecords, int userId);
+		// visation services
+		Task<ServiceResponse<string>> DeleteVisitsRecord(int VisitId);
+		Task<ServiceResponse<string>> AddPatientVistsRecords(PatientsVisitsDto PatientVisitsObj, int userId);
+		Task<ServiceResponse<List<PatientsVisitsDto>>> GetAllVisitationByPatientId(int VisitaionId);
     }
 }

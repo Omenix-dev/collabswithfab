@@ -3,6 +3,7 @@ using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
 using MedicalRecordsApi.Services.Common;
 using MedicalRecordsApi.Services.Common.Interfaces;
 using MedicalRecordsApi.Services.Implementation.PatientServices;
+using MedicalRecordsApi.Utils;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
 using MedicalRecordsRepository.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,7 @@ namespace MedicalRecordsApi.Services
         {
             //Common
             services.AddSingleton<IHttpService, HttpService>();
-
+            services.AddHttpClient();
             //Helpers
             services.AddSingleton<IClaimHelper, ClaimHelper>();
 
@@ -38,6 +39,7 @@ namespace MedicalRecordsApi.Services
 			services.AddScoped<IGenericService<Treatment>, GenericService<Treatment>>();
             services.AddScoped<IGenericService<Visit>, GenericService<Visit>>();
             services.AddScoped<IGenericService<Lab>, GenericService<Lab>>();
+            services.AddAutoMapper(typeof(PatientProfileMapper));
         }
     }
 }

@@ -1,9 +1,23 @@
-﻿using MedicalRecordsApi.Models.DTO.Request;
+﻿
+using MedicalRecordsApi.Constants;
+using MedicalRecordsApi.Models;
+using MedicalRecordsApi.Models.DTO.Request;
 using MedicalRecordsApi.Models.DTO.Responses;
 using MedicalRecordsApi.Services;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
+using MedicalRecordsApi.Utils;
+using MedicalRecordsData.Entities;
+using MedicalRecordsData.Enum;
+using MedicalRecordsRepository.DTO.AuthDTO;
+using MedicalRecordsRepository.DTO.MedicalDto;
+using MedicalRecordsRepository.DTO.PatientDto;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+//using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Mime;
@@ -13,11 +27,14 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 {
     [Route("api/patients")]
     [ApiController]
+    [Authorize]
     public class PatientController : ControllerBase
     {
         private readonly IPatientService _service;
-        public PatientController(IPatientService service)
+        private readonly ILogger _logger;
+        public PatientController(IPatientService service, ILogger logger)
         {
+            _logger = logger;
             _service = service;
         }
 
@@ -39,10 +56,10 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		{
 			int userId = int.Parse(User.FindFirst("Id").Value);
 
-			ServiceResponse<IEnumerable<AssignedPatientsDTO>> result = await _service.GetAssignedPatientsAsync(userId);
+            ServiceResponse<IEnumerable<AssignedPatientsDTO>> result = await _service.GetAssignedPatientsAsync(userId);
 
-			return result.FormatResponse();
-		}
+            return result.FormatResponse();
+        }
 
 		//2. GetPatientData
 		/// <summary>
@@ -63,8 +80,8 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		{
 			ServiceResponse<ReadPatientDTO> result = await _service.GetPatientDataAsync(patientId);
 
-			return result.FormatResponse();
-		}
+            return result.FormatResponse();
+        }
 
 		//3. GetNurseNote
 		/// <summary>
@@ -110,8 +127,8 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		{
 			ServiceResponse<string> result = await _service.AddToPatientNoteAsync(patientId, patientNoteDTO);
 
-			return result.FormatResponse();
-		}
+            return result.FormatResponse();
+        }
 
         //5. ReferPatient
         /// <summary>
@@ -203,8 +220,548 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		public async Task<IActionResult> GetHistory([FromRoute] int patientId)
 		{
 			ServiceResponse<IEnumerable<ReadVisitHistoryDTO>> result = await _service.GetAllAdmissionHistoryAsync(patientId);
+            return result.FormatResponse();
+        }
 
-			return result.FormatResponse();
-		}
-	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// create the profile for the patient user
+        /// </summary>
+        /// <param name="CreateProfileDto"></param>
+        /// <returns></returns>
+        [HttpPost("CreatePatientProfile")]
+        public async Task<IActionResult> CreatePatientProfile(CreatePatientProfileDto CreateProfileDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty",InternalCode.Failed,ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.CreatePatientProfile(CreateProfileDto, UserId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            
+        }
+        /// <summary>
+        /// used to add the patient to the nurse or doctors queue
+        /// </summary>
+        /// <param name="createPatientDto"></param>
+        /// <returns></returns>
+        [HttpPost("AddPatient")]
+        public async Task<IActionResult> AddPatient(CreatePatientRequestDto createPatientDto)
+        {
+           
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.AddPatient(createPatientDto, UserId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+                
+        }
+
+        [HttpPost("UpdateContact")]
+        public async Task<IActionResult> UpdateContact(updateContactDto contactDto)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.UpdateContact(contactDto, UserId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+
+        }
+
+        [HttpPost("EmergerncyContact")]
+        public async Task<IActionResult> EmergerncyContact(UpdateEmergencyContactDto EmergencyContact)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.UpdateEmergencyContact(EmergencyContact, UserId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+
+        }
+
+        [HttpPost("AddMedicalReport")]
+        public async Task<IActionResult> AddMedicalReport(MedicalRecordsDto MedicalReportDto)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.AddMedicalReport(MedicalReportDto, UserId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+
+        }
+        [HttpPost("AddVisitationRecords")]
+        public async Task<IActionResult> AddVisitationRecords(PatientsVisitsDto PatientsVisitsDto)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.AddPatientVistsRecords(PatientsVisitsDto, UserId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+
+        }
+        [HttpPost("AddImmunizationRecords")]
+        public async Task<IActionResult> AddImmunizationRecords(ImmunizationDto ImmunizationObj)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.AddImmunizationRecords(ImmunizationObj, UserId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+
+        }
+        [HttpDelete("DeleteImmunizationRecordsById")]
+        public async Task<IActionResult> DeleteImmunizationRecords(int ImmunizationId)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.DeleteImmunizationRecord(ImmunizationId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+
+        }
+
+        [HttpDelete("DeleteVisitationById")]
+        public async Task<IActionResult> DeleteVisitationRecords(int VisitationId)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.DeleteImmunizationRecord(VisitationId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+
+        }
+
+        [HttpDelete("DeleteMedicalRecordById")]
+        public async Task<IActionResult> DeleteMedicalRecords(int MedicalRecordsId)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.DeleteMedicalReport(MedicalRecordsId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+        }
+        /// <summary>
+        /// get all the patienrt Medical Records
+        /// </summary>
+        /// <param name="PatientId"></param>
+        /// <returns></returns>
+        [HttpGet("GetAllMedicalRecordByPatientId")]
+        public async Task<IActionResult> GetAllMedicalRecordsByPatientId(int PatientId)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.GetAllMedicalReportByPatientId(PatientId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+        }
+        /// <summary>
+        /// get all the visitation by patient Id
+        /// </summary>
+        /// <param name="PatientId"></param>
+        /// <returns></returns>
+        [HttpGet("GetAllVisitationRecordByPatientId")]
+        public async Task<IActionResult> GetAllVisitationRecordByPatientId(int PatientId)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.GetAllVisitationByPatientId(PatientId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+        }
+        /// <summary>
+        /// get all the immunzation records by the patient Id
+        /// </summary>
+        /// <param name="PatientId"></param>
+        /// <returns></returns>
+        [HttpGet("GetAllImmunizationRecordByPatientId")]
+        public async Task<IActionResult> GetAllImmunizationRecordByPatientId(int PatientId)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            {
+                // caling the service here
+                var response = await _service.GetAllImmunizatiobByPatientId(PatientId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+        }
+    }
 }

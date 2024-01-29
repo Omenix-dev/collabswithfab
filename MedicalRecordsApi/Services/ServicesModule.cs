@@ -1,7 +1,9 @@
 ﻿using MedicalRecordsApi.Helpers;
+using MedicalRecordsApi.Services.Abstract.FacilityInterfaces;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
 using MedicalRecordsApi.Services.Common;
 using MedicalRecordsApi.Services.Common.Interfaces;
+using MedicalRecordsApi.Services.Implementation.FacilityServices;
 using MedicalRecordsApi.Services.Implementation.PatientServices;
 using MedicalRecordsApi.Utils;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
@@ -21,11 +23,15 @@ namespace MedicalRecordsApi.Services
             //Common
             services.AddSingleton<IHttpService, HttpService>();
             services.AddHttpClient();
+            
             //Helpers
             services.AddSingleton<IClaimHelper, ClaimHelper>();
 
-			//Doctors
+			//Patients
 			services.AddScoped<IPatientService, PatientService>();
+
+            //Facility
+            services.AddScoped<IFacilityService, FacilityService>();
 
 			//Generic class instantiations
 			services.AddScoped<IGenericService<Patient>, GenericService<Patient>>();

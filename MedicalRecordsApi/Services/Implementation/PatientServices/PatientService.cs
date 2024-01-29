@@ -343,20 +343,6 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             return new ServiceResponse<string>("Successful", InternalCode.Success);
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         public async Task<ServiceResponse<string>> CreatePatientProfile(CreatePatientProfileDto profileDto, int userId)
         {
             var userExists = await _userRepository.FirstOrDefault(r => r.Email == profileDto.Email);
@@ -440,7 +426,6 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             }
 
         }
-
 
         public async Task<ServiceResponse<string>> AddImmunizationRecords(ImmunizationDto ImmunizationRecords, int userId)
         {

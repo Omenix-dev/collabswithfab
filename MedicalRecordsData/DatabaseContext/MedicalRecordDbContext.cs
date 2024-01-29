@@ -71,6 +71,13 @@ namespace MedicalRecordsData.DatabaseContext
 					}
 				}
 			}
+
+
+			modelBuilder.Entity<Visit>()
+				.HasOne(v => v.Treatment)
+				.WithOne(t => t.Visit)
+				.HasForeignKey<Treatment>(t => t.VisitId)
+				.OnDelete(DeleteBehavior.NoAction);
 		}
 
 		//TODO: Check performance

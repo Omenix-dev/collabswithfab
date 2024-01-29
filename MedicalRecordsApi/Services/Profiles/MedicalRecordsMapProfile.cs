@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MedicalRecordsApi.Models.DTO.Request;
 using MedicalRecordsApi.Models.DTO.Responses;
 using MedicalRecordsData.Entities.AuthEntity;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
@@ -12,6 +13,8 @@ namespace MedicalRecordsApi.Services.Profiles
 		{
 			CreateMap<UserDTO, Employee>().ReverseMap();
 			CreateMap<ReadPatientDTO, Patient>().ReverseMap();
-		}
+            CreateMap<ReadVisitHistoryDTO, Visit>().ReverseMap();
+            CreateMap<CreateLabReferDTO, Lab>().ReverseMap();
+        }
     }
 }

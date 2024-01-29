@@ -4,14 +4,16 @@ using MedicalRecordsData.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MedicalRecordsData.Migrations
 {
     [DbContext(typeof(MedicalRecordDbContext))]
-    partial class MedicalRecordDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240123113208_UpdateToMappingOfTreatmentVisit")]
+    partial class UpdateToMappingOfTreatmentVisit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -541,59 +543,6 @@ namespace MedicalRecordsData.Migrations
                     b.ToTable("ImmunizationDocuments");
                 });
 
-            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.Lab", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("ActionTaken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Diagnosis")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("LabCentre")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LabNote")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LabType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ModifiedBy")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("VisitId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VisitId");
-
-                    b.ToTable("Lab");
-                });
-
             modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.MedicalRecord", b =>
                 {
                     b.Property<int>("Id")
@@ -1071,15 +1020,6 @@ namespace MedicalRecordsData.Migrations
                     b.HasOne("MedicalRecordsData.Entities.MedicalRecordsEntity.Immunization", "Immunization")
                         .WithMany("ImmunizationDocuments")
                         .HasForeignKey("ImmunizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.Lab", b =>
-                {
-                    b.HasOne("MedicalRecordsData.Entities.MedicalRecordsEntity.Visit", "Visit")
-                        .WithMany("Labs")
-                        .HasForeignKey("VisitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

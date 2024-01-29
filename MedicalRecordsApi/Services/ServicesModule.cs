@@ -20,7 +20,7 @@ namespace MedicalRecordsApi.Services
         {
             //Common
             services.AddSingleton<IHttpService, HttpService>();
-
+            services.AddHttpClient();
             //Helpers
             services.AddSingleton<IClaimHelper, ClaimHelper>();
 

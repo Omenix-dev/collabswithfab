@@ -13,5 +13,7 @@ namespace MedicalRecordsRepository.DTO.PatientDto
         public string LGA { get; set; }
         public string City { get; set; }
         public string AltPhone { get; set; }
+        public int PatientId { get; set; }
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MedicalRecordsApi.Models.DTO.Responses;
 using MedicalRecordsData.Entities.AuthEntity;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
 using MedicalRecordsRepository.DTO.AuthDTO;
@@ -24,6 +25,7 @@ namespace MedicalRecordsApi.Utils
             CreateMap<Visit, PatientsVisitsDto>()
                 .ForMember(x => x.VisitId, opt => opt.MapFrom(src => src.Id));
             CreateMap<PatientsVisitsDto, Visit>();
+            CreateMap<AssignedPatientsDTO, BedAssignment>().ReverseMap();
         }
     }
 }

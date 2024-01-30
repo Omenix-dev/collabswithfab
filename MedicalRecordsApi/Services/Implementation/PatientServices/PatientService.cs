@@ -373,7 +373,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
                 await _patientRepository.Insert(PatientDetails);
 
-                return new ServiceResponse<string>("the patient profile was created", InternalCode.Success, ServiceErrorMessages.Success);
+                return new ServiceResponse<string>("the patient has been assigned a user", InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)
             {

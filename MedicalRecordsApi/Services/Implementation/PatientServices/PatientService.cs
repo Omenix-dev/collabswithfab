@@ -416,11 +416,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
-                var allRecords = _medicalRecordRepository.GetAll().Where(x => x.Id == patientId).ToList();
+                var allRecords = await _medicalRecordRepository.GetAll().Where(x => x.Id == patientId).ToListAsync();
                 var reports = _mapper.Map<List<MedicalRecordsDto>>(allRecords);
                 return new ServiceResponse<List<MedicalRecordsDto>>(reports, InternalCode.Success, ServiceErrorMessages.Success);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new ServiceResponse<List<MedicalRecordsDto>>(null, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }
@@ -460,11 +460,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
-                var allRecords = _immunizationRepository.GetAll().Where(x => x.Id == patientId).ToList();
+                var allRecords = await _immunizationRepository.GetAll().Where(x => x.Id == patientId).ToListAsync();
                 var reports = _mapper.Map<List<ImmunizationDto>>(allRecords);
                 return new ServiceResponse<List<ImmunizationDto>>(reports, InternalCode.Success, ServiceErrorMessages.Success);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new ServiceResponse<List<ImmunizationDto>>(null, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }
@@ -503,11 +503,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
-                var allVisitsRecords = _visitRepository.GetAll().Where(x => x.Id == VisitaionId).ToList();
+                var allVisitsRecords = await _visitRepository.GetAll().Where(x => x.Id == VisitaionId).ToListAsync();
                 var patientVisits = _mapper.Map<List<PatientsVisitsDto>>(allVisitsRecords);
                 return new ServiceResponse<List<PatientsVisitsDto>>(patientVisits, InternalCode.Success, ServiceErrorMessages.Success);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new ServiceResponse<List<PatientsVisitsDto>>(null, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }

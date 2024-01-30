@@ -7,11 +7,13 @@ using System.Collections.Generic;
 using System.Net.Mime;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MedicalRecordsApi.Controllers.FacilityEndpoints
 {
     [Route("api/facilities")]
     [ApiController]
+    [Authorize]
     public class FacilityController : ControllerBase
     {
         private readonly IFacilityService _service;

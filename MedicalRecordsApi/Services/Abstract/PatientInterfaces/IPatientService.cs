@@ -1,13 +1,8 @@
-﻿using MedicalRecordsApi.Models;
-using MedicalRecordsApi.Utils;
-using MedicalRecordsRepository.DTO.AuthDTO;
+﻿using MedicalRecordsRepository.DTO.AuthDTO;
 using System.Threading.Tasks;
-
 using MedicalRecordsApi.Models.DTO.Request;
 using MedicalRecordsApi.Models.DTO.Responses;
-using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using MedicalRecordsRepository.DTO.PatientDto;
 using MedicalRecordsApi.Services;
 using MedicalRecordsRepository.DTO.MedicalDto;

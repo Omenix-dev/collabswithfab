@@ -1,4 +1,5 @@
-﻿using MedicalRecordsRepository.Interfaces;
+﻿using MedicalRecordsData.Entities.AuthEntity;
+using MedicalRecordsRepository.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -11,9 +12,12 @@ namespace MedicalRecordsRepository
 	{
 		public static void AddCoreRepository(this IServiceCollection services)
 		{
-			//Inject Business Login Layers. Use Scoped for Repos that use EF (our BLL) since EF uses Scope.
-			//See https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.1 for details
+            //Inject Business Login Layers. Use Scoped for Repos that use EF (our BLL) since EF uses Scope.
+            //See https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.1 for details
 
-		}
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
+
+        }
 	}
 }

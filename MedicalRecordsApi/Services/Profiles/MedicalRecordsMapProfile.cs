@@ -15,6 +15,7 @@ namespace MedicalRecordsApi.Services.Profiles
 			CreateMap<ReadPatientDTO, Patient>().ReverseMap();
             CreateMap<ReadVisitHistoryDTO, Visit>().ReverseMap();
             CreateMap<CreateLabReferDTO, Lab>().ReverseMap();
+            CreateMap<CreateCustomerFeedbackDTO, CustomerFeedback>().ReverseMap();
         }
     }
 }

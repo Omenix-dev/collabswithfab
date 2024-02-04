@@ -48,6 +48,6 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public virtual ICollection<MedicalRecord> MedicalRecords { get; set; }
 		public virtual ICollection<Immunization> Immunizations { get; set; }
 		public virtual ICollection<Visit> Visits { get; set; }
-		public virtual ICollection<Treatment> Treatments { get; set; }
+        public virtual ICollection<Treatment> Treatments { get; set; }
 	}
 }

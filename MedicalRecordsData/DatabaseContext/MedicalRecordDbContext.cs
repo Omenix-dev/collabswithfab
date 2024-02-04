@@ -29,6 +29,7 @@ namespace MedicalRecordsData.DatabaseContext
 		public virtual DbSet<UserRole> UserRoles { get; set; }
 		public virtual DbSet<Employee> Employees { get; set; }
 
+
 		//Patient DbSets
 		public virtual DbSet<Patient> Patients { get; set; }
 		public virtual DbSet<PatientReferrer> PatientReferrers { get; set; }
@@ -40,6 +41,10 @@ namespace MedicalRecordsData.DatabaseContext
 		public virtual DbSet<ImmunizationDocument> ImmunizationDocuments { get; set; }
 		public virtual DbSet<EmergencyContact> EmergencyContacts { get; set; }
 		public virtual DbSet<Contact> Contacts { get; set; }
+		public virtual DbSet<Facility> Facilities { get; set; }
+		public virtual DbSet<BedAssignment> BedAssignments { get; set; }
+		public virtual DbSet<Lab> Labs { get; set; }
+		public virtual DbSet<CustomerFeedback> CustomerFeedbacks { get; set; }
 
 
 

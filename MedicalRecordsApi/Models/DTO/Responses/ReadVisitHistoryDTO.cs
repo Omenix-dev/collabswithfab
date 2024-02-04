@@ -4,6 +4,9 @@ namespace MedicalRecordsApi.Models.DTO.Responses
 {
 	public class ReadVisitHistoryDTO
 	{
+		public int Id { get; set; }
+		public DateTime CreatedAt { get; set; }
+		public DateTime? UpdatedAt { get; set; }
 		public DateTime DateOfVisit { get; set; }
 		public double Temperature { get; set; }
 		public string BloodPressure { get; set; }

@@ -1,23 +1,17 @@
 ﻿
 using MedicalRecordsApi.Constants;
-using MedicalRecordsApi.Models;
 using MedicalRecordsApi.Models.DTO.Request;
 using MedicalRecordsApi.Models.DTO.Responses;
 using MedicalRecordsApi.Services;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
-using MedicalRecordsApi.Utils;
-using MedicalRecordsData.Entities;
 using MedicalRecordsData.Enum;
 using MedicalRecordsRepository.DTO.AuthDTO;
 using MedicalRecordsRepository.DTO.MedicalDto;
 using MedicalRecordsRepository.DTO.PatientDto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Mime;

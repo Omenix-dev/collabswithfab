@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MedicalRecordsApi.Models.DTO.Responses
 {
 	public class ReadNurseNotesDTO
 	{
-        public ReadVisitHistoryDTO Visit { get; set; }
+		public int Id { get; set; }
+		public DateTime CreatedAt { get; set; }
+		public DateTime? UpdatedAt { get; set; }
+		public ReadVisitHistoryDTO Visit { get; set; }
         public List<NurseNotesDTO> Notes { get; set; }
     }
 

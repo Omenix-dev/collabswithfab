@@ -45,6 +45,8 @@ namespace MedicalRecordsApi.Services
 			services.AddScoped<IGenericService<Treatment>, GenericService<Treatment>>();
             services.AddScoped<IGenericService<Visit>, GenericService<Visit>>();
             services.AddScoped<IGenericService<Lab>, GenericService<Lab>>();
+
+
             services.AddAutoMapper(typeof(PatientProfileMapper));
         }
     }

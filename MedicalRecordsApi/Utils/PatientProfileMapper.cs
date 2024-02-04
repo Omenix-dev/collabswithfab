@@ -5,6 +5,7 @@ using MedicalRecordsData.Entities.MedicalRecordsEntity;
 using MedicalRecordsRepository.DTO.AuthDTO;
 using MedicalRecordsRepository.DTO.MedicalDto;
 using MedicalRecordsRepository.DTO.PatientDto;
+using MedicalRecordsRepository.DTO.ReferralDto;
 
 namespace MedicalRecordsApi.Utils
 {
@@ -26,6 +27,7 @@ namespace MedicalRecordsApi.Utils
                 .ForMember(x => x.VisitId, opt => opt.MapFrom(src => src.Id));
             CreateMap<PatientsVisitsDto, Visit>();
             CreateMap<AssignedPatientsDTO, BedAssignment>().ReverseMap();
+            CreateMap<PatientReferrer, ReferralNoteDto>().ReverseMap();
         }
     }
 }

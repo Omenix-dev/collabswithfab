@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MedicalRecordsData.Entities.MedicalRecordsEntity;
+using System;
 using System.Collections.Generic;
 
 namespace MedicalRecordsData.Entities.AuthEntity
@@ -7,8 +8,9 @@ namespace MedicalRecordsData.Entities.AuthEntity
     {
         public Employee()
         {
-            Userroles = new HashSet<UserRole>();
-        }
+            Roles = new HashSet<UserRole>();
+			CustomerFeedbacks = new HashSet<CustomerFeedback>();
+		}
 
         public int Id { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -41,16 +43,16 @@ namespace MedicalRecordsData.Entities.AuthEntity
         public string ProfilePicture { get; set; }
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }
-        public int? RoleId { get; set; }
 
 
 		public string WorkGrade { get; set; }
 		public string ResumptionDate { get; set; }
 		public DateTime? LastLoginTime { get; set; }
 		public string Signature { get; set; }
-		public ICollection<UserRole> Roles { get; set; } = new List<UserRole>();
 
+		public int? RoleId { get; set; }
 		public virtual Role Role { get; set; }
-        public virtual ICollection<UserRole> Userroles { get; set; }
-    }
+        public virtual ICollection<UserRole> Roles { get; set; }
+		public virtual ICollection<CustomerFeedback> CustomerFeedbacks { get; set; }
+	}
 }

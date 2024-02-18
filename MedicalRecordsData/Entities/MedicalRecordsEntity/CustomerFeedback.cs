@@ -1,4 +1,5 @@
 ﻿using MedicalRecordsData.Entities.BaseEntity;
+using MedicalRecordsData.Enum;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,18 +15,5 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		//Navigation Properties
 		public int EmployeeId { get; set; }
 
-	}
-
-	public enum ReviewRating
-	{
-		Excellent,
-		JustOk,
-		Poor
-	}
-
-	public enum ReviewSource
-	{
-		Patient,
-		Colleague
 	}
 }

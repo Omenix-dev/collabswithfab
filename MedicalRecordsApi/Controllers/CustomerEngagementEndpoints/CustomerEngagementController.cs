@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
 using MedicalRecordsRepository.DTO;
+using MedicalRecordsData.Enum;
 
 namespace MedicalRecordsApi.Controllers.CustomerEngagementEndpoints
 {

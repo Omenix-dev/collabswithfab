@@ -51,7 +51,7 @@ namespace MedicalRecordsApi.Managers.Auth
             try
             {
 
-                user = await repository.FirstOrDefault(u => u.Email == model.Email);
+                user = await repository.Query().FirstOrDefaultAsync(u => u.Email == model.Email);
                 if (user == null) return null;
             }catch(DbUpdateException e)
             {
@@ -115,7 +115,7 @@ namespace MedicalRecordsApi.Managers.Auth
         public async Task<(User user, string message)> RegisterUser(UserDTO model)
         {
            
-            var userExists = await repository.FirstOrDefault(r => r.Email == model.Email);
+            var userExists = await repository.Query().FirstOrDefaultAsync(r => r.Email == model.Email);
             if (userExists != null) return (user: null, message: $"User {userExists.Email} exists already!");
              AuthUtil.CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
             var userDetails = new User

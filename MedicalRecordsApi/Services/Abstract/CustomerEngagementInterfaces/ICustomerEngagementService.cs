@@ -1,6 +1,7 @@
 ﻿using MedicalRecordsApi.Models.DTO.Request;
 using MedicalRecordsApi.Models.DTO.Responses;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
+using MedicalRecordsData.Enum;
 using MedicalRecordsRepository.DTO;
 using System.Threading.Tasks;
 

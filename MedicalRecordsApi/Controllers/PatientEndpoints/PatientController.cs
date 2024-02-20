@@ -32,7 +32,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             _service = service;
         }
 
-		//1. GetAssignedPatients
+		//1. GetAssignedWaitingPatients
 		/// <summary>
 		/// This gets the patients assigned to a particular doctor
 		/// </summary>

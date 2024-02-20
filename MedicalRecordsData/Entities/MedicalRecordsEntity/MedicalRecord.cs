@@ -1,4 +1,5 @@
 ﻿using MedicalRecordsData.Entities.BaseEntity;
+using MedicalRecordsData.Enum;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,14 +16,5 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		//Navigation Properties
 		public int PatientId { get; set; }
 		public virtual Patient Patient { get; set; }
-	}
-
-	public enum MedicalRecordType
-	{
-		Allergy,
-		PastIllness,
-		ChronicConditions,
-		SurgicalHistory,
-		FamilyMedicalHistory
 	}
 }

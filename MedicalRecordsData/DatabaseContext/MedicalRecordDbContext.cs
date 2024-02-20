@@ -21,9 +21,10 @@ namespace MedicalRecordsData.DatabaseContext
 		{
 		}
 
-		//Base DbSet by Edward
-		public virtual DbSet<Role> Roles { get; set; }
-		public virtual DbSet<Resources> Resources { get; set; }
+        //Base DbSet by Edward
+        public virtual DbSet<Role> Roles { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Resources> Resources { get; set; }
 		public virtual DbSet<Clinic> Clinics { get; set; }
 		public virtual DbSet<Department> Departments { get; set; }
 		public virtual DbSet<UserRole> UserRoles { get; set; }
@@ -45,11 +46,12 @@ namespace MedicalRecordsData.DatabaseContext
 		public virtual DbSet<BedAssignment> BedAssignments { get; set; }
 		public virtual DbSet<Lab> Labs { get; set; }
 		public virtual DbSet<CustomerFeedback> CustomerFeedbacks { get; set; }
+        public virtual DbSet<PatientAssignmentHistory> PatientAssignmentHistories { get; set; }
 
 
 
-		//Regenerate Models and DBContext using CodeFirst From Database
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+        //Regenerate Models and DBContext using CodeFirst From Database
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			////Ensure all dates are saved as UTC and read as UTC:
 			////https://github.com/dotnet/efcore/issues/4711#issuecomment-481215673

@@ -27,10 +27,10 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public string PlaceOfBirth { get; set; }
 		public string MaritalStatus { get; set; }
         public string Nationality { get; set; }
+		public bool HasHMO { get; set; } = false;
 
-		//PatientAuth
-		public int UserId { get; set; }
-		public string PatientId { get; set; }
+        //PatientAuth
+        public int UserId { get; set; }
 
 		//Staff taking care of patient
 		public int NurseId { get; set; }

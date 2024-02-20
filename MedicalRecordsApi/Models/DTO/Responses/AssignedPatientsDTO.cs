@@ -7,7 +7,7 @@ namespace MedicalRecordsApi.Models.DTO.Responses
 		public int Id { get; set; }
 		public DateTime CreatedAt { get; set; }
 		public DateTime? UpdatedAt { get; set; }
-		public string PatientId { get; set; }
+		public int PatientId { get; set; }
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
 		public string AssignedNurse { get; set; }

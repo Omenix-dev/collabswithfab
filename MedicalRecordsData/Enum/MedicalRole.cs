@@ -5,7 +5,7 @@ namespace MedicalRecordsData.Enum
 {
     public enum MedicalRole
     {
-        Patient,
+        Patient = 1,
         Nurse,
         Doctors
     }

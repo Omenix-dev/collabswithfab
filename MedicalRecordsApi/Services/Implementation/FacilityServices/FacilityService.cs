@@ -5,6 +5,7 @@ using MedicalRecordsApi.Services.Abstract.FacilityInterfaces;
 using MedicalRecordsData.DatabaseContext;
 using MedicalRecordsData.Entities.AuthEntity;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
+using MedicalRecordsData.Enum;
 using MedicalRecordsRepository.DTO.FacilityDto;
 using MedicalRecordsRepository.Interfaces;
 using Microsoft.EntityFrameworkCore;

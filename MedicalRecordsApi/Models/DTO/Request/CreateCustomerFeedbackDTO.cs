@@ -1,4 +1,5 @@
 ﻿using MedicalRecordsData.Entities.MedicalRecordsEntity;
+using MedicalRecordsData.Enum;
 
 namespace MedicalRecordsApi.Models.DTO.Request
 {

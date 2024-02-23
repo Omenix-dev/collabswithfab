@@ -1,11 +1,17 @@
 ﻿using MedicalRecordsApi.Helpers;
+using MedicalRecordsApi.Models.DTO.Responses;
+using MedicalRecordsApi.Services.Abstract.CustomerEngagementInterfaces;
+using MedicalRecordsApi.Services.Abstract.DashBoardInterfaces;
 using MedicalRecordsApi.Services.Abstract.FacilityInterfaces;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
 using MedicalRecordsApi.Services.Common;
 using MedicalRecordsApi.Services.Common.Interfaces;
+using MedicalRecordsApi.Services.Implementation.CustomerEngagementServices;
+using MedicalRecordsApi.Services.Implementation.DashBoardServices;
 using MedicalRecordsApi.Services.Implementation.FacilityServices;
 using MedicalRecordsApi.Services.Implementation.PatientServices;
 using MedicalRecordsApi.Utils;
+using MedicalRecordsData.Entities.AuthEntity;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
 using MedicalRecordsRepository.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,8 +39,14 @@ namespace MedicalRecordsApi.Services
             //Facility
             services.AddScoped<IFacilityService, FacilityService>();
 
-			//Generic class instantiations
-			services.AddScoped<IGenericService<Patient>, GenericService<Patient>>();
+            //DashBoard
+            services.AddScoped<IDashBoardService, DashBoardService>();
+
+            //Customer Engagement
+            services.AddScoped<ICustomerEngagementService, CustomerEngagementService>();
+
+            //Generic class instantiations
+            services.AddScoped<IGenericService<Patient>, GenericService<Patient>>();
 			services.AddScoped<IGenericService<Contact>, GenericService<Contact>>();
 			services.AddScoped<IGenericService<EmergencyContact>, GenericService<EmergencyContact>>();
 			services.AddScoped<IGenericService<Immunization>, GenericService<Immunization>>();
@@ -45,6 +57,9 @@ namespace MedicalRecordsApi.Services
 			services.AddScoped<IGenericService<Treatment>, GenericService<Treatment>>();
             services.AddScoped<IGenericService<Visit>, GenericService<Visit>>();
             services.AddScoped<IGenericService<Lab>, GenericService<Lab>>();
+            services.AddScoped<IGenericService<User>, GenericService<User>>();
+            services.AddScoped<IGenericService<ReadCustomerFeedbackDTO>, GenericService<ReadCustomerFeedbackDTO>>();
+            services.AddScoped<IGenericService<PatientAssignmentHistory>, GenericService<PatientAssignmentHistory>>();
 
 
             services.AddAutoMapper(typeof(PatientProfileMapper));

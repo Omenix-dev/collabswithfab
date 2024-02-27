@@ -14,15 +14,15 @@ namespace MedicalRecordsApi.Utils
     {
 
 
-        public IConfiguration _configuration { get; }
+        public IConfiguration Configuration { get; }
         public Token(IConfiguration configuration)
         {
-            _configuration = configuration;
+            Configuration = configuration;
         }
 
         public string BuildToken(string id, string name)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             //Create a List of Claims, Keep claims name short    
@@ -33,14 +33,14 @@ namespace MedicalRecordsApi.Utils
             permClaims.Add(new Claim("name", name));
 
             //Create Security Token object by giving required parameters    
-            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], //Issure    
-                            _configuration["Jwt:Issuer"],  //Audience    
+            var token = new JwtSecurityToken(Configuration["Jwt:Issuer"], //Issure    
+                            Configuration["Jwt:Issuer"],  //Audience    
                             permClaims,
                             expires: DateTime.Now.AddDays(1),
                             signingCredentials: credentials);
-            var jwt_token = new JwtSecurityTokenHandler().WriteToken(token);
+            var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return jwt_token;
+            return jwtToken;
         }
     }
 }

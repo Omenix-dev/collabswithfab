@@ -6,7 +6,7 @@ namespace MedicalRecordsData.Enum
 {
 	public enum Order
 	{
-		ASC = 1,
-		DESC = 2
+		Asc = 1,
+		Desc = 2
 	}
 }

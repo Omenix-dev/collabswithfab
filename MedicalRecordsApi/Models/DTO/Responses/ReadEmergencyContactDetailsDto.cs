@@ -1,8 +1,12 @@
-﻿
-namespace MedicalRecordsRepository.DTO.PatientDto
+﻿using System;
+
+namespace MedicalRecordsApi.Models.DTO.Responses
 {
-    public class UpdateEmergencyContactDto
+    public class ReadEmergencyContactDetailsDto
     {
+        public int Id { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public string Relationship { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -13,7 +17,7 @@ namespace MedicalRecordsRepository.DTO.PatientDto
         public string Lga { get; set; }
         public string City { get; set; }
         public string AltPhone { get; set; }
-        public int PatientId { get; set; }
 
+        public int PatientId { get; set; }
     }
 }

@@ -4,7 +4,7 @@ using System;
 
 namespace MedicalRecordsApi.Models.DTO.Responses
 {
-	public class ReadPatientDTO
+	public class ReadPatientDto
 	{
 
 		public int Id { get; set; }
@@ -19,7 +19,7 @@ namespace MedicalRecordsApi.Models.DTO.Responses
 		public string Email { get; set; }
 		public string PhoneNumber { get; set; }
 		public string StateOfOrigin { get; set; }
-		public string LGA { get; set; }
+		public string Lga { get; set; }
 		public string PlaceOfBirth { get; set; }
 		public string MaritalStatus { get; set; }
 

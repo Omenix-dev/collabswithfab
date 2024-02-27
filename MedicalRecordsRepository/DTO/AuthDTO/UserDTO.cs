@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MedicalRecordsRepository.DTO.AuthDTO
 {
-    public class UserDTO
+    public class UserDto
     {
         [Required]
         public string Email { get; set; }

@@ -8,7 +8,7 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 	public partial class Contact : Base
 	{
 		public string StateOfResidence { get; set; }
-		public string LGAResidence { get; set; }
+		public string LgaResidence { get; set; }
 		public string City { get; set; }
 		public string HomeAddress { get; set; }
 		public string Phone { get; set; }

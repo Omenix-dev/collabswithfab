@@ -41,11 +41,11 @@ namespace MedicalRecordsApi.Services.Implementation.FacilityServices
         }
         #endregion
 
-        public async Task<ServiceResponse<IEnumerable<ReadBedDetailsDTO>>> GetBedsAssignedToDoctor(int userId)
+        public async Task<ServiceResponse<IEnumerable<ReadBedDetailsDto>>> GetBedsAssignedToDoctor(int userId)
         {
             if (userId <= 0)
             {
-                return new ServiceResponse<IEnumerable<ReadBedDetailsDTO>>(Enumerable.Empty<ReadBedDetailsDTO>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+                return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(Enumerable.Empty<ReadBedDetailsDto>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
             }
 
 
@@ -56,7 +56,7 @@ namespace MedicalRecordsApi.Services.Implementation.FacilityServices
                                                 .ToListAsync();
             if (!beds.Any())
             {
-                return new ServiceResponse<IEnumerable<ReadBedDetailsDTO>>(Enumerable.Empty<ReadBedDetailsDTO>(), InternalCode.Success);
+                return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(Enumerable.Empty<ReadBedDetailsDto>(), InternalCode.Success);
 
             }
 
@@ -71,13 +71,13 @@ namespace MedicalRecordsApi.Services.Implementation.FacilityServices
                                                                .Where(x => x.IsDeleted == false)
                                                                .ToListAsync();
 
-            List<ReadBedDetailsDTO> bedDetailsList = new List<ReadBedDetailsDTO>();
+            List<ReadBedDetailsDto> bedDetailsList = new List<ReadBedDetailsDto>();
 
             foreach ( var bed in beds )
             {
-                ReadBedDetailsDTO bedDetailsDTO = new ReadBedDetailsDTO();
-                bedDetailsDTO.BedName = bed.Name;
-                bedDetailsDTO.IsOccupied = bed.IsOccupied;
+                ReadBedDetailsDto bedDetailsDto = new ReadBedDetailsDto();
+                bedDetailsDto.BedName = bed.Name;
+                bedDetailsDto.IsOccupied = bed.IsOccupied;
 
                 if (bed.IsOccupied)
                 {
@@ -85,17 +85,17 @@ namespace MedicalRecordsApi.Services.Implementation.FacilityServices
                                                                                 .Select(s => $"{s.FirstName} {s.LastName}")
                                                                                 .FirstOrDefault();
 
-                    bedDetailsDTO.PatientName = patientName ?? null;
-                    bedDetailsDTO.PatientId = bedAssignments.FirstOrDefault(x => x.FacilityId == bed.Id).PatientId;
+                    bedDetailsDto.PatientName = patientName ?? null;
+                    bedDetailsDto.PatientId = bedAssignments.FirstOrDefault(x => x.FacilityId == bed.Id).PatientId;
                 }
 
-                bedDetailsList.Add(bedDetailsDTO);
+                bedDetailsList.Add(bedDetailsDto);
             }
 
-            return new ServiceResponse<IEnumerable<ReadBedDetailsDTO>>(bedDetailsList, InternalCode.Success);
+            return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(bedDetailsList, InternalCode.Success);
         }
 
-        public async Task<ServiceResponse<IEnumerable<ReadBedDetailsDTO>>> GetBedStatus()
+        public async Task<ServiceResponse<IEnumerable<ReadBedDetailsDto>>> GetBedStatus()
         {
             //Get Facility Details
             var beds = await _facilityRepository.Query()
@@ -104,22 +104,22 @@ namespace MedicalRecordsApi.Services.Implementation.FacilityServices
                                                 .ToListAsync();
             if (!beds.Any())
             {
-                return new ServiceResponse<IEnumerable<ReadBedDetailsDTO>>(Enumerable.Empty<ReadBedDetailsDTO>(), InternalCode.Success);
+                return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(Enumerable.Empty<ReadBedDetailsDto>(), InternalCode.Success);
 
             }
 
-            List<ReadBedDetailsDTO> bedDetailsList = new List<ReadBedDetailsDTO>();
+            List<ReadBedDetailsDto> bedDetailsList = new List<ReadBedDetailsDto>();
 
             foreach (var bed in beds)
             {
-                ReadBedDetailsDTO bedDetailsDTO = new ReadBedDetailsDTO();
-                bedDetailsDTO.BedName = bed.Name;
-                bedDetailsDTO.IsOccupied = bed.IsOccupied;
+                ReadBedDetailsDto bedDetailsDto = new ReadBedDetailsDto();
+                bedDetailsDto.BedName = bed.Name;
+                bedDetailsDto.IsOccupied = bed.IsOccupied;
 
-                bedDetailsList.Add(bedDetailsDTO);
+                bedDetailsList.Add(bedDetailsDto);
             }
 
-            return new ServiceResponse<IEnumerable<ReadBedDetailsDTO>>(bedDetailsList, InternalCode.Success);
+            return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(bedDetailsList, InternalCode.Success);
         }
     }
 }

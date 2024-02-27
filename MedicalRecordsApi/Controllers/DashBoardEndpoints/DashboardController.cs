@@ -177,11 +177,11 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         // GET api/dashboard/gender
-        public async Task<IActionResult> GetPatientWithHMO()
+        public async Task<IActionResult> GetPatientWithHmo()
         {
             int userId = int.Parse(User.FindFirst("Id").Value);
 
-            ServiceResponse<long> result = await _service.GetPatientByHMOAsync(userId);
+            ServiceResponse<long> result = await _service.GetPatientByHmoAsync(userId);
 
             return result.FormatResponse();
         }

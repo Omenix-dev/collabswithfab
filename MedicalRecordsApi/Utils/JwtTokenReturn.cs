@@ -7,7 +7,7 @@ namespace MedicalRecordsApi.Utils
     public class JwtTokenReturn
     {
         public int Id { get; set; }
-        public int UserID { get; set; }
+        public int UserId { get; set; }
         public string FullName { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }

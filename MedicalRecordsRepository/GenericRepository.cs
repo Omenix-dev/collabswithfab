@@ -33,42 +33,42 @@ namespace MedicalRecordsRepository
 		//IEnumerable iterates over an in-memory collection while IQueryable does so on the DB
 		// call to .ToList to enable instant query against DB
 
-		protected MedicalRecordDbContext _db;
-		protected ILogger _logger;
+		protected MedicalRecordDbContext Db;
+		protected ILogger Logger;
 
 		public GenericRepository(MedicalRecordDbContext db, ILogger<GenericRepository<T>> logger)
 		{
-			_logger = logger;
-			_db = db;
+			Logger = logger;
+			Db = db;
 		}
 
 		public IQueryable<T> GetAll()
 		{
-			return _db.Set<T>();
+			return Db.Set<T>();
 		}
 
 		public DbSet<T> GetDbSet()
 		{
-			return _db.Set<T>();
+			return Db.Set<T>();
 		}
 
 		public IQueryable<T> Query()
 		{
-			return _db.Set<T>().AsQueryable();
+			return Db.Set<T>().AsQueryable();
 		}
 
 		#region Async Methods
 
 		public async Task<T> GetByIdAsync(int id)
 		{
-			var entity = await _db.Set<T>().FindAsync(id);
+			var entity = await Db.Set<T>().FindAsync(id);
 
 			return entity;
 		}
 
 		public async Task<T> GetByGuidAsync(Guid id)
 		{
-			var entity = await _db.Set<T>().FindAsync(id);
+			var entity = await Db.Set<T>().FindAsync(id);
 
 			return entity;
 		}
@@ -77,11 +77,11 @@ namespace MedicalRecordsRepository
 		{
 			if (entity == null)
 			{
-				_logger.LogError(RepositoryConstants.CreateNullError, typeof(T).Name);
+				Logger.LogError(RepositoryConstants.CreateNullError, typeof(T).Name);
 				return 3;
 			}
 
-			_db.Set<T>().Add(entity);
+			Db.Set<T>().Add(entity);
 
 			if (isSave)
 			{
@@ -101,7 +101,7 @@ namespace MedicalRecordsRepository
 			//    return 0;
 			//}
 
-			_db.Set<T>().Update(entity);
+			Db.Set<T>().Update(entity);
 
 			if (isSave)
 			{
@@ -116,11 +116,11 @@ namespace MedicalRecordsRepository
 			T entity = await GetByIdAsync(id);
 			if (entity == null)
 			{
-				_logger.LogError(RepositoryConstants.DeleteNullError, typeof(T).Name);
+				Logger.LogError(RepositoryConstants.DeleteNullError, typeof(T).Name);
 				return 4;
 			}
 
-			_db.Set<T>().Remove(entity);
+			Db.Set<T>().Remove(entity);
 
 			if (isSave)
 			{
@@ -135,11 +135,11 @@ namespace MedicalRecordsRepository
 		{
 			if (entityId == null || !entityId.Any())
 			{
-				_logger.LogError(RepositoryConstants.BulkDeleteNullError, typeof(T).Name);
+				Logger.LogError(RepositoryConstants.BulkDeleteNullError, typeof(T).Name);
 				return 3;
 			}
 
-			DbSet<T> table = _db.Set<T>();
+			DbSet<T> table = Db.Set<T>();
 
 			foreach (int id in entityId)
 			{
@@ -162,11 +162,11 @@ namespace MedicalRecordsRepository
 		{
 			if (entities == null || !entities.Any())
 			{
-				_logger.LogError(RepositoryConstants.BulkCreateNullError, typeof(T).Name);
+				Logger.LogError(RepositoryConstants.BulkCreateNullError, typeof(T).Name);
 				return 3;
 			}
 
-			DbSet<T> table = _db.Set<T>();
+			DbSet<T> table = Db.Set<T>();
 
 			table.AddRange(entities);
 
@@ -183,34 +183,34 @@ namespace MedicalRecordsRepository
 		//fix this after tests have been writing for projects
 		public async Task<int> SaveChangesToDbAsync()
 		{
-			_logger.LogInformation(RepositoryConstants.LoggingStarted);
+			Logger.LogInformation(RepositoryConstants.LoggingStarted);
 			int saveResult;
 
 			try
 			{
-				int tempResult = await _db.SaveChangesAsync(); //give numbers of entries updated in db. in some cases e.g Update, when no data changes, this method returns 0
+				int tempResult = await Db.SaveChangesAsync(); //give numbers of entries updated in db. in some cases e.g Update, when no data changes, this method returns 0
 				if (tempResult == 0)
 				{
-					_logger.LogInformation(RepositoryConstants.EmptySaveInfo);
+					Logger.LogInformation(RepositoryConstants.EmptySaveInfo);
 				}
 				saveResult = 1; //means atleast one entry was made. 1 is InternalCode.Success.
 								//saveResult = tempResult > 0 ? 1 : 0; //means atleast one entry was made. 1 is InternalCode.Success
 			}
 			catch (DbUpdateConcurrencyException ex)
 			{
-				_logger.LogError(ex, RepositoryConstants.UpdateConcurrencyException);
+				Logger.LogError(ex, RepositoryConstants.UpdateConcurrencyException);
 				saveResult = -1;
 				throw;
 			}
 			catch (DbUpdateException ex)
 			{
-				_logger.LogError(ex, RepositoryConstants.UpdateException);
+				Logger.LogError(ex, RepositoryConstants.UpdateException);
 				saveResult = -1;
 				throw;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, RepositoryConstants.SaveChangesException);
+				Logger.LogError(ex, RepositoryConstants.SaveChangesException);
 				saveResult = -1;
 				throw;
 			}
@@ -219,7 +219,7 @@ namespace MedicalRecordsRepository
 
 		public async Task<bool> EntityExistsAsync(int id)
 		{
-			T entityFound = await _db.Set<T>().FindAsync(id);
+			T entityFound = await Db.Set<T>().FindAsync(id);
 			if (entityFound == null)
 			{
 				return false;
@@ -234,14 +234,14 @@ namespace MedicalRecordsRepository
 
 		public T GetById(int id)
 		{
-			var entity = _db.Set<T>().Find(id);
+			var entity = Db.Set<T>().Find(id);
 
 			return entity;
 		}
 
 		public T GetByGuid(Guid id)
 		{
-			var entity = _db.Set<T>().Find(id);
+			var entity = Db.Set<T>().Find(id);
 
 			return entity;
 		}
@@ -250,11 +250,11 @@ namespace MedicalRecordsRepository
 		{
 			if (entity == null)
 			{
-				_logger.LogError(RepositoryConstants.CreateNullError, typeof(T).Name);
+				Logger.LogError(RepositoryConstants.CreateNullError, typeof(T).Name);
 				return 3;
 			}
 
-			_db.Set<T>().Add(entity);
+			Db.Set<T>().Add(entity);
 
 			if (isSave)
 			{
@@ -266,7 +266,7 @@ namespace MedicalRecordsRepository
 
 		public int Update(T entity, bool isSave = true)
 		{
-			_db.Set<T>().Update(entity);
+			Db.Set<T>().Update(entity);
 
 			if (isSave)
 			{
@@ -281,11 +281,11 @@ namespace MedicalRecordsRepository
 			T entity = GetById(id);
 			if (entity == null)
 			{
-				_logger.LogError(RepositoryConstants.DeleteNullError, typeof(T).Name);
+				Logger.LogError(RepositoryConstants.DeleteNullError, typeof(T).Name);
 				return 4;
 			}
 
-			_db.Set<T>().Remove(entity);
+			Db.Set<T>().Remove(entity);
 
 			if (isSave)
 			{
@@ -300,11 +300,11 @@ namespace MedicalRecordsRepository
 		{
 			if (entityId == null || !entityId.Any())
 			{
-				_logger.LogError(RepositoryConstants.BulkDeleteNullError, typeof(T).Name);
+				Logger.LogError(RepositoryConstants.BulkDeleteNullError, typeof(T).Name);
 				return 3;
 			}
 
-			DbSet<T> table = _db.Set<T>();
+			DbSet<T> table = Db.Set<T>();
 
 			foreach (int id in entityId)
 			{
@@ -327,11 +327,11 @@ namespace MedicalRecordsRepository
 		{
 			if (entities == null || !entities.Any())
 			{
-				_logger.LogError(RepositoryConstants.BulkCreateNullError, typeof(T).Name);
+				Logger.LogError(RepositoryConstants.BulkCreateNullError, typeof(T).Name);
 				return 3;
 			}
 
-			DbSet<T> table = _db.Set<T>();
+			DbSet<T> table = Db.Set<T>();
 
 			table.AddRange(entities);
 
@@ -348,35 +348,35 @@ namespace MedicalRecordsRepository
 		//fix this after tests have been writing for projects
 		public int SaveChangesToDb()
 		{
-			_logger.LogInformation(RepositoryConstants.LoggingStarted);
+			Logger.LogInformation(RepositoryConstants.LoggingStarted);
 
 			int saveResult;
 
 			try
 			{
-				int tempResult = _db.SaveChanges(); //give numbers of entries updated in db. in some cases e.g Update, when no data changes, this method returns 0
+				int tempResult = Db.SaveChanges(); //give numbers of entries updated in db. in some cases e.g Update, when no data changes, this method returns 0
 				if (tempResult == 0)
 				{
-					_logger.LogInformation(RepositoryConstants.EmptySaveInfo);
+					Logger.LogInformation(RepositoryConstants.EmptySaveInfo);
 				}
 				saveResult = 1; //means atleast one entry was made. 1 is InternalCode.Success.
 								//saveResult = tempResult > 0 ? 1 : 0; //means atleast one entry was made. 1 is InternalCode.Success
 			}
 			catch (DbUpdateConcurrencyException ex)
 			{
-				_logger.LogError(ex, RepositoryConstants.UpdateConcurrencyException);
+				Logger.LogError(ex, RepositoryConstants.UpdateConcurrencyException);
 				saveResult = -1;
 				throw;
 			}
 			catch (DbUpdateException ex)
 			{
-				_logger.LogError(ex, RepositoryConstants.UpdateException);
+				Logger.LogError(ex, RepositoryConstants.UpdateException);
 				saveResult = -1;
 				throw;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, RepositoryConstants.SaveChangesException);
+				Logger.LogError(ex, RepositoryConstants.SaveChangesException);
 				saveResult = -1;
 				throw;
 			}
@@ -385,7 +385,7 @@ namespace MedicalRecordsRepository
 
 		public bool EntityExists(int id)
 		{
-			T entityFound = _db.Set<T>().Find(id);
+			T entityFound = Db.Set<T>().Find(id);
 			if (entityFound == null)
 			{
 				return false;
@@ -447,7 +447,7 @@ namespace MedicalRecordsRepository
 		{
 			IQueryable<T> orderedData = data;
 
-			if (order == Order.ASC)
+			if (order == Order.Asc)
 			{
 				orderedData = data.OrderBy(expression);
 			}
@@ -463,7 +463,7 @@ namespace MedicalRecordsRepository
 		{
 			IQueryable<T> orderedData = data;
 
-			if (order == Order.ASC)
+			if (order == Order.Asc)
 			{
 				orderedData = data.OrderBy(expression);
 			}
@@ -495,22 +495,22 @@ namespace MedicalRecordsRepository
 
 		//Others
 		public Task<T> FirstOrDefault(Expression<Func<T, bool>> predicate)
-			=> _db.Set<T>().FirstOrDefaultAsync(predicate);
+			=> Db.Set<T>().FirstOrDefaultAsync(predicate);
 
 		public async Task<T> Insert(T entity)
 		{
 			if (entity == null) throw new ArgumentNullException($"{nameof(Insert)} entity cannot be null");
 			try
 			{
-				await _db.Set<T>().AddAsync(entity);
-				await _db.SaveChangesAsync();
-				_logger.LogInformation($"Successfully Saved {entity}");
+				await Db.Set<T>().AddAsync(entity);
+				await Db.SaveChangesAsync();
+				Logger.LogInformation($"Successfully Saved {entity}");
 
 				return entity;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError($"{ex}");
+				Logger.LogError($"{ex}");
 				throw new Exception($"{nameof(entity)} could not be saved: {ex}");
 			}
 		}
@@ -525,14 +525,14 @@ namespace MedicalRecordsRepository
 				//Context.Entry(entity).State = EntityState.Modified;
 				//Context.Set<T>().Update(entity);
 
-				_db.Update(entity);
-				await _db.SaveChangesAsync();
+				Db.Update(entity);
+				await Db.SaveChangesAsync();
 
-				_logger.LogInformation($"Successfully Updated {entity}");
+				Logger.LogInformation($"Successfully Updated {entity}");
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError($"{ex}");
+				Logger.LogError($"{ex}");
 			}
 		}
 	}

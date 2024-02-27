@@ -16,7 +16,7 @@ namespace MedicalRecordsData.Entities.AuthEntity
         public string Gender { get; set; }
         public string Role { get; set; }
 
-        public Boolean isSettings { get; set; }
+        public Boolean IsSettings { get; set; }
         public string Token { get; set; }
         public string RefreshToken { get; set; }
         public byte[] PasswordHash { get; set; }

@@ -29,11 +29,11 @@ namespace MedicalRecordsApi.Services.Implementation.CustomerEngagementServices
 		private readonly IMapper _mapper;
 		private readonly MedicalRecordDbContext _dbContext;
 		private readonly IGenericRepository<Employee> _employeeRepository;
-		private readonly IGenericService<ReadCustomerFeedbackDTO> _genericService;
+		private readonly IGenericService<ReadCustomerFeedbackDto> _genericService;
 		private readonly IGenericRepository<CustomerFeedback> _customerFeedbackRepository;
 		private readonly IConfiguration _configuration;
 		
-		public CustomerEngagementService(MedicalRecordDbContext dbContext, IGenericRepository<CustomerFeedback> customerFeedbackRepository, IConfiguration configuration, IGenericRepository<Employee> employeeRepository, IGenericService<ReadCustomerFeedbackDTO> genericService)
+		public CustomerEngagementService(MedicalRecordDbContext dbContext, IGenericRepository<CustomerFeedback> customerFeedbackRepository, IConfiguration configuration, IGenericRepository<Employee> employeeRepository, IGenericService<ReadCustomerFeedbackDto> genericService)
 		{
 			_dbContext = dbContext;
 			_customerFeedbackRepository = customerFeedbackRepository;
@@ -43,29 +43,29 @@ namespace MedicalRecordsApi.Services.Implementation.CustomerEngagementServices
 		}
 		#endregion
 
-		public async Task<ServiceResponse<string>> AddCustomerFeedbackAsync(CreateCustomerFeedbackDTO customerFeedbackDTO)
+		public async Task<ServiceResponse<string>> AddCustomerFeedbackAsync(CreateCustomerFeedbackDto customerFeedbackDto)
 		{
-			if (customerFeedbackDTO == null)
+			if (customerFeedbackDto == null)
 			{
 				return new ServiceResponse<string>(String.Empty, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 			}
 
 			var employee = await _employeeRepository.Query()
-											.FirstOrDefaultAsync(x => x.Id == customerFeedbackDTO.EmployeeId);
+											.FirstOrDefaultAsync(x => x.Id == customerFeedbackDto.EmployeeId);
 
 			if (employee == null)
 			{
 				return new ServiceResponse<string>(String.Empty, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
 			}
 
-			var feedback = _mapper.Map<CustomerFeedback>(customerFeedbackDTO);
+			var feedback = _mapper.Map<CustomerFeedback>(customerFeedbackDto);
 
 			var result = await _customerFeedbackRepository.CreateAsync(feedback);
 
 			return new ServiceResponse<string>("Successful", (InternalCode)result);
 		}
 
-		public ServiceResponse<PaginatedList<ReadCustomerFeedbackDTO>> GetFeedbackDetailsAsync(int userId, ReviewSource source, string month, int pageIndex = 1, int pageSize = 5)
+		public ServiceResponse<PaginatedList<ReadCustomerFeedbackDto>> GetFeedbackDetailsAsync(int userId, ReviewSource source, string month, int pageIndex = 1, int pageSize = 5)
 		{
 			// Parse the month string to a Month enum (assumes valid month string)
 			Month monthEnum = (Month)Enum.Parse(typeof(Month), month, true);
@@ -80,17 +80,17 @@ namespace MedicalRecordsApi.Services.Implementation.CustomerEngagementServices
 														.AsNoTracking()
 														.Where(x => x.EmployeeId == userId && x.Source == source && x.CreatedAt >= firstDayOfMonth && x.CreatedAt < endDate);
 
-			IQueryable<ReadCustomerFeedbackDTO> data = feedbacks
-				.ProjectTo<ReadCustomerFeedbackDTO>(_mapper.ConfigurationProvider);
+			IQueryable<ReadCustomerFeedbackDto> data = feedbacks
+				.ProjectTo<ReadCustomerFeedbackDto>(_mapper.ConfigurationProvider);
 
-			Expression<Func<ReadCustomerFeedbackDTO, string>> expression = x => x.Comments;
+			Expression<Func<ReadCustomerFeedbackDto, string>> expression = x => x.Comments;
 
-			PaginatedList<ReadCustomerFeedbackDTO> result = _genericService.SortPaginateByText(pageIndex, pageSize, data, expression, Order.ASC);
+			PaginatedList<ReadCustomerFeedbackDto> result = _genericService.SortPaginateByText(pageIndex, pageSize, data, expression, Order.Asc);
 
-			return new ServiceResponse<PaginatedList<ReadCustomerFeedbackDTO>>(result, InternalCode.Success);
+			return new ServiceResponse<PaginatedList<ReadCustomerFeedbackDto>>(result, InternalCode.Success);
 		}
 		
-		public async Task<ServiceResponse<ReadCustomerFeedbackAverageDTO>> GetMonthlyAverageAsync(int userId, ReviewSource source, string month)
+		public async Task<ServiceResponse<ReadCustomerFeedbackAverageDto>> GetMonthlyAverageAsync(int userId, ReviewSource source, string month)
 		{
 			// Parse the month string to a Month enum (assumes valid month string)
 			Month monthEnum = (Month)Enum.Parse(typeof(Month), month, true);
@@ -104,7 +104,7 @@ namespace MedicalRecordsApi.Services.Implementation.CustomerEngagementServices
 			var feedbacks = await _customerFeedbackRepository.Query().AsNoTracking()
 															 .Where(x => x.EmployeeId == userId && x.Source == source && x.CreatedAt >= firstDayOfMonth && x.CreatedAt < endDate)
 															 .GroupBy(x => x.Rating)
-															 .Select(g => new FeedbackDataDTO()
+															 .Select(g => new FeedbackDataDto()
 															 {
 															 	Rating = g.Key,
 															 	Count = g.Count()
@@ -112,7 +112,7 @@ namespace MedicalRecordsApi.Services.Implementation.CustomerEngagementServices
 
 			int totalRatings = feedbacks.Sum(r => r.Count);
 
-			var averageFeedback = new ReadCustomerFeedbackAverageDTO
+			var averageFeedback = new ReadCustomerFeedbackAverageDto
 			{
 				Month = month,
 				ExcellentPercentage = CalculatePercentage(ReviewRating.Excellent, feedbacks, totalRatings),
@@ -120,11 +120,11 @@ namespace MedicalRecordsApi.Services.Implementation.CustomerEngagementServices
 				PoorPercentage = CalculatePercentage(ReviewRating.Poor, feedbacks, totalRatings)
 			};
 
-			return new ServiceResponse<ReadCustomerFeedbackAverageDTO>(averageFeedback, InternalCode.Success);
+			return new ServiceResponse<ReadCustomerFeedbackAverageDto>(averageFeedback, InternalCode.Success);
 		}
 
 		#region Helpers
-		private int CalculatePercentage(ReviewRating rating, List<FeedbackDataDTO> ratings, int totalRatings)
+		private int CalculatePercentage(ReviewRating rating, List<FeedbackDataDto> ratings, int totalRatings)
 		{
 
 			var ratingCount = ratings.FirstOrDefault(r => r.Rating == rating)?.Count ?? 0;

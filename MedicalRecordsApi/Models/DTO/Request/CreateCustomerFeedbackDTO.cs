@@ -3,7 +3,7 @@ using MedicalRecordsData.Enum;
 
 namespace MedicalRecordsApi.Models.DTO.Request
 {
-	public class CreateCustomerFeedbackDTO
+	public class CreateCustomerFeedbackDto
 	{
 		public ReviewRating Rating { get; set; }
 		public string Comments { get; set; }

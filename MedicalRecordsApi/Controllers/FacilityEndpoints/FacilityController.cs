@@ -30,7 +30,7 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
         /// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadBedDetailsDTO}}"/> object.</returns>
         [HttpGet]
         [Route("beds/assignedtodoctor")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadBedDetailsDTO>>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadBedDetailsDto>>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
@@ -41,7 +41,7 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
         {
             int userId = int.Parse(User.FindFirst("Id").Value);
 
-            ServiceResponse<IEnumerable<ReadBedDetailsDTO>> result = await _service.GetBedsAssignedToDoctor(userId);
+            ServiceResponse<IEnumerable<ReadBedDetailsDto>> result = await _service.GetBedsAssignedToDoctor(userId);
 
             return result.FormatResponse();
         }
@@ -53,7 +53,7 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
         /// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadBedDetailsDTO}}"/> object.</returns>
         [HttpGet]
         [Route("beds")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadBedDetailsDTO>>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadBedDetailsDto>>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
@@ -62,7 +62,7 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
         // GET api/facilities/beds
         public async Task<IActionResult> GetBedDetails()
         {
-            ServiceResponse<IEnumerable<ReadBedDetailsDTO>> result = await _service.GetBedStatus();
+            ServiceResponse<IEnumerable<ReadBedDetailsDto>> result = await _service.GetBedStatus();
 
             return result.FormatResponse();
         }

@@ -22,20 +22,20 @@ namespace MedicalRecordsApi.Controllers
 	{
 		private IAuthManager _auth;
 
-		private readonly MedicalRecordDbContext _Context;
+		private readonly MedicalRecordDbContext _context;
 
 		public AuthController(MedicalRecordDbContext context, IAuthManager auth)
 		{
-			_Context = context;
+			_context = context;
 			_auth = auth;
 		}
 
 		//api/<AuthController>
 		[HttpPost]
 		[AllowAnonymous]
-		public async Task<IActionResult> Login(UserDTO user)
+		public async Task<IActionResult> Login(UserDto user)
 		{
-			var response = new APIResponse();
+			var response = new ApiResponse();
 			response.ApiMessage = $"Error: User credentials in correct!";
 			response.StatusCode = "01";
 			response.Result = null;
@@ -55,26 +55,26 @@ namespace MedicalRecordsApi.Controllers
 		[AllowAnonymous]
 		public async Task<IActionResult> SignIn(int id)
 		{
-			var response = new APIResponse();
+			var response = new ApiResponse();
 			response.ApiMessage = $"Error: User credentials in correct!";
 			response.StatusCode = "01";
 			response.Result = null;
 
-			var link = await _Context.Resources.SingleOrDefaultAsync();
-			var user_auth = await _Context.Employees.Where(s => s.Id == id).FirstOrDefaultAsync();
-			if (user_auth != null)
+			var link = await _context.Resources.SingleOrDefaultAsync();
+			var userAuth = await _context.Employees.Where(s => s.Id == id).FirstOrDefaultAsync();
+			if (userAuth != null)
 			{
 				User data = new User
 				{
-					Id = user_auth.Id,
-					FirstName = user_auth.FirstName,
-					LastName = user_auth.LastName,
+					Id = userAuth.Id,
+					FirstName = userAuth.FirstName,
+					LastName = userAuth.LastName,
 					Role = "",
-					Email = user_auth.Email,
+					Email = userAuth.Email,
 					HomeLink = link.HomeLink,
 
-					ClinicName = await _Context.Clinics.Where(x => x.Id == user_auth.ClinicId).Select(m => m.Name).FirstOrDefaultAsync(),
-					ClinicAddress = await _Context.Clinics.Where(x => x.Id == user_auth.ClinicId).Select(m => m.Location).FirstOrDefaultAsync(),
+					ClinicName = await _context.Clinics.Where(x => x.Id == userAuth.ClinicId).Select(m => m.Name).FirstOrDefaultAsync(),
+					ClinicAddress = await _context.Clinics.Where(x => x.Id == userAuth.ClinicId).Select(m => m.Location).FirstOrDefaultAsync(),
 
 				};
 
@@ -95,40 +95,40 @@ namespace MedicalRecordsApi.Controllers
 		[AllowAnonymous]
 		public async Task<IActionResult> MainLogin(string urltoken)
 		{
-			var response = new APIResponse();
+			var response = new ApiResponse();
 			response.ApiMessage = $"Error: User credentials in correct!";
 			response.StatusCode = "01";
 			response.Result = null;
 
 
-			var user_auth = await _Context.Employees.Where(s => s.AuthenticationToken == urltoken).FirstOrDefaultAsync();
-			if (user_auth != null)
+			var userAuth = await _context.Employees.Where(s => s.AuthenticationToken == urltoken).FirstOrDefaultAsync();
+			if (userAuth != null)
 			{
 				var role = "";
-				var URole = (from ur1 in _Context.UserRoles
-							 join r1 in _Context.Roles on ur1.RoleId equals r1.Id
-							 where ur1.UserId == user_auth.Id && ur1.Status == 1
+				var uRole = (from ur1 in _context.UserRoles
+							 join r1 in _context.Roles on ur1.RoleId equals r1.Id
+							 where ur1.UserId == userAuth.Id && ur1.Status == 1
 							 select new
 							 {
 								 Id = ur1.RoleId,
 								 Name = r1.Name
 							 }).FirstOrDefault();
 
-				if (URole != null) { if (URole.Id > 0) { role = URole.Name; } }
+				if (uRole != null) { if (uRole.Id > 0) { role = uRole.Name; } }
 
-				var link = await _Context.Resources.SingleOrDefaultAsync();
+				var link = await _context.Resources.SingleOrDefaultAsync();
 
 				User data = new User
 				{
-					Id = user_auth.Id,
-					FirstName = user_auth.FirstName,
-					LastName = user_auth.LastName,
+					Id = userAuth.Id,
+					FirstName = userAuth.FirstName,
+					LastName = userAuth.LastName,
 					Role = role,
-					Email = user_auth.Email,
-					Picture = user_auth.ProfilePicture,
+					Email = userAuth.Email,
+					Picture = userAuth.ProfilePicture,
 					HomeLink = link.HomeLink,
-					ClinicName = await _Context.Clinics.Where(x => x.Id == user_auth.ClinicId).Select(m => m.Name).FirstOrDefaultAsync(),
-					ClinicAddress = await _Context.Clinics.Where(x => x.Id == user_auth.ClinicId).Select(m => m.Location).FirstOrDefaultAsync(),
+					ClinicName = await _context.Clinics.Where(x => x.Id == userAuth.ClinicId).Select(m => m.Name).FirstOrDefaultAsync(),
+					ClinicAddress = await _context.Clinics.Where(x => x.Id == userAuth.ClinicId).Select(m => m.Location).FirstOrDefaultAsync(),
 				};
 
 
@@ -148,9 +148,9 @@ namespace MedicalRecordsApi.Controllers
 
 		[HttpPost("register")]
 		[AllowAnonymous]
-		public async Task<IActionResult> Register(UserDTO userdto)
+		public async Task<IActionResult> Register(UserDto userdto)
 		{
-			var response = new APIResponse();
+			var response = new ApiResponse();
 			response.StatusCode = "01";
 			response.Result = null;
 			var (user, message) = await _auth.RegisterUser(userdto); ;

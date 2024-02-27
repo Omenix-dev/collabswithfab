@@ -83,7 +83,7 @@ namespace MedicalRecordsApi.Services.Common
 
         public IQueryable<T> OrderByText(IQueryable<T> data, Order order, Expression<Func<T, string>> expression)
         {
-            if (order == Order.ASC)
+            if (order == Order.Asc)
             {
                 return data.OrderBy(expression);
             }
@@ -95,7 +95,7 @@ namespace MedicalRecordsApi.Services.Common
 
         public IQueryable<T> OrderByDate(IQueryable<T> data, Order order, Expression<Func<T, DateTime>> expression)
         {
-            if (order == Order.ASC)
+            if (order == Order.Asc)
             {
                 return data.OrderBy(expression);
             }

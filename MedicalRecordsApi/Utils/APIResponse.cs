@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MedicalRecordsApi.Utils
 {
-    public class APIResponse
+    public class ApiResponse
     {
         /// <summary>
         /// StatusCodes 00, 01

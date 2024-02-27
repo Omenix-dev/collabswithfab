@@ -23,11 +23,11 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public string Email { get; set; }
 		public string PhoneNumber { get; set; }
 		public string StateOfOrigin { get; set; }
-		public string LGA { get; set; }
+		public string Lga { get; set; }
 		public string PlaceOfBirth { get; set; }
 		public string MaritalStatus { get; set; }
         public string Nationality { get; set; }
-		public bool HasHMO { get; set; } = false;
+		public bool HasHmo { get; set; } = false;
 
         //PatientAuth
         public int UserId { get; set; }

@@ -13,7 +13,7 @@ namespace MedicalRecordsApi.Utils
         {
             CreateMap<CreatePatientProfileDto, User>();
             CreateMap<CreatePatientRequestDto, Patient>();
-            CreateMap<updateContactDto, Contact>();
+            CreateMap<UpdateContactDto, Contact>();
             CreateMap<UpdateEmergencyContactDto, EmergencyContact>();
             CreateMap<MedicalRecordsDto, MedicalRecord>();
             CreateMap<MedicalRecord, MedicalRecordsDto>()

@@ -2,7 +2,7 @@
 
 namespace MedicalRecordsApi.Models.DTO.Responses
 {
-	public class AssignedPatientsDTO
+	public class AssignedPatientsDto
 	{
 		public int Id { get; set; }
 		public DateTime CreatedAt { get; set; }

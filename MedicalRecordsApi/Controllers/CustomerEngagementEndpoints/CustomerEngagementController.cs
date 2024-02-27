@@ -30,7 +30,7 @@ namespace MedicalRecordsApi.Controllers.CustomerEngagementEndpoints
 		/// <summary>
 		/// This adds to the doctor or nurse customer feedback table
 		/// </summary>
-		/// <param name="customerFeedbackDTO"></param>
+		/// <param name="customerFeedbackDto"></param>
 		/// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
 		[HttpPost]
 		[Route("addfeedback")]
@@ -42,9 +42,9 @@ namespace MedicalRecordsApi.Controllers.CustomerEngagementEndpoints
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
 		// POST api/customerengagements/addfeedback
-		public async Task<IActionResult> Post([FromBody] CreateCustomerFeedbackDTO customerFeedbackDTO)
+		public async Task<IActionResult> Post([FromBody] CreateCustomerFeedbackDto customerFeedbackDto)
 		{
-			ServiceResponse<string> result = await _service.AddCustomerFeedbackAsync(customerFeedbackDTO);
+			ServiceResponse<string> result = await _service.AddCustomerFeedbackAsync(customerFeedbackDto);
 
 			return result.FormatResponse();
 		}
@@ -59,7 +59,7 @@ namespace MedicalRecordsApi.Controllers.CustomerEngagementEndpoints
 		/// <returns>Returns a <see cref="ServiceResponse{PaginatedList{ReadCustomerFeedbackDTO}}"/> object.</returns>
 		[HttpGet]
 		[Route("customerengagements/{source}/{month}")]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<PaginatedList<ReadBedDetailsDTO>>))]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<PaginatedList<ReadBedDetailsDto>>))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
@@ -70,7 +70,7 @@ namespace MedicalRecordsApi.Controllers.CustomerEngagementEndpoints
 		{
 			int userId = int.Parse(User.FindFirst("Id").Value);
 
-			ServiceResponse<PaginatedList<ReadCustomerFeedbackDTO>> result = _service.GetFeedbackDetailsAsync(userId, source, month, pageIndex, pageSize);
+			ServiceResponse<PaginatedList<ReadCustomerFeedbackDto>> result = _service.GetFeedbackDetailsAsync(userId, source, month, pageIndex, pageSize);
 
 			return result.FormatResponse();
 		}
@@ -83,7 +83,7 @@ namespace MedicalRecordsApi.Controllers.CustomerEngagementEndpoints
 		/// <returns>Returns a <see cref="ServiceResponse{ReadCustomerFeedbackAverageDTO}"/> object.</returns>
 		[HttpGet]
 		[Route("customerengagements/{source}/{month}/average")]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ReadCustomerFeedbackAverageDTO>))]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ReadCustomerFeedbackAverageDto>))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
@@ -94,7 +94,7 @@ namespace MedicalRecordsApi.Controllers.CustomerEngagementEndpoints
 		{
 			int userId = int.Parse(User.FindFirst("Id").Value);
 
-			ServiceResponse<ReadCustomerFeedbackAverageDTO> result = await _service.GetMonthlyAverageAsync(userId, source, month);
+			ServiceResponse<ReadCustomerFeedbackAverageDto> result = await _service.GetMonthlyAverageAsync(userId, source, month);
 
 			return result.FormatResponse();
 		}

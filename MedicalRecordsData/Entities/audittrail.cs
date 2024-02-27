@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace MedicalRecordsData.Entities
 {
-    public class audittrail
+    public class Audittrail
     {
     }
 }

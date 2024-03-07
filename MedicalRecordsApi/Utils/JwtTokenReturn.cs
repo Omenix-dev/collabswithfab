@@ -16,9 +16,9 @@ namespace MedicalRecordsApi.Utils
         public string Token { get; set; }
         public string LoginTime { get; set; }
         public int ClinicId { get; set; }
-        public string ClinicName { get; set; }
-        public string ClinicAddress { get; set; }
+        //public string ClinicName { get; set; }
+        //public string ClinicAddress { get; set; }
 
-        public string HomeLink { get; set; }
+        //public string HomeLink { get; set; }
     }
 }

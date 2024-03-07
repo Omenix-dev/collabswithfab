@@ -66,27 +66,30 @@ namespace MedicalRecordsApi
                     Description = "Greenzone Medical Records API with endpoints for Medical Records."
                 });
 
-                var securityScheme = new OpenApiSecurityScheme
+                // Configure Swagger to use Bearer token authentication
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Name = "JWT Authentication",
-                    Description = "Enter JWT Bearer token **_only_**",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer", // must be lower case
-                    BearerFormat = "JWT",
-                    Reference = new OpenApiReference
-                    {
-                        Id = JwtBearerDefaults.AuthenticationScheme,
-                        Type = ReferenceType.SecurityScheme
-                    }
-                };
-
-                c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {securityScheme, new string[] { }}
+                    Description = "Please enter your Bearer token in the field",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
                 });
 
+                // Make sure Swagger UI requires a Bearer token to be passed
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new List<string>()
+                    }
+                });
             });
 
             #region Setup Managers
@@ -124,7 +127,6 @@ namespace MedicalRecordsApi
             {
                 app.UseDeveloperExceptionPage();
             }
-
             //app.UseDeveloperExceptionPage();
 
             //app.UseStaticFiles();

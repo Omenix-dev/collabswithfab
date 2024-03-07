@@ -25,14 +25,12 @@ namespace MedicalRecordsData.DatabaseContext
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Resources> Resources { get; set; }
-		public virtual DbSet<Clinic> Clinics { get; set; }
-		public virtual DbSet<Department> Departments { get; set; }
-		public virtual DbSet<UserRole> UserRoles { get; set; }
 		public virtual DbSet<Employee> Employees { get; set; }
+		public virtual DbSet<EmployeePrivilegeAccess> EmployeePrivilegeAccesses { get; set; }
 
 
-		//Patient DbSets
-		public virtual DbSet<Patient> Patients { get; set; }
+        //Patient DbSets
+        public virtual DbSet<Patient> Patients { get; set; }
 		public virtual DbSet<PatientReferrer> PatientReferrers { get; set; }
 		public virtual DbSet<Treatment> Treatments { get; set; }
 		public virtual DbSet<Visit> Visits { get; set; }

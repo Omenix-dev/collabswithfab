@@ -3,7 +3,9 @@ using MedicalRecordsApi.Constants;
 using MedicalRecordsApi.Models.DTO.Request;
 using MedicalRecordsApi.Models.DTO.Responses;
 using MedicalRecordsApi.Services;
+using MedicalRecordsApi.Services.Abstract.EmployeeInterfaces;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
+using MedicalRecordsApi.Services.Implementation.EmployeeServices;
 using MedicalRecordsData.Enum;
 using MedicalRecordsRepository.DTO.AuthDTO;
 using MedicalRecordsRepository.DTO.MedicalDto;
@@ -24,13 +26,15 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
     public class PatientController : ControllerBase
     {
         private readonly IPatientService _service;
+        private readonly IEmployeeService _employeeService;
 
-        public PatientController(IPatientService service)
+        public PatientController(IPatientService service, IEmployeeService employeeService)
         {
             _service = service;
+            _employeeService = employeeService;
         }
 
-		//1. GetAssignedWaitingPatients
+        //1. GetAssignedWaitingPatients
         /// <summary>
         /// This gets the patients assigned to a particular doctor
         /// </summary>
@@ -51,7 +55,10 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		{
 			int userId = int.Parse(User.FindFirst("Id").Value);
 
-            ServiceResponse<IEnumerable<AssignedPatientsDto>> result = await _service.GetAssignedPatientsAsync(userId);
+            //Get Employee Id
+            var employeeId = await _employeeService.GetEmployeeId(userId);
+
+            ServiceResponse<IEnumerable<AssignedPatientsDto>> result = await _service.GetAssignedPatientsAsync(employeeId.Data);
 
             return result.FormatResponse();
         }

@@ -10,6 +10,7 @@ using System.Net;
 using System.Threading.Tasks;
 using MedicalRecordsApi.Models.DTO.Request.Enums;
 using MedicalRecordsData.Enum;
+using MedicalRecordsApi.Services.Abstract.EmployeeInterfaces;
 
 namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
 {
@@ -18,10 +19,12 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
     public class DashboardController : ControllerBase
     {
         private readonly IDashBoardService _service;
+        private readonly IEmployeeService _employeeService;
 
-        public DashboardController(IDashBoardService service)
+        public DashboardController(IDashBoardService service, IEmployeeService employeeService)
         {
             _service = service;
+            _employeeService = employeeService;
         }
 
         //1. GetAssignedPatientsCount-Waiting or All
@@ -42,7 +45,10 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
         {
             int userId = int.Parse(User.FindFirst("Id").Value);
 
-            ServiceResponse<long> result = await _service.GetAssignedPatientsCountAsync(userId, status);
+            //Get Employee Id
+            var employeeId = await _employeeService.GetEmployeeId(userId);
+
+            ServiceResponse<long> result = await _service.GetAssignedPatientsCountAsync(employeeId.Data, status);
 
             return result.FormatResponse();
         }
@@ -65,7 +71,10 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
         {
             int userId = int.Parse(User.FindFirst("Id").Value);
 
-            ServiceResponse<long> result = await _service.GetAdmittedPatientsCountAsync(userId);
+            //Get Employee Id
+            var employeeId = await _employeeService.GetEmployeeId(userId);
+
+            ServiceResponse<long> result = await _service.GetAdmittedPatientsCountAsync(employeeId.Data);
 
             return result.FormatResponse();
         }
@@ -88,7 +97,10 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
         {
             int userId = int.Parse(User.FindFirst("Id").Value);
 
-            ServiceResponse<long> result = await _service.GetInPatientOutPatientPatientsCountAsync(userId, careType);
+            //Get Employee Id
+            var employeeId = await _employeeService.GetEmployeeId(userId);
+
+            ServiceResponse<long> result = await _service.GetInPatientOutPatientPatientsCountAsync(employeeId.Data, careType);
 
             return result.FormatResponse();
         }
@@ -112,7 +124,10 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
         {
             int userId = int.Parse(User.FindFirst("Id").Value);
 
-            ServiceResponse<ReadPatientCareTypeDto> result = await _service.InPatientOutPatientDataAndPercentagesAsync(userId);
+            //Get Employee Id
+            var employeeId = await _employeeService.GetEmployeeId(userId);
+
+            ServiceResponse<ReadPatientCareTypeDto> result = await _service.InPatientOutPatientDataAndPercentagesAsync(employeeId.Data);
 
             return result.FormatResponse();
         }
@@ -135,7 +150,10 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
         {
             int userId = int.Parse(User.FindFirst("Id").Value);
 
-            ServiceResponse<IEnumerable<ReadPatientAdmissionDto>> result = await _service.PatientAdmissionAsync(userId);
+            //Get Employee Id
+            var employeeId = await _employeeService.GetEmployeeId(userId);
+
+            ServiceResponse<IEnumerable<ReadPatientAdmissionDto>> result = await _service.PatientAdmissionAsync(employeeId.Data);
 
             return result.FormatResponse();
         }
@@ -158,7 +176,10 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
         {
             int userId = int.Parse(User.FindFirst("Id").Value);
 
-            ServiceResponse<ReadPatientByGenderDto> result = await _service.PatientByGenderAsync(userId);
+            //Get Employee Id
+            var employeeId = await _employeeService.GetEmployeeId(userId);
+
+            ServiceResponse<ReadPatientByGenderDto> result = await _service.PatientByGenderAsync(employeeId.Data);
 
             return result.FormatResponse();
         }
@@ -181,7 +202,10 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
         {
             int userId = int.Parse(User.FindFirst("Id").Value);
 
-            ServiceResponse<long> result = await _service.GetPatientByHmoAsync(userId);
+            //Get Employee Id
+            var employeeId = await _employeeService.GetEmployeeId(userId);
+
+            ServiceResponse<long> result = await _service.GetPatientByHmoAsync(employeeId.Data);
 
             return result.FormatResponse();
         }

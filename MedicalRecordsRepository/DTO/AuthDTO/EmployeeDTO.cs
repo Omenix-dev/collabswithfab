@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MedicalRecordsRepository.DTO.AuthDTO
 {
-    public class EmployeeDTO
+    public class EmployeeDto
     {
         public int Id {get; set; }
         public string FullName { get; set; }

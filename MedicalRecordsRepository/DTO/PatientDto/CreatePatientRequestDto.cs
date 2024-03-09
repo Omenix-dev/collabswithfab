@@ -30,7 +30,7 @@ namespace MedicalRecordsRepository.DTO.PatientDto
 
         public string StateOfOrigin { get; set; }
 
-        public string LGA { get; set; }
+        public string Lga { get; set; }
 
         public string PlaceOfBirth { get; set; }
 

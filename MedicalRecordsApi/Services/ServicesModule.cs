@@ -1,13 +1,17 @@
 ﻿using MedicalRecordsApi.Helpers;
 using MedicalRecordsApi.Models.DTO.Responses;
+using MedicalRecordsApi.Services.Abstract.AuthServices;
 using MedicalRecordsApi.Services.Abstract.CustomerEngagementInterfaces;
 using MedicalRecordsApi.Services.Abstract.DashBoardInterfaces;
+using MedicalRecordsApi.Services.Abstract.EmployeeInterfaces;
 using MedicalRecordsApi.Services.Abstract.FacilityInterfaces;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
 using MedicalRecordsApi.Services.Common;
 using MedicalRecordsApi.Services.Common.Interfaces;
+using MedicalRecordsApi.Services.Implementation.AuthServices;
 using MedicalRecordsApi.Services.Implementation.CustomerEngagementServices;
 using MedicalRecordsApi.Services.Implementation.DashBoardServices;
+using MedicalRecordsApi.Services.Implementation.EmployeeServices;
 using MedicalRecordsApi.Services.Implementation.FacilityServices;
 using MedicalRecordsApi.Services.Implementation.PatientServices;
 using MedicalRecordsApi.Utils;
@@ -29,6 +33,9 @@ namespace MedicalRecordsApi.Services
             //Common
             services.AddSingleton<IHttpService, HttpService>();
             services.AddHttpClient();
+
+            //Employee
+            services.AddScoped<IEmployeeService, EmployeeService>();
             
             //Helpers
             services.AddSingleton<IClaimHelper, ClaimHelper>();
@@ -45,6 +52,9 @@ namespace MedicalRecordsApi.Services
             //Customer Engagement
             services.AddScoped<ICustomerEngagementService, CustomerEngagementService>();
 
+            //JWT
+            services.AddScoped<IJwtService, JwtService>();
+
             //Generic class instantiations
             services.AddScoped<IGenericService<Patient>, GenericService<Patient>>();
 			services.AddScoped<IGenericService<Contact>, GenericService<Contact>>();
@@ -58,7 +68,9 @@ namespace MedicalRecordsApi.Services
             services.AddScoped<IGenericService<Visit>, GenericService<Visit>>();
             services.AddScoped<IGenericService<Lab>, GenericService<Lab>>();
             services.AddScoped<IGenericService<User>, GenericService<User>>();
-            services.AddScoped<IGenericService<ReadCustomerFeedbackDTO>, GenericService<ReadCustomerFeedbackDTO>>();
+            services.AddScoped<IGenericService<Employee>, GenericService<Employee>>();
+            services.AddScoped<IGenericService<EmployeePrivilegeAccess>, GenericService<EmployeePrivilegeAccess>>();
+            services.AddScoped<IGenericService<ReadCustomerFeedbackDto>, GenericService<ReadCustomerFeedbackDto>>();
             services.AddScoped<IGenericService<PatientAssignmentHistory>, GenericService<PatientAssignmentHistory>>();
 
 

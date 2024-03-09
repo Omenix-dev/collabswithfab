@@ -2,7 +2,7 @@
 
 namespace MedicalRecordsApi.Models.DTO.Responses
 {
-	public class ReadCustomerFeedbackDTO
+	public class ReadCustomerFeedbackDto
 	{
 		public int Id { get; set; }
 		public DateTime CreatedAt { get; set; }

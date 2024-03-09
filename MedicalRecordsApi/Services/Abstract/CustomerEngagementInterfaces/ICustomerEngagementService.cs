@@ -12,15 +12,15 @@ namespace MedicalRecordsApi.Services.Abstract.CustomerEngagementInterfaces
 		/// <summary>
 		/// This adds to the doctor or nurse customer feedback table
 		/// </summary>
-		/// <param name="customerFeedbackDTO"></param>
+		/// <param name="customerFeedbackDto"></param>
 		/// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
-		Task<ServiceResponse<string>> AddCustomerFeedbackAsync(CreateCustomerFeedbackDTO customerFeedbackDTO);
+		Task<ServiceResponse<string>> AddCustomerFeedbackAsync(CreateCustomerFeedbackDto customerFeedbackDto);
 		/// <summary>
 		/// This gets the monthly average feedback details
 		/// </summary>
 		/// <param name="source"></param>
 		/// <returns>Returns a <see cref="ServiceResponse{ReadCustomerFeedbackAverageDTO}"/> object.</returns>
-		Task<ServiceResponse<ReadCustomerFeedbackAverageDTO>> GetMonthlyAverageAsync(int userId, ReviewSource source, string month);
+		Task<ServiceResponse<ReadCustomerFeedbackAverageDto>> GetMonthlyAverageAsync(int userId, ReviewSource source, string month);
 		/// <summary>
 		/// This gets paginated customer engagement details
 		/// </summary>
@@ -29,6 +29,6 @@ namespace MedicalRecordsApi.Services.Abstract.CustomerEngagementInterfaces
 		/// <param name="pageIndex"></param>
 		/// <param name="pageSize"></param>
 		/// <returns>Returns a <see cref="ServiceResponse{PaginatedList{ReadCustomerFeedbackDTO}}"/> object.</returns>
-		ServiceResponse<PaginatedList<ReadCustomerFeedbackDTO>> GetFeedbackDetailsAsync(int userId, ReviewSource source, string month, int pageIndex, int pageSize);
+		ServiceResponse<PaginatedList<ReadCustomerFeedbackDto>> GetFeedbackDetailsAsync(int userId, ReviewSource source, string month, int pageIndex, int pageSize);
 	}
 }

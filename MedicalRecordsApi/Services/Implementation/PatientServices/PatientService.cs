@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MedicalRecordsRepository.DTO.PatientDto;
 using MedicalRecordsRepository.DTO.MedicalDto;
+using AutoMapper.QueryableExtensions;
 
 namespace MedicalRecordsApi.Services.Implementation.PatientServices
 {
@@ -33,7 +34,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 		private readonly IGenericRepository<Patient> _patientRepository;
 		private readonly IGenericRepository<Employee> _employeeRepository;
 		private readonly IGenericRepository<Contact> _contactRepository;
-		private readonly IGenericRepository<EmergencyContact> _emrgencyContactRepository;
+		private readonly IGenericRepository<EmergencyContact> _emergencyContactRepository;
 		private readonly IGenericRepository<Immunization> _immunizationRepository;
 		private readonly IGenericRepository<ImmunizationDocument> _immunizationDocumentRepository;
 		private readonly IGenericRepository<MedicalRecord> _medicalRecordRepository;
@@ -61,7 +62,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             _mapper = mapper;
             _configuration = configuration;
             _contactRepository = contactRepository;
-            _emrgencyContactRepository = emrgencyContactRepository;
+            _emergencyContactRepository = emrgencyContactRepository;
             _immunizationRepository = immunizationRepository;
             _immunizationDocumentRepository = immunizationDocumentRepository;
             _medicalRecordRepository = medicalRecordRepository;
@@ -76,9 +77,9 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         }
         #endregion
 
-        public async Task<ServiceResponse<string>> AddPrescriptionAsync(int patientId, CreatePatientPrescriptionDTO prescriptionDTO)
+        public async Task<ServiceResponse<string>> AddPrescriptionAsync(int patientId, CreatePatientPrescriptionDto prescriptionDto)
 		{
-			if (prescriptionDTO == null)
+			if (prescriptionDto == null)
 			{
 				return new ServiceResponse<string>(String.Empty, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 			}
@@ -94,13 +95,13 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
 			Treatment treatment = new Treatment()
 			{
-				DateOfVisit = prescriptionDTO.DateOfVisit,
-				Diagnosis = prescriptionDTO.Diagnosis,
+				DateOfVisit = prescriptionDto.DateOfVisit,
+				Diagnosis = prescriptionDto.Diagnosis,
 				Temperature = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Temperature,
 				Age = CalculateAge(patient.DateOfBirth),
 				Weight = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Weight,
 				PatientId = patientId,
-				Medications = prescriptionDTO.Medication.Select(med => new Medication { Name = med }).ToList()
+				Medications = prescriptionDto.Medication.Select(med => new Medication { Name = med }).ToList()
 			};
 
             patient.Treatments.Add(treatment);
@@ -110,16 +111,16 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             return new ServiceResponse<string>("Successful", InternalCode.Success);
         }
 
-		public async Task<ServiceResponse<string>> AddToPatientNoteAsync(int patientId, CreatePatientNoteDTO patientNoteDTO)
+		public async Task<ServiceResponse<string>> AddToPatientNoteAsync(int patientId, CreatePatientNoteDto patientNoteDto)
 		{
-			if (patientNoteDTO == null)
+			if (patientNoteDto == null)
 			{
 				return new ServiceResponse<string>(String.Empty, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 			}
 
 			var patient = await _patientRepository.Query()
 												  .AsNoTracking()
-												  .Include(x => x.Treatments.FirstOrDefault(x => x.Id == patientNoteDTO.TreatmentId))
+												  .Include(x => x.Treatments.FirstOrDefault(x => x.Id == patientNoteDto.TreatmentId))
 												  .FirstOrDefaultAsync(x => x.Id == patientId);
 
 			if (patient == null)
@@ -127,18 +128,18 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 				return new ServiceResponse<string>(String.Empty, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
 			}
 
-			patient.Treatments.First().AdditonalNote = patientNoteDTO.AdditonalNoteOnTreatment;
+			patient.Treatments.First().AdditonalNote = patientNoteDto.AdditonalNoteOnTreatment;
 
 			await _patientRepository.SaveChangesToDbAsync();
 
 			return new ServiceResponse<string>("Successful", InternalCode.Success);
 		}
 
-		public async Task<ServiceResponse<IEnumerable<AssignedPatientsDTO>>> GetAssignedPatientsAsync(int userId)
+		public async Task<ServiceResponse<IEnumerable<AssignedPatientsDto>>> GetAssignedPatientsAsync(int userId)
 		{
 			if (userId <= 0)
 			{
-				return new ServiceResponse<IEnumerable<AssignedPatientsDTO>>(Enumerable.Empty<AssignedPatientsDTO>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+				return new ServiceResponse<IEnumerable<AssignedPatientsDto>>(Enumerable.Empty<AssignedPatientsDto>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 			}
 
             var patients = await _patientRepository.Query()
@@ -148,10 +149,10 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
             if (!patients.Any())
             {
-                return new ServiceResponse<IEnumerable<AssignedPatientsDTO>>(Enumerable.Empty<AssignedPatientsDTO>(), InternalCode.Success, ServiceErrorMessages.Success);
+                return new ServiceResponse<IEnumerable<AssignedPatientsDto>>(Enumerable.Empty<AssignedPatientsDto>(), InternalCode.Success, ServiceErrorMessages.Success);
             }
 
-			List<AssignedPatientsDTO> assignedPatientsDTOs = patients.Select(patient => new AssignedPatientsDTO
+			List<AssignedPatientsDto> assignedPatientsDtOs = patients.Select(patient => new AssignedPatientsDto
 			{
 				PatientId = patient.Id,
 				FirstName = patient.FirstName,
@@ -192,14 +193,14 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			//	assignedPatientsDTOs.Add(assignedPatient);
 			//}
 
-            return new ServiceResponse<IEnumerable<AssignedPatientsDTO>>(assignedPatientsDTOs, InternalCode.Success);
+            return new ServiceResponse<IEnumerable<AssignedPatientsDto>>(assignedPatientsDtOs, InternalCode.Success);
         }
 
-        public async Task<ServiceResponse<ReadPatientDTO>> GetPatientDataAsync(int patientId)
+        public async Task<ServiceResponse<ReadPatientDto>> GetPatientDataAsync(int patientId)
         {
             if (patientId <= 0)
             {
-                return new ServiceResponse<ReadPatientDTO>(null, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+                return new ServiceResponse<ReadPatientDto>(null, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
             }
 
             var patient = await _patientRepository.Query()
@@ -212,22 +213,22 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
             if (patient == null)
             {
-                return new ServiceResponse<ReadPatientDTO>(null, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+                return new ServiceResponse<ReadPatientDto>(null, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
             }
 
-            var patientdata = _mapper.Map<ReadPatientDTO>(patient);
+            var patientdata = _mapper.Map<ReadPatientDto>(patient);
 
 			patientdata.NurseName = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patientdata.NurseId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync();
 			patientdata.DoctorName = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patientdata.DoctorId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync();
 
-			return new ServiceResponse<ReadPatientDTO>(patientdata, InternalCode.Success);
+			return new ServiceResponse<ReadPatientDto>(patientdata, InternalCode.Success);
         }
 
-		public async Task<ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>> GetAllAdmissionHistoryAsync(int patientId)
+		public async Task<ServiceResponse<IEnumerable<ReadVisitHistoryDto>>> GetAllAdmissionHistoryAsync(int patientId)
 		{
 			if (patientId <= 0)
 			{
-				return new ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>(Enumerable.Empty<ReadVisitHistoryDTO>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+				return new ServiceResponse<IEnumerable<ReadVisitHistoryDto>>(Enumerable.Empty<ReadVisitHistoryDto>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 			}
 
 			var patient = await _patientRepository.Query()
@@ -237,10 +238,10 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
 			if (patient == null)
 			{
-				return new ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>(Enumerable.Empty<ReadVisitHistoryDTO>(), InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+				return new ServiceResponse<IEnumerable<ReadVisitHistoryDto>>(Enumerable.Empty<ReadVisitHistoryDto>(), InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
 			}
 
-			var visitsdata = _mapper.Map<IEnumerable<ReadVisitHistoryDTO>>(patient.Visits);
+			var visitsdata = _mapper.Map<IEnumerable<ReadVisitHistoryDto>>(patient.Visits);
 
 			// Update Age for each visit
 			visitsdata.ToList().ForEach(visit => visit.Age = CalculateAge(patient.DateOfBirth, visit.DateOfVisit));
@@ -263,14 +264,14 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 													  .Result;
 			}
 
-			return new ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>(visitsdata, InternalCode.Success);
+			return new ServiceResponse<IEnumerable<ReadVisitHistoryDto>>(visitsdata, InternalCode.Success);
         }
 
-		public async Task<ServiceResponse<ReadNurseNotesDTO>> GetNurseNoteAsync(int patientId, int visitId)
+		public async Task<ServiceResponse<ReadNurseNotesDto>> GetNurseNoteAsync(int patientId, int visitId)
 		{
 			if (patientId <= 0 || visitId <= 0)
 			{
-				return new ServiceResponse<ReadNurseNotesDTO>(null, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+				return new ServiceResponse<ReadNurseNotesDto>(null, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 			}
 
 			var patient = await _patientRepository.Query()
@@ -281,20 +282,20 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
 			if (patient == null)
 			{
-				return new ServiceResponse<ReadNurseNotesDTO>(null, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+				return new ServiceResponse<ReadNurseNotesDto>(null, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
 			}
 
-			var visitsdata = _mapper.Map<IEnumerable<ReadVisitHistoryDTO>>(patient.Visits);
+			var visitsdata = _mapper.Map<IEnumerable<ReadVisitHistoryDto>>(patient.Visits);
 
-			ReadNurseNotesDTO readNurseNotesDTO = new ReadNurseNotesDTO
+			ReadNurseNotesDto readNurseNotesDto = new ReadNurseNotesDto
 			{
 				Visit = visitsdata.First(),
 				Notes = patient.Visits.First().NurseNotes
-									  .Select(notes => new NurseNotesDTO { Note = notes.Note })
+									  .Select(notes => new NurseNotesDto { Note = notes.Note })
 									  .ToList()
 			};
 
-			return new ServiceResponse<ReadNurseNotesDTO>(readNurseNotesDTO, InternalCode.Success);
+			return new ServiceResponse<ReadNurseNotesDto>(readNurseNotesDto, InternalCode.Success);
 		}
 
         public async Task<ServiceResponse<string>> GetLabNoteAsync(int patientId, int labId)
@@ -317,9 +318,9 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             return new ServiceResponse<string>(lab.LabNote, InternalCode.Success);
         }
 
-        public async Task<ServiceResponse<string>> ReferPatientAsync(int patientId, int visitId, CreateLabReferDTO labReferDTO)
+        public async Task<ServiceResponse<string>> ReferPatientAsync(int patientId, int visitId, CreateLabReferDto labReferDto)
         {
-            if (labReferDTO == null || patientId <= 0 || visitId <= 0)
+            if (labReferDto == null || patientId <= 0 || visitId <= 0)
             {
                 return new ServiceResponse<string>(String.Empty, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
             }
@@ -334,13 +335,200 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 return new ServiceResponse<string>(String.Empty, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
             }
 
-			var lab = _mapper.Map<Lab>(labReferDTO);
+			var lab = _mapper.Map<Lab>(labReferDto);
 
 			patient.Visits.First().Labs.Add(lab);
 
             await _patientRepository.SaveChangesToDbAsync();
 
             return new ServiceResponse<string>("Successful", InternalCode.Success);
+        }
+
+        public async Task<ServiceResponse<ReadContactDetailsDto>> GetContactDetailsAsync(int patientId)
+        {
+            if (patientId <= 0)
+            {
+                return new ServiceResponse<ReadContactDetailsDto>(null, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+            }
+
+            var contactDetails = await _contactRepository.Query()
+                                          .AsNoTracking()
+                                          .Where(contact => contact.PatientId == patientId)
+                                          .ProjectTo<ReadContactDetailsDto>(_mapper.ConfigurationProvider)
+                                          .FirstOrDefaultAsync();
+
+            if (contactDetails == null)
+            {
+                return new ServiceResponse<ReadContactDetailsDto>(null, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+            }
+
+            return new ServiceResponse<ReadContactDetailsDto>(contactDetails, InternalCode.Success);
+        }
+
+        public async Task<ServiceResponse<ReadEmergencyContactDetailsDto>> GetEmergencyContactDetailsAsync(int patientId)
+        {
+            if (patientId <= 0)
+            {
+                return new ServiceResponse<ReadEmergencyContactDetailsDto>(null, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+            }
+
+            var emergencyContactDetails = await _emergencyContactRepository.Query()
+                                                          .AsNoTracking()
+                                                          .Where(contact => contact.PatientId == patientId)
+                                                          .ProjectTo<ReadEmergencyContactDetailsDto>(_mapper.ConfigurationProvider)
+                                                          .FirstOrDefaultAsync();
+
+            if (emergencyContactDetails == null)
+            {
+                return new ServiceResponse<ReadEmergencyContactDetailsDto>(null, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+            }
+
+            return new ServiceResponse<ReadEmergencyContactDetailsDto>(emergencyContactDetails, InternalCode.Success);
+        }
+
+        public ServiceResponse<IEnumerable<ReadMedicalRecordDto>> GetMedicalRecordAsync(int patientId)
+        {
+            if (patientId <= 0)
+            {
+                return new ServiceResponse<IEnumerable<ReadMedicalRecordDto>>(Enumerable.Empty<ReadMedicalRecordDto>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+            }
+
+            IEnumerable<ReadMedicalRecordDto> medicalRecords = _medicalRecordRepository.Query()
+                                                                    .AsNoTracking()
+                                                                    .Where(record => record.PatientId == patientId)
+                                                                    .OrderByDescending(order => order.CreatedAt)
+                                                                    .ProjectTo<ReadMedicalRecordDto>(_mapper.ConfigurationProvider);
+
+            if (medicalRecords == null)
+            {
+                return new ServiceResponse<IEnumerable<ReadMedicalRecordDto>>(Enumerable.Empty<ReadMedicalRecordDto>(), InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+            }
+
+            return new ServiceResponse<IEnumerable<ReadMedicalRecordDto>>(medicalRecords, InternalCode.Success);
+        }
+
+        public async Task<ServiceResponse<IEnumerable<ReadImmunizationRecordDto>>> GetImmunizationRecordAsync(int patientId)
+        {
+            if (patientId <= 0)
+            {
+                return new ServiceResponse<IEnumerable<ReadImmunizationRecordDto>>(Enumerable.Empty<ReadImmunizationRecordDto>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+            }
+
+            var patientDOB = await _patientRepository.Query()
+                                                  .AsNoTracking()
+                                                  .Where(x => x.Id == patientId)
+                                                  .Select(x => x.DateOfBirth)
+                                                  .FirstOrDefaultAsync();
+
+            if (patientDOB == null)
+            {
+                return new ServiceResponse<IEnumerable<ReadImmunizationRecordDto>>(Enumerable.Empty<ReadImmunizationRecordDto>(), InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+            }
+
+            IEnumerable<ReadImmunizationRecordDto> immunizationRecords = _immunizationRepository.Query()
+                                                                    .AsNoTracking()
+                                                                    .Where(record => record.PatientId == patientId)
+                                                                    .Include(record => record.ImmunizationDocuments)
+                                                                    .OrderByDescending(order => order.CreatedAt)
+                                                                    .ProjectTo<ReadImmunizationRecordDto>(_mapper.ConfigurationProvider);
+
+            if (immunizationRecords == null)
+            {
+                return new ServiceResponse<IEnumerable<ReadImmunizationRecordDto>>(Enumerable.Empty<ReadImmunizationRecordDto>(), InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+            }
+
+            // Update Age for each visit
+            immunizationRecords.ToList().ForEach(immunization => immunization.Age = CalculateAge(patientDOB, immunization.DateGiven));
+
+            return new ServiceResponse<IEnumerable<ReadImmunizationRecordDto>>(immunizationRecords, InternalCode.Success);
+        }
+
+        public async Task<ServiceResponse<IEnumerable<ReadVisitHistoryDto>>> GetVisitRecordAsync(int patientId)
+        {
+            if (patientId <= 0)
+            {
+                return new ServiceResponse<IEnumerable<ReadVisitHistoryDto>>(Enumerable.Empty<ReadVisitHistoryDto>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+            }
+
+            var patientDOB = await _patientRepository.Query()
+                                                  .AsNoTracking()
+                                                  .Where(x => x.Id == patientId)
+                                                  .Select(x => x.DateOfBirth)
+                                                  .FirstOrDefaultAsync();
+
+            if (patientDOB == null)
+            {
+                return new ServiceResponse<IEnumerable<ReadVisitHistoryDto>>(Enumerable.Empty<ReadVisitHistoryDto>(), InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+            }
+
+            IEnumerable<ReadVisitHistoryDto> visitRecords = _visitRepository.Query()
+                                                                    .AsNoTracking()
+                                                                    .Where(record => record.PatientId == patientId)
+                                                                    .OrderByDescending(order => order.CreatedAt)
+                                                                    .ProjectTo<ReadVisitHistoryDto>(_mapper.ConfigurationProvider);
+
+            if (visitRecords == null)
+            {
+                return new ServiceResponse<IEnumerable<ReadVisitHistoryDto>>(Enumerable.Empty<ReadVisitHistoryDto>(), InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+            }
+
+            // Update Age for each visit
+            visitRecords.ToList().ForEach(visit => visit.Age = CalculateAge(patientDOB, visit.DateOfVisit));
+
+            //Update with doctors and nurses names
+            foreach (var visit in visitRecords)
+            {
+                visit.DoctorName = _employeeRepository.Query()
+                                                      .AsNoTracking()
+                                                      .Where(x => x.Id == visit.DoctorId)
+                                                      .Select(s => $"{s.FirstName} {s.LastName}")
+                                                      .FirstOrDefaultAsync()
+                                                      .Result;
+
+                visit.NurseName = _employeeRepository.Query()
+                                                      .AsNoTracking()
+                                                      .Where(x => x.Id == visit.NurseId)
+                                                      .Select(s => $"{s.FirstName} {s.LastName}")
+                                                      .FirstOrDefaultAsync()
+                                                      .Result;
+            }
+
+            return new ServiceResponse<IEnumerable<ReadVisitHistoryDto>>(visitRecords, InternalCode.Success);
+        }
+
+        public async Task<ServiceResponse<IEnumerable<ReadTreatmentRecordDto>>> GetTreatmentRecordAsync(int patientId)
+        {
+            if (patientId <= 0)
+            {
+                return new ServiceResponse<IEnumerable<ReadTreatmentRecordDto>>(Enumerable.Empty<ReadTreatmentRecordDto>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+            }
+
+            var patientDOB = await _patientRepository.Query()
+                                                  .AsNoTracking()
+                                                  .Where(x => x.Id == patientId)
+                                                  .Select(x => x.DateOfBirth)
+                                                  .FirstOrDefaultAsync();
+
+            if (patientDOB == null)
+            {
+                return new ServiceResponse<IEnumerable<ReadTreatmentRecordDto>>(Enumerable.Empty<ReadTreatmentRecordDto>(), InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+            }
+
+            IEnumerable<ReadTreatmentRecordDto> treatmentRecords = _visitRepository.Query()
+                                                                    .AsNoTracking()
+                                                                    .Where(record => record.PatientId == patientId)
+                                                                    .OrderByDescending(order => order.CreatedAt)
+                                                                    .ProjectTo<ReadTreatmentRecordDto>(_mapper.ConfigurationProvider);
+
+            if (treatmentRecords == null)
+            {
+                return new ServiceResponse<IEnumerable<ReadTreatmentRecordDto>>(Enumerable.Empty<ReadTreatmentRecordDto>(), InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+            }
+
+            // Update Age for each visit
+            treatmentRecords.ToList().ForEach(visit => visit.Age = CalculateAge(patientDOB, visit.DateOfVisit));
+
+            return new ServiceResponse<IEnumerable<ReadTreatmentRecordDto>>(treatmentRecords, InternalCode.Success);
         }
 
         public async Task<ServiceResponse<string>> CreatePatientProfile(CreatePatientProfileDto profileDto, int userId)
@@ -368,11 +556,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
-                var PatientDetails = _mapper.Map<Patient>(patientDto);
-                PatientDetails.CreatedAt = DateTime.UtcNow;
-                PatientDetails.CreatedBy = userId;
+                var patientDetails = _mapper.Map<Patient>(patientDto);
+                patientDetails.CreatedAt = DateTime.UtcNow;
+                patientDetails.CreatedBy = userId;
 
-                await _patientRepository.Insert(PatientDetails);
+                await _patientRepository.Insert(patientDetails);
 
                 return new ServiceResponse<string>("the patient has been assigned a user", InternalCode.Success, ServiceErrorMessages.Success);
             }
@@ -383,15 +571,15 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<string>> AddMedicalReport(MedicalRecordsDto MedicalRecords, int userId)
+        public async Task<ServiceResponse<string>> AddMedicalReport(MedicalRecordsDto medicalRecords, int userId)
         {
             try
             {
-                var PatientDetails = _mapper.Map<MedicalRecord>(MedicalRecords);
-                PatientDetails.CreatedAt = DateTime.UtcNow;
-                PatientDetails.CreatedBy = userId;
+                var patientDetails = _mapper.Map<MedicalRecord>(medicalRecords);
+                patientDetails.CreatedAt = DateTime.UtcNow;
+                patientDetails.CreatedBy = userId;
 
-                await _medicalRecordRepository.Insert(PatientDetails);
+                await _medicalRecordRepository.Insert(patientDetails);
 
                 return new ServiceResponse<string>("the medical record was added successfully", InternalCode.Success);
             }
@@ -402,11 +590,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<string>> DeleteMedicalReport(int RecordId)
+        public async Task<ServiceResponse<string>> DeleteMedicalReport(int recordId)
         {
             try
             {
-                await _medicalRecordRepository.DeleteAsync(RecordId);
+                await _medicalRecordRepository.DeleteAsync(recordId);
                 return new ServiceResponse<string>("the medical record was deleted successfully", InternalCode.Success);
             }
             catch (Exception ex)
@@ -431,11 +619,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<string>> AddImmunizationRecords(ImmunizationDto ImmunizationRecords, int userId)
+        public async Task<ServiceResponse<string>> AddImmunizationRecords(ImmunizationDto immunizationRecords, int userId)
         {
             try
             {
-                var immunizationObj = _mapper.Map<Immunization>(ImmunizationRecords);
+                var immunizationObj = _mapper.Map<Immunization>(immunizationRecords);
                 immunizationObj.CreatedAt = DateTime.UtcNow;
                 immunizationObj.CreatedBy = userId;
                 await _immunizationRepository.Insert(immunizationObj);
@@ -448,11 +636,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<string>> DeleteImmunizationRecord(int RecordId)
+        public async Task<ServiceResponse<string>> DeleteImmunizationRecord(int recordId)
         {
             try
             {
-                await _immunizationRepository.DeleteAsync(RecordId);
+                await _immunizationRepository.DeleteAsync(recordId);
                 return new ServiceResponse<string>("the Immunization record was deleted successfully", InternalCode.Success);
             }
             catch (Exception ex)
@@ -477,11 +665,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<string>> DeleteVisitsRecord(int VisitId)
+        public async Task<ServiceResponse<string>> DeleteVisitsRecord(int visitId)
         {
             try
             {
-                await _immunizationRepository.DeleteAsync(VisitId);
+                await _immunizationRepository.DeleteAsync(visitId);
                 return new ServiceResponse<string>("the visitation record was deleted successfully", InternalCode.Success);
             }
             catch (Exception ex)
@@ -491,14 +679,14 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<string>> AddPatientVistsRecords(PatientsVisitsDto PatientVisitsObj, int userId)
+        public async Task<ServiceResponse<string>> AddPatientVistsRecords(PatientsVisitsDto patientVisitsObj, int userId)
         {
             try
             {
-                var VisitRecordObj = _mapper.Map<Visit>(PatientVisitsObj);
-                VisitRecordObj.CreatedAt = DateTime.UtcNow;
-                VisitRecordObj.CreatedBy = userId;
-                await _visitRepository.Insert(VisitRecordObj);
+                var visitRecordObj = _mapper.Map<Visit>(patientVisitsObj);
+                visitRecordObj.CreatedAt = DateTime.UtcNow;
+                visitRecordObj.CreatedBy = userId;
+                await _visitRepository.Insert(visitRecordObj);
                 return new ServiceResponse<string>("the Visit record was added successfully", InternalCode.Success);
             }
             catch (Exception ex)
@@ -508,11 +696,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<List<PatientsVisitsDto>>> GetAllVisitationByPatientId(int VisitaionId)
+        public async Task<ServiceResponse<List<PatientsVisitsDto>>> GetAllVisitationByPatientId(int visitaionId)
         {
             try
             {
-                var allVisitsRecords = await _visitRepository.GetAll().Where(x => x.Id == VisitaionId).ToListAsync();
+                var allVisitsRecords = await _visitRepository.GetAll().Where(x => x.Id == visitaionId).ToListAsync();
                 var patientVisits = _mapper.Map<List<PatientsVisitsDto>>(allVisitsRecords);
                 return new ServiceResponse<List<PatientsVisitsDto>>(patientVisits, InternalCode.Success);
             }
@@ -523,11 +711,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<string>> UpdateContact(updateContactDto contactDto, int userId)
+        public async Task<ServiceResponse<string>> UpdateContact(UpdateContactDto contactDto, int userId)
         {
             try
             {
-                var ApiResponse = new APIResponse();
+                var apiResponse = new ApiResponse();
                 var contactDetails = _mapper.Map<Contact>(contactDto);
                 contactDetails.CreatedAt = DateTime.UtcNow;
                 contactDetails.ModifiedBy = userId;
@@ -546,11 +734,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
-                var ApiResponse = new APIResponse();
+                var apiResponse = new ApiResponse();
                 var emergencyDetails = _mapper.Map<EmergencyContact>(emergencyContactDto);
                 emergencyDetails.CreatedAt = DateTime.UtcNow;
                 emergencyDetails.ModifiedBy = userId;
-                await _emrgencyContactRepository.Insert(emergencyDetails);
+                await _emergencyContactRepository.Insert(emergencyDetails);
                 return new ServiceResponse<string>("the patient emergency co was updated", InternalCode.Success);
             }
             catch (Exception ex)

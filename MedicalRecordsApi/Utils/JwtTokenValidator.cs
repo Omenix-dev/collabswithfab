@@ -10,7 +10,7 @@ namespace MedicalRecordsApi.Utils
     {
         public JwtTokenReturn RetrieveToken(ClaimsIdentity identity)
         {
-            JwtTokenReturn token_obejct = new JwtTokenReturn();
+            JwtTokenReturn tokenObejct = new JwtTokenReturn();
             if (identity != null)
             {
                 IEnumerable<Claim> claims = identity.Claims;
@@ -19,17 +19,17 @@ namespace MedicalRecordsApi.Utils
                 {
                     if (id > 0)
                     {
-                        token_obejct.UserID = id;
-                        token_obejct.FullName = claims.Where(p => p.Type == "Name").FirstOrDefault()?.Value;
-                        token_obejct.Email = claims.Where(p => p.Type == "Email").FirstOrDefault()?.Value;
-                        token_obejct.Role = claims.Where(p => p.Type == "Role").FirstOrDefault()?.Value;
+                        tokenObejct.UserId = id;
+                        tokenObejct.FullName = claims.Where(p => p.Type == "Name").FirstOrDefault()?.Value;
+                        tokenObejct.Email = claims.Where(p => p.Type == "Email").FirstOrDefault()?.Value;
+                        tokenObejct.Role = claims.Where(p => p.Type == "Role").FirstOrDefault()?.Value;
                      //   token_obejct.MdaId = claims.Where(p => p.Type == "MdaId").FirstOrDefault()?.Value;
                         //var name = claims.Where(p => p.Type == "userid").FirstOrDefault()?.Value;
                     }
                 }
             }
 
-            return token_obejct;
+            return tokenObejct;
         }
     }
 }

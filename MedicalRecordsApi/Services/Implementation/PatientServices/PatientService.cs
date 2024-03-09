@@ -45,6 +45,8 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         private readonly IGenericRepository<Lab> _labRepository;
         private readonly IConfiguration _configuration;
         private readonly IGenericRepository<User> _userRepository;
+        private readonly IGenericRepository<PatientAssignmentHistory> _patientAssignmentHistoryRepository;
+
 
         public PatientService(IGenericRepository<Patient> patientRepository,
             IMapper mapper, IConfiguration configuration, IGenericRepository<Contact> contactRepository,
@@ -56,7 +58,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             IGenericRepository<PatientReferrer> patientReferrerRepository,
             IGenericRepository<Treatment> treatmentRepository, IGenericRepository<Visit> visitRepository,
             MedicalRecordDbContext dbContext, IGenericRepository<Employee> employeeRepository,
-            IGenericRepository<Lab> labRepository, IGenericRepository<User> userRepository)
+            IGenericRepository<Lab> labRepository, IGenericRepository<User> userRepository, IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository)
         {
             _patientRepository = patientRepository;
             _mapper = mapper;
@@ -74,6 +76,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             _employeeRepository = employeeRepository;
             _labRepository = labRepository;
             _userRepository = userRepository;
+            _patientAssignmentHistoryRepository = patientAssignmentHistoryRepository;
         }
         #endregion
 
@@ -561,7 +564,12 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 patientDetails.CreatedBy = userId;
 
                 await _patientRepository.Insert(patientDetails);
-
+                var patientAssignmentHistory = _mapper.Map<PatientAssignmentHistory>(patientDto);
+                patientAssignmentHistory.PatientId = patientDetails.UserId;
+                patientAssignmentHistory.CareType = MedicalRecordsData.Enum.PatientCareType.InPatient;
+                patientAssignmentHistory.CreatedAt = DateTime.UtcNow;
+                patientAssignmentHistory.CreatedBy = userId;
+                await _patientAssignmentHistoryRepository.CreateAsync(patientAssignmentHistory);
                 return new ServiceResponse<string>("the patient has been assigned a user", InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)
@@ -746,6 +754,31 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }
         }
+        public async Task<ServiceResponse<string>> UpdateMedicalStaffByPatientId(UpdateMedicalStaffDto updateMedicalStaffDto, int userId)
+        {
+            try
+            {
+                var patientObj = _patientRepository.GetById(updateMedicalStaffDto.PatientId);
+                if(patientObj == null)
+                    return new ServiceResponse<string>("the patientId doesnt exist", InternalCode.EntityIsNull, ServiceErrorMessages.Failed);
+                patientObj.NurseId = updateMedicalStaffDto.NurseId;
+                patientObj.DoctorId = updateMedicalStaffDto.DoctorId;
+                patientObj.ModifiedBy = userId;
+                patientObj.CreatedAt = DateTime.UtcNow;
+                await _patientRepository.UpdateAsync(patientObj);
+                var patientAssignmentHistory = _mapper.Map<PatientAssignmentHistory>(updateMedicalStaffDto);
+                patientAssignmentHistory.CareType = MedicalRecordsData.Enum.PatientCareType.InPatient;
+                patientAssignmentHistory.CreatedAt = DateTime.UtcNow;
+                patientAssignmentHistory.CreatedBy = userId;
+                await _patientAssignmentHistoryRepository.CreateAsync(patientAssignmentHistory);
+                //_patientAssignmentHistoryRepository
+                return new ServiceResponse<string>("the patient has been reassign to the doctor", InternalCode.Success, ServiceErrorMessages.Success);
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+            }
+        }
 
 
 
@@ -771,6 +804,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
 			return ageString;
 		}
+
         #endregion
     }
 }

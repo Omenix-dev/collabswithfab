@@ -226,18 +226,6 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
         /// <summary>
         /// create the profile for the patient user
         /// </summary>

@@ -209,5 +209,30 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
 
             return result.FormatResponse();
         }
+        //1. GetAssignedPatientsCount-Waiting or All
+        /// <summary>
+        /// This gets the number of patients assigned to a particular doctor from time till date or waiting to be attended to
+        /// </summary>
+        /// <returns>Returns a <see cref="ServiceResponse{long}"/> object.</returns>
+        [HttpGet]
+        [Route("assignedtonurse")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<long>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        // GET api/dashboard/assignedtodoctor
+        public async Task<IActionResult> GetPatientAssignedToNurse([FromQuery] PatientCareStatus status = PatientCareStatus.All)
+        {
+            int userId = int.Parse(User.FindFirst("Id").Value);
+
+            //Get Employee Id
+            var employeeId = await _employeeService.GetEmployeeId(userId);
+
+            ServiceResponse<long> result = await _service.GetAssignedPatientsCountAsync(employeeId.Data, status);
+
+            return result.FormatResponse();
+        }
     }
 }

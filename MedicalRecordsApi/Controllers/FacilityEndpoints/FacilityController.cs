@@ -76,6 +76,31 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
             return result.FormatResponse();
         }
 
+        //1. GetBedsAssignedToDoctor
+        /// <summary>
+        /// This gets bed information. If free, If assigned to doctor. Etc
+        /// </summary>
+        /// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadBedDetailsDTO}}"/> object.</returns>
+        [HttpGet]
+        [Route("beds/assignedtonurse")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadBedDetailsDto>>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        // GET api/facilities/beds/assignedtodoctor
+        public async Task<IActionResult> GetNurseAssigned()
+        {
+            int userId = int.Parse(User.FindFirst("Id").Value);
+
+            //Get Employee Id
+            var employeeId = await _employeeService.GetEmployeeId(userId);
+
+            ServiceResponse<IEnumerable<ReadBedDetailsDto>> result = await _service.GetBedsAssignedToNurse(employeeId.Data);
+
+            return result.FormatResponse();
+        }
         /// <summary>
         /// method used to assigning bed space
         /// </summary>
@@ -96,7 +121,7 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int UserId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -145,7 +170,7 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int UserId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))

@@ -7,7 +7,7 @@ using MedicalRecordsRepository.DTO.MedicalDto;
 using MedicalRecordsRepository.DTO.PatientDto;
 using MedicalRecordsRepository.DTO.ReferralDto;
 
-namespace MedicalRecordsApi.Utils
+namespace MedicalRecordsApi.Services.Profiles
 {
     public class PatientProfileMapper : Profile
     {
@@ -26,8 +26,10 @@ namespace MedicalRecordsApi.Utils
             CreateMap<Visit, PatientsVisitsDto>()
                 .ForMember(x => x.VisitId, opt => opt.MapFrom(src => src.Id));
             CreateMap<PatientsVisitsDto, Visit>();
-            CreateMap<AssignedPatientsDTO, BedAssignment>().ReverseMap();
+            CreateMap<AssignedPatientsDto, BedAssignment>().ReverseMap();
             CreateMap<PatientReferrer, ReferralNoteDto>().ReverseMap();
+            CreateMap<PatientAssignmentHistory, PatientAssignmentHistory>();
+            CreateMap<UpdateMedicalStaffDto, PatientAssignmentHistory>();
         }
     }
 }

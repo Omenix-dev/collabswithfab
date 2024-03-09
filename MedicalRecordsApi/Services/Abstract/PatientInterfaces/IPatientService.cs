@@ -142,5 +142,6 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 		Task<ServiceResponse<string>> DeleteVisitsRecord(int visitId);
 		Task<ServiceResponse<string>> AddPatientVistsRecords(PatientsVisitsDto patientVisitsObj, int userId);
 		Task<ServiceResponse<List<PatientsVisitsDto>>> GetAllVisitationByPatientId(int visitaionId);
+        Task<ServiceResponse<string>> UpdateMedicalStaffByPatientId(UpdateMedicalStaffDto updateMedicalStaffDto, int userId);
     }
 }

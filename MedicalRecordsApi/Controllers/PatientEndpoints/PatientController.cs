@@ -397,7 +397,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -440,7 +440,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -456,7 +456,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 userRoleId = convertedUserRoleId;
             }
-            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
                 var response = await _service.AddPatient(createPatientDto, userId);
@@ -479,7 +479,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -495,7 +495,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 userRoleId = convertedUserRoleId;
             }
-            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
                 var response = await _service.UpdateContact(contactDto, userId);
@@ -518,7 +518,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -534,7 +534,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 userRoleId = convertedUserRoleId;
             }
-            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
                 var response = await _service.UpdateEmergencyContact(emergencyContact, userId);
@@ -557,7 +557,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -573,7 +573,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 userRoleId = convertedUserRoleId;
             }
-            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
                 var response = await _service.AddMedicalReport(medicalReportDto, userId);
@@ -595,7 +595,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -611,7 +611,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 userRoleId = convertedUserRoleId;
             }
-            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
                 var response = await _service.AddPatientVistsRecords(patientsVisitsDto, userId);
@@ -633,7 +633,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -649,7 +649,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 userRoleId = convertedUserRoleId;
             }
-            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
                 var response = await _service.AddImmunizationRecords(immunizationObj, userId);
@@ -671,7 +671,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -682,7 +682,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 userRoleId = convertedUserRoleId;
             }
-            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
                 var response = await _service.DeleteImmunizationRecord(immunizationId);
@@ -705,7 +705,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -716,7 +716,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 userRoleId = convertedUserRoleId;
             }
-            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
                 var response = await _service.DeleteImmunizationRecord(visitationId);
@@ -739,7 +739,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -750,7 +750,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 userRoleId = convertedUserRoleId;
             }
-            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
                 var response = await _service.DeleteMedicalReport(medicalRecordsId);
@@ -776,7 +776,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -813,7 +813,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -850,7 +850,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
             string username = User.FindFirst("UserId")?.Value;
-            string userRole = User.FindFirst("AccessRoleId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -865,6 +865,39 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 // caling the service here
                 var response = await _service.GetAllImmunizatiobByPatientId(patientId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+        }
+
+        [HttpPut("updatemedicalstaffbypatientId")]
+        public async Task<IActionResult> UpdateMedicalStaffByPatientId(UpdateMedicalStaffDto UpdateMedicalStaffDto)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("UserId")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse)
+            {
+                // caling the service here
+                var response = await _service.UpdateMedicalStaffByPatientId(UpdateMedicalStaffDto, userRoleId);
                 return response.FormatResponse();
             }
             else

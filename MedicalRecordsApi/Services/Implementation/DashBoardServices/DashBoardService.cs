@@ -87,7 +87,8 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
             {
                 patientCount = await _patientAssignmentHistoryRepository.Query()
                                                       .AsNoTracking()
-                                                      .Where(x => x.DoctorId == userId)
+                                                      .Where(x => x.DoctorId == userId 
+                                                       || x.NurseId == userId)
                                                       .Select(x => x.PatientId)
                                                       .Distinct().CountAsync();
             }

@@ -14,7 +14,7 @@ using MedicalRecordsApi.Services.Implementation.DashBoardServices;
 using MedicalRecordsApi.Services.Implementation.EmployeeServices;
 using MedicalRecordsApi.Services.Implementation.FacilityServices;
 using MedicalRecordsApi.Services.Implementation.PatientServices;
-using MedicalRecordsApi.Utils;
+using MedicalRecordsApi.Services.Profiles;
 using MedicalRecordsData.Entities.AuthEntity;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
 using MedicalRecordsRepository.Interfaces;

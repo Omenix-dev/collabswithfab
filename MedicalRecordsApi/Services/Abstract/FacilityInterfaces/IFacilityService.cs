@@ -13,11 +13,15 @@ namespace MedicalRecordsApi.Services.Abstract.FacilityInterfaces
         /// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadBedDetailsDTO}}"/> object.</returns>
         Task<ServiceResponse<IEnumerable<ReadBedDetailsDto>>> GetBedsAssignedToDoctor(int userId);
         /// <summary>
+        /// This gets bed information. If free, If assigned to doctor. Etc
+        /// </summary>
+        /// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadBedDetailsDTO}}"/> object.</returns>
+        Task<ServiceResponse<IEnumerable<ReadBedDetailsDto>>> GetBedsAssignedToNurse(int userId);
+        /// <summary>
         /// This gets bed information. If free, or occupied
         /// </summary>
         /// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadBedDetailsDTO}}"/> object.</returns>
         Task<ServiceResponse<IEnumerable<ReadBedDetailsDto>>> GetBedStatus();
-        Task<ServiceResponse<IEnumerable<ReadBedDetailsDTO>>> GetBedStatus();
         /// <summary>
         /// assign bed space
         /// </summary>

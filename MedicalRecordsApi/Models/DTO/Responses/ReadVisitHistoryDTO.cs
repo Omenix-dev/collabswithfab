@@ -2,7 +2,7 @@
 
 namespace MedicalRecordsApi.Models.DTO.Responses
 {
-	public class ReadVisitHistoryDTO
+	public class ReadVisitHistoryDto
 	{
 		public int Id { get; set; }
 		public DateTime CreatedAt { get; set; }
@@ -19,5 +19,10 @@ namespace MedicalRecordsApi.Models.DTO.Responses
 		public int NurseId { get; set; }
 		public string DoctorName { get; set; }
 		public string NurseName { get; set; }
-	}
+
+
+        //Navigation Properties
+        public int PatientId { get; set; }
+        public int TreatmentId { get; set; }
+    }
 }

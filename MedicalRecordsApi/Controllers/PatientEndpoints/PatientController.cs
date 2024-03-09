@@ -3,7 +3,9 @@ using MedicalRecordsApi.Constants;
 using MedicalRecordsApi.Models.DTO.Request;
 using MedicalRecordsApi.Models.DTO.Responses;
 using MedicalRecordsApi.Services;
+using MedicalRecordsApi.Services.Abstract.EmployeeInterfaces;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
+using MedicalRecordsApi.Services.Implementation.EmployeeServices;
 using MedicalRecordsData.Enum;
 using MedicalRecordsRepository.DTO.AuthDTO;
 using MedicalRecordsRepository.DTO.MedicalDto;
@@ -11,7 +13,6 @@ using MedicalRecordsRepository.DTO.PatientDto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Mime;
@@ -25,21 +26,25 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
     public class PatientController : ControllerBase
     {
         private readonly IPatientService _service;
-        private readonly ILogger _logger;
-        public PatientController(IPatientService service, ILogger logger)
+        private readonly IEmployeeService _employeeService;
+
+        public PatientController(IPatientService service, IEmployeeService employeeService)
         {
-            _logger = logger;
             _service = service;
+            _employeeService = employeeService;
         }
 
-		//1. GetAssignedWaitingPatients
-		/// <summary>
-		/// This gets the patients assigned to a particular doctor
-		/// </summary>
-		/// <returns>Returns a <see cref="ServiceResponse{IEnumerable{AssignedPatientsDTO}}"/> object.</returns>
-		[HttpGet]
+        //1. GetAssignedWaitingPatients
+        /// <summary>
+        /// This gets the patients assigned to a particular doctor
+        /// </summary>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{IEnumerable{AssignedPatientsDTO}}</cref>
+        ///     </see>
+        ///     object.</returns>
+        [HttpGet]
 		[Route("assignedtodoctor")]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<AssignedPatientsDTO>>))]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<AssignedPatientsDto>>))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
@@ -50,7 +55,10 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		{
 			int userId = int.Parse(User.FindFirst("Id").Value);
 
-            ServiceResponse<IEnumerable<AssignedPatientsDTO>> result = await _service.GetAssignedPatientsAsync(userId);
+            //Get Employee Id
+            var employeeId = await _employeeService.GetEmployeeId(userId);
+
+            ServiceResponse<IEnumerable<AssignedPatientsDto>> result = await _service.GetAssignedPatientsAsync(employeeId.Data);
 
             return result.FormatResponse();
         }
@@ -63,7 +71,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		/// <returns>Returns a <see cref="ServiceResponse{ReadPatientDTO}"/> object.</returns>
 		[HttpGet]
 		[Route("{patientId}/data")]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ReadPatientDTO>))]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ReadPatientDto>))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
@@ -72,7 +80,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		// GET api/patients/5/data
 		public async Task<IActionResult> Get([FromRoute] int patientId)
 		{
-			ServiceResponse<ReadPatientDTO> result = await _service.GetPatientDataAsync(patientId);
+			ServiceResponse<ReadPatientDto> result = await _service.GetPatientDataAsync(patientId);
 
             return result.FormatResponse();
         }
@@ -86,7 +94,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		/// <returns>Returns a <see cref="ServiceResponse{ReadNurseNotesDTO}"/> object.</returns>
 		[HttpGet]
 		[Route("{patientId}/nursenotes/{visitId}")]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ReadNurseNotesDTO>))]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ReadNurseNotesDto>))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
@@ -95,19 +103,22 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		// GET api/patients/5/nursenotes/2
 		public async Task<IActionResult> Get([FromRoute] int patientId, [FromRoute] int visitId)
 		{
-			ServiceResponse<ReadNurseNotesDTO> result = await _service.GetNurseNoteAsync(patientId, visitId);
+			ServiceResponse<ReadNurseNotesDto> result = await _service.GetNurseNoteAsync(patientId, visitId);
 
 			return result.FormatResponse();
 		}
 
 		//4. AddToPatientNote
-		/// <summary>
-		/// This adds to the patient note in the patients record
-		/// </summary>
-		/// <param name="patientId"></param>
-		/// <param name="patientNoteDTO"></param>
-		/// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
-		[HttpPost]
+        /// <summary>
+        /// This adds to the patient note in the patients record
+        /// </summary>
+        /// <param name="patientId"></param>
+        /// <param name="patientNoteDto"></param>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{string}</cref>
+        ///     </see>
+        ///     object.</returns>
+        [HttpPost]
 		[Route("{patientId}/addpatientnote")]
 		[ProducesResponseType(StatusCodes.Status201Created, Type = typeof(string))]
 		[ProducesResponseType((int)HttpStatusCode.Created)]
@@ -117,9 +128,9 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
 		// POST api/patients/5/addpatientnote
-		public async Task<IActionResult> Post([FromRoute] int patientId, [FromBody] CreatePatientNoteDTO patientNoteDTO)
+		public async Task<IActionResult> Post([FromRoute] int patientId, [FromBody] CreatePatientNoteDto patientNoteDto)
 		{
-			ServiceResponse<string> result = await _service.AddToPatientNoteAsync(patientId, patientNoteDTO);
+			ServiceResponse<string> result = await _service.AddToPatientNoteAsync(patientId, patientNoteDto);
 
             return result.FormatResponse();
         }
@@ -130,8 +141,11 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// </summary>
         /// <param name="patientId"></param>
         /// <param name="visitId"></param>
-        /// <param name="labReferDTO"></param>
-        /// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
+        /// <param name="labReferDto"></param>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{string}</cref>
+        ///     </see>
+        ///     object.</returns>
         [HttpPost]
         [Route("{patientId}/visit/{visitId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
@@ -142,9 +156,9 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         // POST api/patients/5/visit/3
-        public async Task<IActionResult> Post([FromRoute] int patientId, [FromRoute] int visitId, [FromBody] CreateLabReferDTO labReferDTO)
+        public async Task<IActionResult> Post([FromRoute] int patientId, [FromRoute] int visitId, [FromBody] CreateLabReferDto labReferDto)
         {
-            ServiceResponse<string> result = await _service.ReferPatientAsync(patientId, visitId, labReferDTO);
+            ServiceResponse<string> result = await _service.ReferPatientAsync(patientId, visitId, labReferDto);
 
             return result.FormatResponse();
         }
@@ -154,8 +168,11 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// This adds to the prescription data in the patients record
         /// </summary>
         /// <param name="patientId"></param>
-        /// <param name="prescriptionDTO"></param>
-        /// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
+        /// <param name="prescriptionDto"></param>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{string}</cref>
+        ///     </see>
+        ///     object.</returns>
         [HttpPost]
 		[Route("{patientId}/addprescription")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
@@ -166,9 +183,9 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
 		// POST api/patients/5/addprescription
-		public async Task<IActionResult> Post([FromRoute] int patientId, [FromBody]CreatePatientPrescriptionDTO prescriptionDTO)
+		public async Task<IActionResult> Post([FromRoute] int patientId, [FromBody]CreatePatientPrescriptionDto prescriptionDto)
 		{
-			ServiceResponse<string> result = await _service.AddPrescriptionAsync(patientId, prescriptionDTO);
+			ServiceResponse<string> result = await _service.AddPrescriptionAsync(patientId, prescriptionDto);
 
 			return result.FormatResponse();
 		}
@@ -179,7 +196,10 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// </summary>
         /// <param name="patientId"></param>
         /// <param name="labId"></param>
-        /// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{string}</cref>
+        ///     </see>
+        ///     object.</returns>
         [HttpGet]
         [Route("{patientId}/lab/{labId}/note")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<string>))]
@@ -201,10 +221,13 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// This gets the patients admission history for quick evaluation
         /// </summary>
         /// <param name="patientId"></param>
-        /// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadVisitHistoryDTO}}"/> object.</returns>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{IEnumerable{ReadVisitHistoryDTO}}</cref>
+        ///     </see>
+        ///     object.</returns>
         [HttpGet]
 		[Route("{patientId}/admission/history")]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadVisitHistoryDTO>>))]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadImmunizationRecordDto>>))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
@@ -213,26 +236,161 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		// GET api/patients/5/admission/history
 		public async Task<IActionResult> GetHistory([FromRoute] int patientId)
 		{
-			ServiceResponse<IEnumerable<ReadVisitHistoryDTO>> result = await _service.GetAllAdmissionHistoryAsync(patientId);
+			ServiceResponse<IEnumerable<ReadVisitHistoryDto>> result = await _service.GetAllAdmissionHistoryAsync(patientId);
             return result.FormatResponse();
         }
 
+        //9. GetContactDetails
+        /// <summary>
+        /// This gets the patients contact details
+        /// </summary>
+        /// <param name="patientId"></param>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{ReadContactDetailsDto}</cref>
+        ///     </see>
+        ///     object.</returns>
+        [HttpGet]
+        [Route("{patientId}/contact")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ReadContactDetailsDto>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        // GET api/patients/5/contact
+        public async Task<IActionResult> GetContactDetails([FromRoute] int patientId)
+        {
+            ServiceResponse<ReadContactDetailsDto> result = await _service.GetContactDetailsAsync(patientId);
+            return result.FormatResponse();
+        }
 
+        //10. GetEmergencyContactDetails
+        /// <summary>
+        /// This gets the patients emergency contact details
+        /// </summary>
+        /// <param name="patientId"></param>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{ReadEmergencyContactDetailsDto}</cref>
+        ///     </see>
+        ///     object.</returns>
+        [HttpGet]
+        [Route("{patientId}/emergencycontact")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ReadEmergencyContactDetailsDto>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        // GET api/patients/5/emergencycontact
+        public async Task<IActionResult> GetEmergencyContactDetails([FromRoute] int patientId)
+        {
+            ServiceResponse<ReadEmergencyContactDetailsDto> result = await _service.GetEmergencyContactDetailsAsync(patientId);
+            return result.FormatResponse();
+        }
 
+        //11. GetMedicalRecord
+        /// <summary>
+        /// This gets the patients medical record
+        /// </summary>
+        /// <param name="patientId"></param>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{IEnumerable{ReadMedicalRecordDto}}</cref>
+        ///     </see>
+        ///     object.</returns>
+        [HttpGet]
+        [Route("{patientId}/medicalrecord")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadMedicalRecordDto>>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        // GET api/patients/5/medicalrecord
+        public IActionResult GetMedicalRecord([FromRoute] int patientId)
+        {
+            ServiceResponse<IEnumerable<ReadMedicalRecordDto>> result = _service.GetMedicalRecordAsync(patientId);
+            return result.FormatResponse();
+        }
 
+        //12. GetImmunizationRecord
+        /// <summary>
+        /// This gets the patients immunization record
+        /// </summary>
+        /// <param name="patientId"></param>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{IEnumerable{ReadImmunizationRecordDto}}</cref>
+        ///     </see>
+        ///     object.</returns>
+        [HttpGet]
+        [Route("{patientId}/immunizationrecord")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadImmunizationRecordDto>>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        // GET api/patients/5/immunizationrecord
+        public async Task<IActionResult> GetImmunizationRecordAsync([FromRoute] int patientId)
+        {
+            ServiceResponse<IEnumerable<ReadImmunizationRecordDto>> result = await _service.GetImmunizationRecordAsync(patientId);
+            return result.FormatResponse();
+        }
 
+        //13. GetVisitRecord
+        /// <summary>
+        /// This gets the patients visit record
+        /// </summary>
+        /// <param name="patientId"></param>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{IEnumerable{ReadVisitHistoryDto}}</cref>
+        ///     </see>
+        ///     object.</returns>
+        [HttpGet]
+        [Route("{patientId}/visitrecord")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadVisitHistoryDto>>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        // GET api/patients/5/visitrecord
+        public async Task<IActionResult> GetVisitRecordAsync([FromRoute] int patientId)
+        {
+            ServiceResponse<IEnumerable<ReadVisitHistoryDto>> result = await _service.GetVisitRecordAsync(patientId);
+            return result.FormatResponse();
+        }
 
-
-
-
+        //14. GetTreatmentRecord
+        /// <summary>
+        /// This gets the patients treatment record
+        /// </summary>
+        /// <param name="patientId"></param>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{IEnumerable{ReadTreatmentRecordDto}}</cref>
+        ///     </see>
+        ///     object.</returns>
+        [HttpGet]
+        [Route("{patientId}/treatmentrecord")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadTreatmentRecordDto>>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        // GET api/patients/5/treatmentrecord
+        public async Task<IActionResult> GetTreatmentRecord([FromRoute] int patientId)
+        {
+            ServiceResponse<IEnumerable<ReadTreatmentRecordDto>> result = await _service.GetTreatmentRecordAsync(patientId);
+            return result.FormatResponse();
+        }
 
         /// <summary>
         /// create the profile for the patient user
         /// </summary>
-        /// <param name="CreateProfileDto"></param>
+        /// <param name="createProfileDto"></param>
         /// <returns></returns>
         [HttpPost("CreatePatientProfile")]
-        public async Task<IActionResult> CreatePatientProfile(CreatePatientProfileDto CreateProfileDto)
+        public async Task<IActionResult> CreatePatientProfile(CreatePatientProfileDto createProfileDto)
         {
             if (!ModelState.IsValid)
             {
@@ -240,7 +398,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
+            int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -249,7 +407,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             if (int.TryParse(username, out int convertedUserId))
             {
-                UserId = convertedUserId;
+                userId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -258,7 +416,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.CreatePatientProfile(CreateProfileDto, UserId);
+                var response = await _service.CreatePatientProfile(createProfileDto, userId);
                 return response.FormatResponse();
             }
             else
@@ -283,7 +441,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
+            int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -292,7 +450,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             if (int.TryParse(username, out int convertedUserId))
             {
-                UserId = convertedUserId;
+                userId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -301,7 +459,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.AddPatient(createPatientDto, UserId);
+                var response = await _service.AddPatient(createPatientDto, userId);
                 return response.FormatResponse();
             }
             else
@@ -313,7 +471,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         }
 
         [HttpPost("UpdateContact")]
-        public async Task<IActionResult> UpdateContact(updateContactDto contactDto)
+        public async Task<IActionResult> UpdateContact(UpdateContactDto contactDto)
         {
 
             if (!ModelState.IsValid)
@@ -322,7 +480,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
+            int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -331,7 +489,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             if (int.TryParse(username, out int convertedUserId))
             {
-                UserId = convertedUserId;
+                userId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -340,7 +498,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.UpdateContact(contactDto, UserId);
+                var response = await _service.UpdateContact(contactDto, userId);
                 return response.FormatResponse();
             }
             else
@@ -352,7 +510,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         }
 
         [HttpPost("EmergerncyContact")]
-        public async Task<IActionResult> EmergerncyContact(UpdateEmergencyContactDto EmergencyContact)
+        public async Task<IActionResult> EmergerncyContact(UpdateEmergencyContactDto emergencyContact)
         {
 
             if (!ModelState.IsValid)
@@ -361,7 +519,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
+            int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -370,7 +528,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             if (int.TryParse(username, out int convertedUserId))
             {
-                UserId = convertedUserId;
+                userId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -379,7 +537,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.UpdateEmergencyContact(EmergencyContact, UserId);
+                var response = await _service.UpdateEmergencyContact(emergencyContact, userId);
                 return response.FormatResponse();
             }
             else
@@ -391,7 +549,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         }
 
         [HttpPost("AddMedicalReport")]
-        public async Task<IActionResult> AddMedicalReport(MedicalRecordsDto MedicalReportDto)
+        public async Task<IActionResult> AddMedicalReport(MedicalRecordsDto medicalReportDto)
         {
 
             if (!ModelState.IsValid)
@@ -400,7 +558,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
+            int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -409,7 +567,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             if (int.TryParse(username, out int convertedUserId))
             {
-                UserId = convertedUserId;
+                userId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -418,7 +576,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.AddMedicalReport(MedicalReportDto, UserId);
+                var response = await _service.AddMedicalReport(medicalReportDto, userId);
                 return response.FormatResponse();
             }
             else
@@ -429,7 +587,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 
         }
         [HttpPost("AddVisitationRecords")]
-        public async Task<IActionResult> AddVisitationRecords(PatientsVisitsDto PatientsVisitsDto)
+        public async Task<IActionResult> AddVisitationRecords(PatientsVisitsDto patientsVisitsDto)
         {
 
             if (!ModelState.IsValid)
@@ -438,7 +596,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
+            int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -447,7 +605,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             if (int.TryParse(username, out int convertedUserId))
             {
-                UserId = convertedUserId;
+                userId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -456,7 +614,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.AddPatientVistsRecords(PatientsVisitsDto, UserId);
+                var response = await _service.AddPatientVistsRecords(patientsVisitsDto, userId);
                 return response.FormatResponse();
             }
             else
@@ -467,7 +625,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 
         }
         [HttpPost("AddImmunizationRecords")]
-        public async Task<IActionResult> AddImmunizationRecords(ImmunizationDto ImmunizationObj)
+        public async Task<IActionResult> AddImmunizationRecords(ImmunizationDto immunizationObj)
         {
 
             if (!ModelState.IsValid)
@@ -476,7 +634,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
+            int userId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
@@ -485,7 +643,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             if (int.TryParse(username, out int convertedUserId))
             {
-                UserId = convertedUserId;
+                userId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -494,7 +652,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.AddImmunizationRecords(ImmunizationObj, UserId);
+                var response = await _service.AddImmunizationRecords(immunizationObj, userId);
                 return response.FormatResponse();
             }
             else
@@ -505,7 +663,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 
         }
         [HttpDelete("DeleteImmunizationRecordsById")]
-        public async Task<IActionResult> DeleteImmunizationRecords(int ImmunizationId)
+        public async Task<IActionResult> DeleteImmunizationRecords(int immunizationId)
         {
 
             if (!ModelState.IsValid)
@@ -514,16 +672,11 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
                 var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
                 return value.FormatResponse();
-            }
-            if (int.TryParse(username, out int convertedUserId))
-            {
-                UserId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -532,7 +685,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.DeleteImmunizationRecord(ImmunizationId);
+                var response = await _service.DeleteImmunizationRecord(immunizationId);
                 return response.FormatResponse();
             }
             else
@@ -544,7 +697,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         }
 
         [HttpDelete("DeleteVisitationById")]
-        public async Task<IActionResult> DeleteVisitationRecords(int VisitationId)
+        public async Task<IActionResult> DeleteVisitationRecords(int visitationId)
         {
 
             if (!ModelState.IsValid)
@@ -553,16 +706,11 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
                 var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
                 return value.FormatResponse();
-            }
-            if (int.TryParse(username, out int convertedUserId))
-            {
-                UserId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -571,7 +719,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.DeleteImmunizationRecord(VisitationId);
+                var response = await _service.DeleteImmunizationRecord(visitationId);
                 return response.FormatResponse();
             }
             else
@@ -583,7 +731,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         }
 
         [HttpDelete("DeleteMedicalRecordById")]
-        public async Task<IActionResult> DeleteMedicalRecords(int MedicalRecordsId)
+        public async Task<IActionResult> DeleteMedicalRecords(int medicalRecordsId)
         {
 
             if (!ModelState.IsValid)
@@ -592,16 +740,11 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
                 var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
                 return value.FormatResponse();
-            }
-            if (int.TryParse(username, out int convertedUserId))
-            {
-                UserId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -610,7 +753,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.DeleteMedicalReport(MedicalRecordsId);
+                var response = await _service.DeleteMedicalReport(medicalRecordsId);
                 return response.FormatResponse();
             }
             else
@@ -622,10 +765,10 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// <summary>
         /// get all the patienrt Medical Records
         /// </summary>
-        /// <param name="PatientId"></param>
+        /// <param name="patientId"></param>
         /// <returns></returns>
         [HttpGet("GetAllMedicalRecordByPatientId")]
-        public async Task<IActionResult> GetAllMedicalRecordsByPatientId(int PatientId)
+        public async Task<IActionResult> GetAllMedicalRecordsByPatientId(int patientId)
         {
 
             if (!ModelState.IsValid)
@@ -634,16 +777,11 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
                 var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
                 return value.FormatResponse();
-            }
-            if (int.TryParse(username, out int convertedUserId))
-            {
-                UserId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -652,7 +790,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.GetAllMedicalReportByPatientId(PatientId);
+                var response = await _service.GetAllMedicalReportByPatientId(patientId);
                 return response.FormatResponse();
             }
             else
@@ -664,10 +802,10 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// <summary>
         /// get all the visitation by patient Id
         /// </summary>
-        /// <param name="PatientId"></param>
+        /// <param name="patientId"></param>
         /// <returns></returns>
         [HttpGet("GetAllVisitationRecordByPatientId")]
-        public async Task<IActionResult> GetAllVisitationRecordByPatientId(int PatientId)
+        public async Task<IActionResult> GetAllVisitationRecordByPatientId(int patientId)
         {
 
             if (!ModelState.IsValid)
@@ -676,16 +814,11 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
                 var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
                 return value.FormatResponse();
-            }
-            if (int.TryParse(username, out int convertedUserId))
-            {
-                UserId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -694,7 +827,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.GetAllVisitationByPatientId(PatientId);
+                var response = await _service.GetAllVisitationByPatientId(patientId);
                 return response.FormatResponse();
             }
             else
@@ -706,10 +839,10 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// <summary>
         /// get all the immunzation records by the patient Id
         /// </summary>
-        /// <param name="PatientId"></param>
+        /// <param name="patientId"></param>
         /// <returns></returns>
         [HttpGet("GetAllImmunizationRecordByPatientId")]
-        public async Task<IActionResult> GetAllImmunizationRecordByPatientId(int PatientId)
+        public async Task<IActionResult> GetAllImmunizationRecordByPatientId(int patientId)
         {
 
             if (!ModelState.IsValid)
@@ -718,16 +851,11 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             }
             string username = User.FindFirst("UserId")?.Value;
             string userRole = User.FindFirst("AccessRoleId")?.Value;
-            int UserId = 0;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
                 var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
                 return value.FormatResponse();
-            }
-            if (int.TryParse(username, out int convertedUserId))
-            {
-                UserId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -736,7 +864,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
             {
                 // caling the service here
-                var response = await _service.GetAllImmunizatiobByPatientId(PatientId);
+                var response = await _service.GetAllImmunizatiobByPatientId(patientId);
                 return response.FormatResponse();
             }
             else

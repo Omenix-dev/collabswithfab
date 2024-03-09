@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MedicalRecordsApi.Models.DTO.Request
 {
-    public class CreateLabReferDTO
+    public class CreateLabReferDto
     {
         public string LabType { get; set; }
         public string LabCentre { get; set; }

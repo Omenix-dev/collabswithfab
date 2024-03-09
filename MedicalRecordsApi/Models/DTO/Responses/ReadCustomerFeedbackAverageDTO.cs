@@ -2,7 +2,7 @@
 
 namespace MedicalRecordsApi.Models.DTO.Responses
 {
-	public class ReadCustomerFeedbackAverageDTO
+	public class ReadCustomerFeedbackAverageDto
 	{
         public string Month { get; set; }
 		public int ExcellentPercentage { get; set; }

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using MedicalRecordsRepository.DTO.FacilityDto;
 using MedicalRecordsApi.Constants;
 using MedicalRecordsData.Enum;
+using MedicalRecordsApi.Services.Abstract.EmployeeInterfaces;
 
 namespace MedicalRecordsApi.Controllers.FacilityEndpoints
 {
@@ -20,10 +21,12 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
     public class FacilityController : ControllerBase
     {
         private readonly IFacilityService _service;
+        private readonly IEmployeeService _employeeService;
 
-        public FacilityController(IFacilityService service)
+        public FacilityController(IFacilityService service, IEmployeeService employeeService)
         {
             _service = service;
+            _employeeService = employeeService;
         }
 
         //1. GetBedsAssignedToDoctor
@@ -33,7 +36,7 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
         /// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadBedDetailsDTO}}"/> object.</returns>
         [HttpGet]
         [Route("beds/assignedtodoctor")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadBedDetailsDTO>>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadBedDetailsDto>>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
@@ -44,7 +47,10 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
         {
             int userId = int.Parse(User.FindFirst("Id").Value);
 
-            ServiceResponse<IEnumerable<ReadBedDetailsDTO>> result = await _service.GetBedsAssignedToDoctor(userId);
+            //Get Employee Id
+            var employeeId = await _employeeService.GetEmployeeId(userId);
+
+            ServiceResponse<IEnumerable<ReadBedDetailsDto>> result = await _service.GetBedsAssignedToDoctor(employeeId.Data);
 
             return result.FormatResponse();
         }
@@ -56,7 +62,7 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
         /// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadBedDetailsDTO}}"/> object.</returns>
         [HttpGet]
         [Route("beds")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadBedDetailsDTO>>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<ReadBedDetailsDto>>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
@@ -65,7 +71,7 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
         // GET api/facilities/beds
         public async Task<IActionResult> GetBedDetails()
         {
-            ServiceResponse<IEnumerable<ReadBedDetailsDTO>> result = await _service.GetBedStatus();
+            ServiceResponse<IEnumerable<ReadBedDetailsDto>> result = await _service.GetBedStatus();
 
             return result.FormatResponse();
         }

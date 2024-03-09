@@ -14,7 +14,7 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public string Email { get; set; }
 		public string ContactAddress { get; set; }
 		public string StateOfResidnece { get; set; }
-		public string LGA { get; set; }
+		public string Lga { get; set; }
 		public string City { get; set; }
 		public string AltPhone { get; set; }
 

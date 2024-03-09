@@ -27,7 +27,7 @@ namespace MedicalRecordsApi.Services.Abstract.DashBoardInterfaces
         /// This gets the number of patients by thats got HMO
         /// </summary>
         /// <returns>Returns a <see cref="ServiceResponse{long}"/> object.</returns>
-        Task<ServiceResponse<long>> GetPatientByHMOAsync(int userId);
+        Task<ServiceResponse<long>> GetPatientByHmoAsync(int userId);
         /// <summary>
         /// This gets the number of patients data for inpatient data or outpatient data
         /// </summary>

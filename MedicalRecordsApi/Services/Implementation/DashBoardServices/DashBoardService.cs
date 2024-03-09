@@ -237,7 +237,7 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
 
             return new ServiceResponse<IEnumerable<ReadPatientAdmissionDto>>(patientAdmission, InternalCode.Success);
         }
-        public async Task<ServiceResponse<long>> GetPatientByHMOAsync(int userId)
+        public async Task<ServiceResponse<long>> GetPatientByHmoAsync(int userId)
         {
             if (userId <= 0)
             {
@@ -246,7 +246,7 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
 
             long patientCount = patientCount = await _patientRepository.Query()
                                                       .AsNoTracking()
-                                                      .Where(x => x.DoctorId == userId && x.HasHMO == true).CountAsync();
+                                                      .Where(x => x.DoctorId == userId && x.HasHmo == true).CountAsync();
 
             return new ServiceResponse<long>(patientCount, InternalCode.Success);
         }

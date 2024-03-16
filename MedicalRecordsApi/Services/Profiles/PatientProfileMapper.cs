@@ -28,7 +28,7 @@ namespace MedicalRecordsApi.Services.Profiles
             CreateMap<PatientsVisitsDto, Visit>();
             CreateMap<AssignedPatientsDto, BedAssignment>().ReverseMap();
             CreateMap<PatientReferrer, ReferralNoteDto>().ReverseMap();
-            CreateMap<PatientAssignmentHistory, PatientAssignmentHistory>();
+            CreateMap<CreatePatientRequestDto, PatientAssignmentHistory>();
             CreateMap<UpdateMedicalStaffDto, PatientAssignmentHistory>();
         }
     }

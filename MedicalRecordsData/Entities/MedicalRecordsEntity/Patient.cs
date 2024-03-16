@@ -14,7 +14,8 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 			Immunizations = new HashSet<Immunization>();
 			Visits = new HashSet<Visit>();
 			Treatments = new HashSet<Treatment>();
-		}
+            PatientAssignmentHistory = new HashSet<PatientAssignmentHistory>();
+        }
 
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
@@ -49,5 +50,6 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public virtual ICollection<Immunization> Immunizations { get; set; }
 		public virtual ICollection<Visit> Visits { get; set; }
         public virtual ICollection<Treatment> Treatments { get; set; }
-	}
+        public virtual ICollection<PatientAssignmentHistory> PatientAssignmentHistory { get; set; }
+    }
 }

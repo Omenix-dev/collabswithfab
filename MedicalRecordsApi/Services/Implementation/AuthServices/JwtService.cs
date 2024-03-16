@@ -63,7 +63,8 @@ namespace MedicalRecordsApi.Services.Implementation.AuthServices
                 new Claim("id", $"{user.Id}"),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role,user.RoleId.ToString())
+                new Claim(ClaimTypes.Role,user.RoleId.ToString()),
+                new Claim("RoleId",user.RoleId.ToString())
             };
         }
         JwtSecurityToken SecurityToken(Claim[] claims)

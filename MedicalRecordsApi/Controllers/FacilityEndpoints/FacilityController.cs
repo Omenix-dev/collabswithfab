@@ -120,7 +120,7 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int UserId = 0;
             int userRoleId = 0;
@@ -169,7 +169,7 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int UserId = 0;
             int userRoleId = 0;

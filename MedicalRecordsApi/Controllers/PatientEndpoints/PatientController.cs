@@ -396,7 +396,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
@@ -413,7 +413,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 userRoleId = convertedUserRoleId;
             }
-            if (userRoleId == (int)MedicalRole.Nurse || userRoleId == (int)MedicalRole.Doctors)
+            if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
                 var response = await _service.CreatePatientProfile(createProfileDto, userId);
@@ -439,7 +439,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
@@ -478,7 +478,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
@@ -517,7 +517,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
@@ -556,7 +556,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
@@ -594,7 +594,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
@@ -632,7 +632,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userId = 0;
             int userRoleId = 0;
@@ -670,7 +670,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -704,7 +704,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -738,7 +738,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -775,7 +775,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -812,7 +812,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -849,7 +849,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
@@ -882,7 +882,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
             }
-            string username = User.FindFirst("UserId")?.Value;
+            string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))

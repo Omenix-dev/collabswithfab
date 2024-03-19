@@ -384,55 +384,14 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             return result.FormatResponse();
         }
 
-        /// <summary>
-        /// create the profile for the patient user
-        /// </summary>
-        /// <param name="createProfileDto"></param>
-        /// <returns></returns>
-        [HttpPost("CreatePatientProfile")]
-        public async Task<IActionResult> CreatePatientProfile(CreatePatientProfileDto createProfileDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
-            }
-            string username = User.FindFirst("id")?.Value;
-            string userRole = User.FindFirst("RoleId")?.Value;
-            int userId = 0;
-            int userRoleId = 0;
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
-            {
-                var value = new ServiceResponse<string>("the user role is empty",InternalCode.Failed,ServiceErrorMessages.OperationFailed);
-                return value.FormatResponse();
-            }
-            if (int.TryParse(username, out int convertedUserId))
-            {
-                userId = convertedUserId;
-            }
-            if (int.TryParse(userRole, out int convertedUserRoleId))
-            {
-                userRoleId = convertedUserRoleId;
-            }
-            if (userRoleId == (int)MedicalRole.Nurse)
-            {
-                // caling the service here
-                var response = await _service.CreatePatientProfile(createProfileDto, userId);
-                return response.FormatResponse();
-            }
-            else
-            {
-                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
-                return value.FormatResponse();
-            }
-            
-        }
+        
         /// <summary>
         /// used to add the patient to the nurse or doctors queue
         /// </summary>
         /// <param name="createPatientDto"></param>
         /// <returns></returns>
         [HttpPost("AddPatient")]
-        public async Task<IActionResult> AddPatient(CreatePatientRequestDto createPatientDto)
+        public async Task<IActionResult> AddPatient([FromBody] CreatePatientRequestDto createPatientDto)
         {
            
             if (!ModelState.IsValid)
@@ -905,6 +864,30 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
                 return value.FormatResponse();
             }
+        }
+        [HttpGet("AllPatient")]
+        public IActionResult GetAllPatient([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        {
+           
+            // caling the service here
+            var response = _service.GetAllPatient(pageIndex, pageSize);
+            return response.FormatResponse();
+        }
+        [HttpGet("AllPatientById")]
+        public IActionResult GetAllPatientById([FromQuery] int patientId)
+        {
+
+            // caling the service here
+            var response = _service.GetAllPatientById(patientId);
+            return response.FormatResponse();
+        }
+        [HttpGet("AllNurse")]
+        public IActionResult GetAllNurses([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        {
+
+            // caling the service here
+            var response = _service.GetAllNurses(pageIndex, pageSize);
+            return response.FormatResponse();
         }
     }
 }

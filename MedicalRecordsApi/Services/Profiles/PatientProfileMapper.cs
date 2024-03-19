@@ -15,6 +15,10 @@ namespace MedicalRecordsApi.Services.Profiles
         {
             CreateMap<CreatePatientProfileDto, User>();
             CreateMap<CreatePatientRequestDto, Patient>();
+            CreateMap<Patient, GetAllPatientsDto>()
+                .ForMember(x =>x.PatientId, src => src.MapFrom(s => s.Id));
+            CreateMap<User, GetAllNurseDto>()
+                .ForMember(x => x.NurseId, src => src.MapFrom(s => s.Id));
             CreateMap<UpdateContactDto, Contact>();
             CreateMap<UpdateEmergencyContactDto, EmergencyContact>();
             CreateMap<MedicalRecordsDto, MedicalRecord>();

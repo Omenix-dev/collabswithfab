@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using MedicalRecordsRepository.DTO.PatientDto;
 using MedicalRecordsApi.Services;
 using MedicalRecordsRepository.DTO.MedicalDto;
+using MedicalRecordsRepository.DTO;
 
 namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 {
@@ -125,9 +126,9 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 		/// <param name="patientDto"></param>
 		/// <param name="userId"></param>
 		/// <returns></returns>
-		Task<ServiceResponse<string>> AddPatient(CreatePatientRequestDto patientDto, int userId);
-        Task<ServiceResponse<string>> UpdateContact(UpdateContactDto contactDto, int userId);
-        Task<ServiceResponse<string>> UpdateEmergencyContact(UpdateEmergencyContactDto emergencyContactDto, int userId);
+		Task<ServiceResponse<object>> AddPatient(CreatePatientRequestDto patientDto, int userId);
+        Task<ServiceResponse<object>> UpdateContact(UpdateContactDto contactDto, int userId);
+        Task<ServiceResponse<object>> UpdateEmergencyContact(UpdateEmergencyContactDto emergencyContactDto, int userId);
 
 		//servoce for the medical records
 		Task<ServiceResponse<List<MedicalRecordsDto>>> GetAllMedicalReportByPatientId(int patientId);
@@ -143,5 +144,8 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 		Task<ServiceResponse<string>> AddPatientVistsRecords(PatientsVisitsDto patientVisitsObj, int userId);
 		Task<ServiceResponse<List<PatientsVisitsDto>>> GetAllVisitationByPatientId(int visitaionId);
         Task<ServiceResponse<string>> UpdateMedicalStaffByPatientId(UpdateMedicalStaffDto updateMedicalStaffDto, int userId);
+        ServiceResponse<PaginatedList<GetAllPatientsDto>> GetAllPatient(int pageIndex, int pageSize);
+        ServiceResponse<GetAllPatientsDto> GetAllPatientById(int patientId);
+        ServiceResponse<PaginatedList<GetAllNurseDto>> GetAllNurses(int pageIndex, int pageSize);
     }
 }

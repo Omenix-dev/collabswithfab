@@ -21,6 +21,10 @@ using System.Linq;
 using MedicalRecordsRepository.DTO.PatientDto;
 using MedicalRecordsRepository.DTO.MedicalDto;
 using AutoMapper.QueryableExtensions;
+using MedicalRecordsApi.Services.Common;
+using MedicalRecordsData.Enum;
+using System.Linq.Expressions;
+using MedicalRecordsRepository.DTO;
 
 namespace MedicalRecordsApi.Services.Implementation.PatientServices
 {
@@ -46,6 +50,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         private readonly IConfiguration _configuration;
         private readonly IGenericRepository<User> _userRepository;
         private readonly IGenericRepository<PatientAssignmentHistory> _patientAssignmentHistoryRepository;
+
 
 
         public PatientService(IGenericRepository<Patient> patientRepository,
@@ -555,26 +560,36 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<string>> AddPatient(CreatePatientRequestDto patientDto, int userId)
+        public async Task<ServiceResponse<object>> AddPatient(CreatePatientRequestDto patientDto, int userId)
         {
             try
             {
+                if (patientDto.DateOfBirth > DateTime.Now)
+                {
+                    return new ServiceResponse<object>("The invalid date of birth ", InternalCode.Unprocessable, "The invalid date of birth");
+
+                }
+                if (patientDto.PhoneNumber.Length > 11)
+                {
+                    return new ServiceResponse<object>("The invalid Phone number ", InternalCode.Unprocessable, "The invalid Phone number ");
+
+                }
                 var EmailExist = _patientRepository.GetAll().FirstOrDefault(x => x.Email == patientDto.Email);
                 if (EmailExist != null)
                 {
-                    return new ServiceResponse<string>("the patient already exist", InternalCode.EntityExist, ServiceErrorMessages.EntityExist);
+                    return new ServiceResponse<object>("The patient already exist", InternalCode.EntityExist, ServiceErrorMessages.EntityExist);
                 }
-                var doctorModel = _userRepository.GetById(patientDto.DoctorId);
+                var doctorModel = _userRepository.GetById(patientDto.DoctorId.Value);
                 if (doctorModel == null)
                 {
-                    return new ServiceResponse<string>("the doctor you assigned doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+                    return new ServiceResponse<object>("The doctor you assigned doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
 
                 }
 
-                var nurseModel = _userRepository.GetById(patientDto.NurseId);
+                var nurseModel = _userRepository.GetById(patientDto.NurseId.Value);
                 if (nurseModel == null)
                 {
-                    return new ServiceResponse<string>("the nurse you assigned doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+                    return new ServiceResponse<object>("The nurse you assigned doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
 
                 }
                 var patientDetails = _mapper.Map<Patient>(patientDto);
@@ -586,11 +601,12 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 patientAssignmentHistory.CreatedBy = userId;
                 patientDetails.PatientAssignmentHistory.Add(patientAssignmentHistory);
                 await _patientRepository.Insert(patientDetails);
-                return new ServiceResponse<string>("the patient has been assigned", InternalCode.Success, ServiceErrorMessages.Success);
+                var PatientId = _patientRepository.GetAll().FirstOrDefault(x => x.Email == patientDto.Email).Id;
+                return new ServiceResponse<object>(new { Messages = "The patient has been assigned", PatientId = PatientId }, InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)
             {
-                return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+                return new ServiceResponse<object>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }
 
         }
@@ -735,7 +751,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<string>> UpdateContact(UpdateContactDto contactDto, int userId)
+        public async Task<ServiceResponse<object>> UpdateContact(UpdateContactDto contactDto, int userId)
         {
             try
             {
@@ -743,23 +759,41 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 var PatientExist = _patientRepository.GetById(contactDto.PatientId);
                 if (PatientExist == null)
                 {
-                    return new ServiceResponse<string>("the patient doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+                    return new ServiceResponse<object>("the patient doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
                 }
-                var contactDetails = _mapper.Map<Contact>(contactDto);
-                contactDetails.CreatedAt = DateTime.UtcNow;
-                contactDetails.ModifiedBy = userId;
-                await _contactRepository.Insert(contactDetails);
-                return new ServiceResponse<string>("the patient profile was updated", InternalCode.Success);
+                var ContactObject = _contactRepository.GetAll().FirstOrDefault(x => x.PatientId == contactDto.PatientId);
+                if (ContactObject == null)
+                {
+                    var contactDetails = _mapper.Map<Contact>(contactDto);
+                    contactDetails.CreatedAt = DateTime.UtcNow;
+                    contactDetails.CreatedBy = userId;
+                    await _contactRepository.Insert(contactDetails); 
+                }
+                else
+                {
+                    ContactObject.StateOfResidence = contactDto.StateOfResidence;
+                    ContactObject.LgaResidence  = contactDto.LgaResidence;
+                    ContactObject.City  = contactDto.City;
+                    ContactObject.HomeAddress  = contactDto.HomeAddress;
+                    ContactObject.Phone  = contactDto.Phone;
+                    ContactObject.AltPhone  = contactDto.AltPhone;
+                    ContactObject.Email  = contactDto.Email;
+                    ContactObject.ActionTaken = "Updated contact address";
+                    ContactObject.UpdatedAt = DateTime.UtcNow;
+                    ContactObject.ModifiedBy = userId;
+                    await _contactRepository.UpdateAsync(ContactObject);
+                }
+                return new ServiceResponse<object>(new { Messages = "The patient has been emergency contact has been updated", PatientId = contactDto.PatientId }, InternalCode.Success);
 
             }
             catch (Exception ex)
             {
-                return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+                return new ServiceResponse<object>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }
 
         }
 
-        public async Task<ServiceResponse<string>> UpdateEmergencyContact(UpdateEmergencyContactDto emergencyContactDto, int userId)
+        public async Task<ServiceResponse<object>> UpdateEmergencyContact(UpdateEmergencyContactDto emergencyContactDto, int userId)
         {
             try
             {
@@ -767,47 +801,67 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 var PatientExist = _patientRepository.GetById(emergencyContactDto.PatientId);
                 if (PatientExist == null)
                 {
-                    return new ServiceResponse<string>("the patient doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+                    return new ServiceResponse<object>("the patient doesnt exist", InternalCode.EntityNotFound, "the patient doesnt exist");
                 }
-                var emergencyDetails = _mapper.Map<EmergencyContact>(emergencyContactDto);
-                emergencyDetails.CreatedAt = DateTime.UtcNow;
-                emergencyDetails.ModifiedBy = userId;
-                await _emergencyContactRepository.Insert(emergencyDetails);
-                return new ServiceResponse<string>("the patient emergency co was updated", InternalCode.Success);
+                var emergencyObject = _emergencyContactRepository.GetAll().FirstOrDefault(x => x.PatientId == emergencyContactDto.PatientId);
+                if (emergencyObject == null)
+                {
+                    var emergencyDetails = _mapper.Map<EmergencyContact>(emergencyContactDto);
+                    emergencyDetails.CreatedAt = DateTime.UtcNow;
+                    emergencyDetails.CreatedBy = userId;
+                    await _emergencyContactRepository.Insert(emergencyDetails);
+                }
+                else
+                {
+                    emergencyObject.Relationship = emergencyContactDto.Relationship;
+                    emergencyObject.FirstName  = emergencyContactDto.FirstName;
+                    emergencyObject.LastName  = emergencyContactDto.LastName;
+                    emergencyObject.Phone  = emergencyContactDto.Phone;
+                    emergencyObject.Email  = emergencyContactDto.Email;
+                    emergencyObject.ContactAddress  = emergencyContactDto.ContactAddress;
+                    emergencyObject.StateOfResidnece  = emergencyContactDto.StateOfResidnece;
+                    emergencyObject.Lga  = emergencyContactDto.Lga;
+                    emergencyObject.City  = emergencyContactDto.City;
+                    emergencyObject.AltPhone  = emergencyContactDto.AltPhone;
+                    emergencyObject.ModifiedBy = userId;
+                    emergencyObject.UpdatedAt = DateTime.UtcNow;
+                    await _emergencyContactRepository.Update(emergencyObject);
+                }
+                return new ServiceResponse<object>(new { Messages = "The patient has been emergency contact has been updated", PatientId = emergencyContactDto.PatientId }, InternalCode.Success);
             }
             catch (Exception ex)
             {
-                return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+                return new ServiceResponse<object>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }
         }
         public async Task<ServiceResponse<string>> UpdateMedicalStaffByPatientId(UpdateMedicalStaffDto updateMedicalStaffDto, int userId)
         {
             try
             {
-                var patientObj = _patientRepository.GetById(updateMedicalStaffDto.PatientId);
+                var patientObj = _patientRepository.GetById(updateMedicalStaffDto.PatientId.Value);
                 if(patientObj == null)
                     return new ServiceResponse<string>("the patientId doesnt exist", InternalCode.EntityIsNull, ServiceErrorMessages.Failed);
-                var doctorModel = _userRepository.GetById(updateMedicalStaffDto.DoctorId);
+                var doctorModel = _userRepository.GetById(updateMedicalStaffDto.DoctorId.Value);
                 if (doctorModel == null)
                 {
                     return new ServiceResponse<string>("the doctor you assigned doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
 
                 }
 
-                var nurseModel = _userRepository.GetById(updateMedicalStaffDto.NurseId);
+                var nurseModel = _userRepository.GetById(updateMedicalStaffDto.NurseId.Value);
                 if (nurseModel == null)
                 {
                     return new ServiceResponse<string>("the nurse you assigned doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
 
                 }
-                patientObj.NurseId = updateMedicalStaffDto.NurseId;
-                patientObj.DoctorId = updateMedicalStaffDto.DoctorId;
+                patientObj.NurseId = updateMedicalStaffDto.NurseId.Value;
+                patientObj.DoctorId = updateMedicalStaffDto.DoctorId.Value;
                 patientObj.ModifiedBy = userId;
                 patientObj.CreatedAt = DateTime.UtcNow;
                 await _patientRepository.UpdateAsync(patientObj);
                 var patientAssignmentHistory = _mapper.Map<PatientAssignmentHistory>(updateMedicalStaffDto);
                 patientAssignmentHistory.CareType = MedicalRecordsData.Enum.PatientCareType.InPatient;
-                patientAssignmentHistory.PatientId = updateMedicalStaffDto.PatientId;
+                patientAssignmentHistory.PatientId = updateMedicalStaffDto.PatientId.Value;
                 patientAssignmentHistory.CreatedAt = DateTime.UtcNow;
                 patientAssignmentHistory.CreatedBy = userId;
                 await _patientAssignmentHistoryRepository.CreateAsync(patientAssignmentHistory);
@@ -818,9 +872,47 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }
         }
+        public ServiceResponse<PaginatedList<GetAllPatientsDto>> GetAllPatient(int pageIndex,int pageSize)
+        {
+            try
+            {
+                var patientsData = _patientRepository.GetAll().AsEnumerable().Select(x => _mapper.Map<GetAllPatientsDto>(x)).AsQueryable();
+                var valObject =  new GenericService<GetAllPatientsDto>().SortPaginateByText(pageIndex, pageSize, patientsData, x => x.PatientId.ToString(), Order.Asc);
+                return new ServiceResponse<PaginatedList<GetAllPatientsDto>>(valObject, InternalCode.Success, ServiceErrorMessages.Success);
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<PaginatedList<GetAllPatientsDto>>(null, InternalCode.Incompleted, ex.Message);
+            }
+        }
+        public ServiceResponse<PaginatedList<GetAllNurseDto>> GetAllNurses(int pageIndex, int pageSize)
+        {
+            try
+            {
+                var NursesData = _userRepository.GetAll().AsEnumerable().Select(x => _mapper.Map<GetAllNurseDto>(x)).AsQueryable();
+                var valObject = new GenericService<GetAllNurseDto>().SortPaginateByText(pageIndex, pageSize, NursesData, x => x.NurseId.ToString(), Order.Asc);
+                return new ServiceResponse<PaginatedList<GetAllNurseDto>>(valObject, InternalCode.Success, ServiceErrorMessages.Success);
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<PaginatedList<GetAllNurseDto>>(null, InternalCode.Incompleted, ex.Message);
+            }
+        }
+        public ServiceResponse<GetAllPatientsDto> GetAllPatientById(int patientId)
+        {
+            try
+            {
+                var patientsData = _mapper.Map<GetAllPatientsDto>(_patientRepository.GetAll().FirstOrDefault(x => x.Id == patientId));
+                if(patientsData is null)
+                    return new ServiceResponse<GetAllPatientsDto>(null, InternalCode.EntityNotFound, "The patient doenst exist");
 
-
-
+                return new ServiceResponse<GetAllPatientsDto>(patientsData, InternalCode.Success, ServiceErrorMessages.Success);
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<GetAllPatientsDto>(null, InternalCode.Incompleted, ex.Message);
+            }
+        }
         #region Helpers
         public static string CalculateAge(DateTime dateOfBirth, DateTime? currentDate = null)
 		{
@@ -843,7 +935,6 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
 			return ageString;
 		}
-
         #endregion
     }
 }

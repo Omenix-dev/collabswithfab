@@ -7,6 +7,7 @@ using MedicalRecordsRepository.DTO.PatientDto;
 using MedicalRecordsApi.Services;
 using MedicalRecordsRepository.DTO.MedicalDto;
 using MedicalRecordsRepository.DTO;
+using MedicalRecordsData.Migrations;
 
 namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 {
@@ -133,17 +134,17 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 		//servoce for the medical records
 		Task<ServiceResponse<List<MedicalRecordsDto>>> GetAllMedicalReportByPatientId(int patientId);
 		Task<ServiceResponse<string>> DeleteMedicalReport(int recordId);
-		Task<ServiceResponse<string>> AddMedicalReport(MedicalRecordsDto medicalRecords, int userId);
+		Task<ServiceResponse<object>> AddMedicalReport(MedicalRecordsDto medicalRecords, int userId);
 
 		//services for the immunization records
 		Task<ServiceResponse<List<ImmunizationDto>>> GetAllImmunizatiobByPatientId(int patientId);
 		Task<ServiceResponse<string>> DeleteImmunizationRecord(int recordId);
-		Task<ServiceResponse<string>> AddImmunizationRecords(ImmunizationDto immunizationRecords, int userId);
+		Task<ServiceResponse<object>> AddImmunizationRecords(ImmunizationDto immunizationRecords, int userId);
 		// visation services
-		Task<ServiceResponse<string>> DeleteVisitsRecord(int visitId);
-		Task<ServiceResponse<string>> AddPatientVistsRecords(PatientsVisitsDto patientVisitsObj, int userId);
-		Task<ServiceResponse<List<PatientsVisitsDto>>> GetAllVisitationByPatientId(int visitaionId);
-        Task<ServiceResponse<string>> UpdateMedicalStaffByPatientId(UpdateMedicalStaffDto updateMedicalStaffDto, int userId);
+		Task<ServiceResponse<object>> DeleteVisitsRecord(int visitId);
+		Task<ServiceResponse<object>> AddPatientVistsRecords(PatientsVisitsDto patientVisitsObj, int userId);
+		Task<ServiceResponse<List<PatientsVisitsDto>>> GetAllVisitationByPatientId(int PatientId);
+        Task<ServiceResponse<object>> UpdateMedicalStaffByPatientId(UpdateMedicalStaffDto updateMedicalStaffDto, int userId);
         ServiceResponse<PaginatedList<GetAllPatientsDto>> GetAllPatient(int pageIndex, int pageSize);
         ServiceResponse<GetAllPatientsDto> GetAllPatientById(int patientId);
         ServiceResponse<PaginatedList<GetAllNurseDto>> GetAllNurses(int pageIndex, int pageSize);

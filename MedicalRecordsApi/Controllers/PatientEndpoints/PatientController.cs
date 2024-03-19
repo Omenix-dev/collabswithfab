@@ -6,6 +6,7 @@ using MedicalRecordsApi.Services;
 using MedicalRecordsApi.Services.Abstract.EmployeeInterfaces;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
 using MedicalRecordsApi.Services.Implementation.EmployeeServices;
+using MedicalRecordsData.Entities.AuthEntity;
 using MedicalRecordsData.Enum;
 using MedicalRecordsRepository.DTO.AuthDTO;
 using MedicalRecordsRepository.DTO.MedicalDto;
@@ -586,7 +587,6 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         [HttpPost("AddImmunizationRecords")]
         public async Task<IActionResult> AddImmunizationRecords(ImmunizationDto immunizationObj)
         {
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(new { Message = "Validation failed", Errors = ModelState });
@@ -844,10 +844,15 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             string username = User.FindFirst("id")?.Value;
             string userRole = User.FindFirst("RoleId")?.Value;
             int userRoleId = 0;
+            int userId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
                 var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
                 return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                userId = convertedUserId;
             }
             if (int.TryParse(userRole, out int convertedUserRoleId))
             {
@@ -856,7 +861,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
-                var response = await _service.UpdateMedicalStaffByPatientId(UpdateMedicalStaffDto, userRoleId);
+                var response = await _service.UpdateMedicalStaffByPatientId(UpdateMedicalStaffDto, userId);
                 return response.FormatResponse();
             }
             else

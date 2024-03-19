@@ -150,7 +150,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         ///     </see>
         ///     object.</returns>
         [HttpPost]
-        [Route("{patientId}/visit/{visitId}")]
+        [Route("{patientId}/visit/{visitId}/labrequest")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
         [ProducesResponseType((int)HttpStatusCode.Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -158,7 +158,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
-        // POST api/patients/5/visit/3
+        // POST api/patients/5/visit/3/labrequest
         public async Task<IActionResult> Post([FromRoute] int patientId, [FromRoute] int visitId, [FromBody] CreateLabReferDto labReferDto)
         {
             ServiceResponse<string> result = await _service.ReferPatientAsync(patientId, visitId, labReferDto);
@@ -177,7 +177,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         ///     </see>
         ///     object.</returns>
         [HttpPost]
-		[Route("{patientId}/addprescription")]
+		[Route("{patientId}/addtreatmentprescription")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
 		[ProducesResponseType((int)HttpStatusCode.Created)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -185,8 +185,8 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
-		// POST api/patients/5/addprescription
-		public async Task<IActionResult> Post([FromRoute] int patientId, [FromBody]CreatePatientPrescriptionDto prescriptionDto)
+        // POST api/patients/5/addtreatmentprescription
+        public async Task<IActionResult> Post([FromRoute] int patientId, [FromBody]CreatePatientPrescriptionDto prescriptionDto)
 		{
 			ServiceResponse<string> result = await _service.AddPrescriptionAsync(patientId, prescriptionDto);
 
@@ -195,26 +195,26 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 
         //7. GetLabNote
         /// <summary>
-        /// This gets the lab note of a patient
+        /// This gets the lab report of a patient
         /// </summary>
         /// <param name="patientId"></param>
-        /// <param name="labId"></param>
+        /// <param name="labrequestId"></param>
         /// <returns>Returns a <see>
-        ///         <cref>ServiceResponse{string}</cref>
+        ///         <cref>ServiceResponse{ReadPatientLabReport}</cref>
         ///     </see>
         ///     object.</returns>
         [HttpGet]
-        [Route("{patientId}/lab/{labId}/note")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<string>))]
+        [Route("{patientId}/labrequest/{labrequestId}/report")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<ReadPatientLabReport>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
-        // GET api/patients/5/lab/1/note
-        public async Task<IActionResult> GetLabNote([FromRoute] int patientId, [FromRoute] int labId)
+        // GET api/patients/5/labrequest/1/report
+        public async Task<IActionResult> GetLabReport([FromRoute] int patientId, [FromRoute] int labrequestId)
         {
-            ServiceResponse<string> result = await _service.GetLabNoteAsync(patientId, labId);
+            ServiceResponse<ReadPatientLabReport> result = await _service.GetLabReportAsync(patientId, labrequestId);
 
             return result.FormatResponse();
         }

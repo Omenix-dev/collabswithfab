@@ -44,9 +44,10 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 		private readonly IGenericRepository<MedicalRecord> _medicalRecordRepository;
 		private readonly IGenericRepository<Medication> _medicationRepository;
 		private readonly IGenericRepository<PatientReferrer> _patientReferrerRepository;
-		private readonly IGenericRepository<Treatment> _treatmentRepository;
+        private readonly IGenericRepository<Treatment> _treatmentRepository;
+        private readonly IGenericRepository<PatientLabReport> _patientLabReportRepository;
         private readonly IGenericRepository<Visit> _visitRepository;
-        private readonly IGenericRepository<Lab> _labRepository;
+        private readonly IGenericRepository<LabRequest> _labRepository;
         private readonly IConfiguration _configuration;
         private readonly IGenericRepository<User> _userRepository;
         private readonly IGenericRepository<PatientAssignmentHistory> _patientAssignmentHistoryRepository;
@@ -63,7 +64,8 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             IGenericRepository<PatientReferrer> patientReferrerRepository,
             IGenericRepository<Treatment> treatmentRepository, IGenericRepository<Visit> visitRepository,
             MedicalRecordDbContext dbContext, IGenericRepository<Employee> employeeRepository,
-            IGenericRepository<Lab> labRepository, IGenericRepository<User> userRepository, IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository)
+            IGenericRepository<LabRequest> labRepository, IGenericRepository<User> userRepository, 
+            IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository, IGenericRepository<PatientLabReport> patientLabReportRepository)
         {
             _patientRepository = patientRepository;
             _mapper = mapper;
@@ -82,6 +84,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             _labRepository = labRepository;
             _userRepository = userRepository;
             _patientAssignmentHistoryRepository = patientAssignmentHistoryRepository;
+            _patientLabReportRepository = patientLabReportRepository;
         }
         #endregion
 
@@ -160,48 +163,35 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 return new ServiceResponse<IEnumerable<AssignedPatientsDto>>(Enumerable.Empty<AssignedPatientsDto>(), InternalCode.Success, ServiceErrorMessages.Success);
             }
 
-			List<AssignedPatientsDto> assignedPatientsDtOs = patients.Select(patient => new AssignedPatientsDto
-			{
-				PatientId = patient.Id,
-				FirstName = patient.FirstName,
-				LastName = patient.LastName,
-				AssignedNurse = _employeeRepository.Query()
-								.AsNoTracking()
-								.Where(x => x.Id == patient.NurseId)
-								.Select(s => $"{s.FirstName} {s.LastName}")
-								.FirstOrDefaultAsync()
-								.Result, // Use .Result to get the result synchronously, assuming this is an asynchronous operation
-				Age = CalculateAge(patient.DateOfBirth),
-				DateCreated = patient.CreatedAt.ToString("dd MMMM yyyy"),
-				Weight = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Weight,
-				Height = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Height,
-				Temperature = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Temperature,
-				Heart = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Height,
-				Resp = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Respiratory
-			}).ToList();
-			//List<AssignedPatientsDTO> assignedPatientsDTOs = new List<AssignedPatientsDTO>();
+            List<AssignedPatientsDto> assignedPatientsDTOs = new List<AssignedPatientsDto>();
 
-			//foreach (var patient in patients)
-			//{
-			//	AssignedPatientsDTO assignedPatient = new AssignedPatientsDTO()
-			//	{
-			//		PatientId = patient.PatientId,
-			//		FirstName = patient.FirstName,
-			//		LastName = patient.LastName,
-			//		AssignedNurse = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patient.NurseId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync(),
-			//		Age = CalculateAge(patient.DateOfBirth),
-			//		DateCreated = patient.CreatedAt.ToString("dd MMMM yyyy"),
-			//		Weight = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Weight,
-			//		Height = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Height,
-			//		Temperature = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Temperature,
-			//		Heart = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Height,
-			//		Resp = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Respiratory
-			//	};
+            foreach (var patient in patients)
+            {
+                Visit patientVisit = null;
 
-			//	assignedPatientsDTOs.Add(assignedPatient);
-			//}
+                if (patient.Visits.Any())
+                {
+                    patientVisit = patient.Visits.OrderBy(x => x.DateOfVisit).Last();
+                }
+                AssignedPatientsDto assignedPatient = new AssignedPatientsDto()
+                {
+                    PatientId = patient.Id,
+                    FirstName = patient.FirstName,
+                    LastName = patient.LastName,
+                    AssignedNurse = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patient.NurseId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync(),
+                    Age = CalculateAge(patient.DateOfBirth),
+                    DateCreated = patient.CreatedAt.ToString("dd MMMM yyyy"),
+                    Weight = patientVisit?.Weight ?? 0,
+                    Height = patientVisit?.Height ?? 0,
+                    Temperature = patientVisit?.Temperature ?? 0,
+                    Heart = patientVisit?.HeartPulse ?? 0,
+                    Resp = patientVisit?.Respiratory.ToString() ?? "0"
+                };
 
-            return new ServiceResponse<IEnumerable<AssignedPatientsDto>>(assignedPatientsDtOs, InternalCode.Success);
+                assignedPatientsDTOs.Add(assignedPatient);
+            }
+
+            return new ServiceResponse<IEnumerable<AssignedPatientsDto>>(assignedPatientsDTOs, InternalCode.Success);
         }
 
         public async Task<ServiceResponse<ReadPatientDto>> GetPatientDataAsync(int patientId)
@@ -215,8 +205,8 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                                                   .AsNoTracking()
                                                   .Include(x => x.Contact).Include(x => x.EmergencyContact)
                                                   .Include(x => x.Immunizations).Include(x => x.MedicalRecords)
-                                                  .Include(x => x.Contact).Include(x => x.Contact)
-                                                  .Include(x => x.Contact).Include(x => x.Contact)
+                                                  .Include(x => x.Visits).Include(x => x.Treatments)
+                                                  .Include(x => x.PatientReferrer)
                                                   .FirstOrDefaultAsync(x => x.Id == patientId);
 
             if (patient == null)
@@ -306,24 +296,26 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			return new ServiceResponse<ReadNurseNotesDto>(readNurseNotesDto, InternalCode.Success);
 		}
 
-        public async Task<ServiceResponse<string>> GetLabNoteAsync(int patientId, int labId)
+        public async Task<ServiceResponse<ReadPatientLabReport>> GetLabReportAsync(int patientId, int labrequestId)
         {
-            if (patientId <= 0 || labId <= 0)
+            if (patientId <= 0 || labrequestId <= 0)
             {
-                return new ServiceResponse<string>(String.Empty, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+                return new ServiceResponse<ReadPatientLabReport>(null, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
             }
 
-            var lab = await _labRepository.Query()
+            var lab = await _patientLabReportRepository.Query()
 										  .AsNoTracking()
-										  .Where(lab => lab.Visit.PatientId == patientId && lab.Id == labId)
-										  .FirstOrDefaultAsync();
+										  .Where(lab => lab.PatientId == patientId && lab.LabRequestId == labrequestId)
+                                          .Include(x => x.PatientLabDocuments)
+                                          .ProjectTo<ReadPatientLabReport>(_mapper.ConfigurationProvider)
+                                          .FirstOrDefaultAsync();
 
 			if (lab == null)
 			{
-				return new ServiceResponse<string>(String.Empty, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+				return new ServiceResponse<ReadPatientLabReport>(null, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
 			}
 
-            return new ServiceResponse<string>(lab.LabNote, InternalCode.Success);
+            return new ServiceResponse<ReadPatientLabReport>(lab, InternalCode.Success);
         }
 
         public async Task<ServiceResponse<string>> ReferPatientAsync(int patientId, int visitId, CreateLabReferDto labReferDto)
@@ -343,7 +335,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 return new ServiceResponse<string>(String.Empty, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
             }
 
-			var lab = _mapper.Map<Lab>(labReferDto);
+			var lab = _mapper.Map<LabRequest>(labReferDto);
 
 			patient.Visits.First().Labs.Add(lab);
 

@@ -8,12 +8,14 @@ using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
 using MedicalRecordsApi.Services.Implementation.EmployeeServices;
 using MedicalRecordsData.Entities.AuthEntity;
 using MedicalRecordsData.Enum;
+using MedicalRecordsRepository.DTO;
 using MedicalRecordsRepository.DTO.AuthDTO;
 using MedicalRecordsRepository.DTO.MedicalDto;
 using MedicalRecordsRepository.DTO.PatientDto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Mime;
@@ -431,7 +433,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         }
 
         [HttpPost("UpdateContact")]
-        public async Task<IActionResult> UpdateContact(UpdateContactDto contactDto)
+        public async Task<IActionResult> InsertOrUpdateContact(UpdateContactDto contactDto)
         {
 
             if (!ModelState.IsValid)
@@ -470,7 +472,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         }
 
         [HttpPost("EmergerncyContact")]
-        public async Task<IActionResult> EmergerncyContact(UpdateEmergencyContactDto emergencyContact)
+        public async Task<IActionResult> InsertOrUpdateEmergerncyContact(UpdateEmergencyContactDto emergencyContact)
         {
 
             if (!ModelState.IsValid)
@@ -893,6 +895,21 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             // caling the service here
             var response = _service.GetAllNurses(pageIndex, pageSize);
             return response.FormatResponse();
+        }
+        [HttpGet("GetAllMedicalTypes")]
+        public IActionResult GetAllMedicalTypes([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        {
+            var enumValues = Enum.GetValues(typeof(MedicalRecordType));
+            var listTypes = new List<(int position, string value)>();
+            for (int i = 0; i < enumValues.Length; i++)
+            {
+                var enumName = Enum.GetName(typeof(MedicalRecordType), enumValues.GetValue(i));
+                listTypes.Add(( i, enumName));
+            } 
+            // caling the service here
+            return new ServiceResponse<List<(int position, string value)>>
+                   (listTypes, InternalCode.Success, ServiceErrorMessages.Success)
+                   .FormatResponse();
         }
     }
 }

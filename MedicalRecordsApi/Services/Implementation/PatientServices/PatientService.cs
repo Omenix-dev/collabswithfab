@@ -569,7 +569,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                     return new ServiceResponse<object>("The invalid date of birth ", InternalCode.Unprocessable, "The invalid date of birth");
 
                 }
-                if (patientDto.PhoneNumber.Length > 11)
+                if (patientDto.PhoneNumber.Length != 11)
                 {
                     return new ServiceResponse<object>("The invalid Phone number ", InternalCode.Unprocessable, "The invalid Phone number ");
 
@@ -579,22 +579,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 {
                     return new ServiceResponse<object>("The patient already exist", InternalCode.EntityExist, ServiceErrorMessages.EntityExist);
                 }
-                var doctorModel = _userRepository.GetById(patientDto.DoctorId.Value);
-                if (doctorModel == null)
-                {
-                    return new ServiceResponse<object>("The doctor you assigned doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
-
-                }
-
-                var nurseModel = _userRepository.GetById(patientDto.NurseId.Value);
-                if (nurseModel == null)
-                {
-                    return new ServiceResponse<object>("The nurse you assigned doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
-
-                }
+                
                 var patientDetails = _mapper.Map<Patient>(patientDto);
                 patientDetails.CreatedAt = DateTime.UtcNow;
                 patientDetails.CreatedBy = userId;
+                patientDetails.UserId = userId;
                 var patientAssignmentHistory = _mapper.Map<PatientAssignmentHistory>(patientDto);
                 patientAssignmentHistory.CareType = MedicalRecordsData.Enum.PatientCareType.InPatient;
                 patientAssignmentHistory.CreatedAt = DateTime.UtcNow;
@@ -644,17 +633,17 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<List<MedicalRecordsDto>>> GetAllMedicalReportByPatientId(int patientId)
+        public async Task<ServiceResponse<List<ResponseMedicalRecordsDto>>> GetAllMedicalReportByPatientId(int patientId)
         {
             try
             {
                 var allRecords = await _medicalRecordRepository.GetAll().Where(x => x.PatientId == patientId).ToListAsync();
-                var reports = _mapper.Map<List<MedicalRecordsDto>>(allRecords);
-                return new ServiceResponse<List<MedicalRecordsDto>>(reports, InternalCode.Success);
+                var reports = _mapper.Map<List<ResponseMedicalRecordsDto>>(allRecords);
+                return new ServiceResponse<List<ResponseMedicalRecordsDto>>(reports, InternalCode.Success);
             }
             catch (Exception)
             {
-                return new ServiceResponse<List<MedicalRecordsDto>>(null, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+                return new ServiceResponse<List<ResponseMedicalRecordsDto>>(null, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }
 
         }
@@ -690,17 +679,17 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<List<ImmunizationDto>>> GetAllImmunizatiobByPatientId(int patientId)
+        public async Task<ServiceResponse<List<ResponseImmunizationDto>>> GetAllImmunizatiobByPatientId(int patientId)
         {
             try
             {
                 var allRecords = await _immunizationRepository.GetAll().Where(x => x.PatientId == patientId).ToListAsync();
-                var reports = _mapper.Map<List<ImmunizationDto>>(allRecords);
-                return new ServiceResponse<List<ImmunizationDto>>(reports, InternalCode.Success);
+                var reports = _mapper.Map<List<ResponseImmunizationDto>>(allRecords);
+                return new ServiceResponse<List<ResponseImmunizationDto>>(reports, InternalCode.Success);
             }
             catch (Exception)
             {
-                return new ServiceResponse<List<ImmunizationDto>>(null, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+                return new ServiceResponse<List<ResponseImmunizationDto>>(null, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }
 
         }
@@ -709,7 +698,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
-                await _immunizationRepository.DeleteAsync(visitId);
+                await _visitRepository.DeleteAsync(visitId);
                 return new ServiceResponse<object>(new { Message = "the visitation record was deleted successfully" }, InternalCode.Success);
             }
             catch (Exception ex)
@@ -723,10 +712,31 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
+                var doctorModel = _userRepository.GetById(patientVisitsObj.DoctorId.Value);
+                if (doctorModel == null)
+                {
+                    return new ServiceResponse<object>("the doctor you assigned doesnt exist", InternalCode.EntityNotFound, "The doctor you assigned doesnt exist");
+
+                }
+
+                var nurseModel = _userRepository.GetById(patientVisitsObj.NurseId.Value);
+                if (nurseModel == null)
+                {
+                    return new ServiceResponse<object>("the nurse you assigned doesnt exist", InternalCode.EntityNotFound, "The nurse you assigned doesnt exist");
+
+                }
                 var visitRecordObj = _mapper.Map<Visit>(patientVisitsObj);
                 visitRecordObj.CreatedAt = DateTime.UtcNow;
-                visitRecordObj.CreatedBy = userId;
+                visitRecordObj.CreatedBy = userId; 
                 await _visitRepository.Insert(visitRecordObj);
+                var patientAssignmentHistory = new PatientAssignmentHistory();
+                patientAssignmentHistory.CareType = MedicalRecordsData.Enum.PatientCareType.InPatient;
+                patientAssignmentHistory.PatientId = patientVisitsObj.PatientId.Value;
+                patientAssignmentHistory.NurseId  = patientVisitsObj.NurseId.Value;
+                patientAssignmentHistory.DoctorId  = patientVisitsObj.DoctorId.Value;
+                patientAssignmentHistory.CreatedAt = DateTime.UtcNow;
+                patientAssignmentHistory.CreatedBy = userId;
+                await _patientAssignmentHistoryRepository.CreateAsync(patientAssignmentHistory);
                 return new ServiceResponse<object>(new { Message = "the Visit record was added successfully"}, InternalCode.Success);
             }
             catch (Exception ex)
@@ -736,17 +746,17 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
         }
 
-        public async Task<ServiceResponse<List<PatientsVisitsDto>>> GetAllVisitationByPatientId(int PatientId)
+        public async Task<ServiceResponse<List<ResponsePatientsVisitsDto>>> GetAllVisitationByPatientId(int PatientId)
         {
             try
             {
                 var allVisitsRecords = await _visitRepository.GetAll().Where(x => x.PatientId == PatientId).ToListAsync();
-                var patientVisits = _mapper.Map<List<PatientsVisitsDto>>(allVisitsRecords);
-                return new ServiceResponse<List<PatientsVisitsDto>>(patientVisits, InternalCode.Success);
+                var patientVisits = _mapper.Map<List<ResponsePatientsVisitsDto>>(allVisitsRecords);
+                return new ServiceResponse<List<ResponsePatientsVisitsDto>>(patientVisits, InternalCode.Success);
             }
             catch (Exception)
             {
-                return new ServiceResponse<List<PatientsVisitsDto>>(null, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+                return new ServiceResponse<List<ResponsePatientsVisitsDto>>(null, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }
 
         }
@@ -854,15 +864,15 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                     return new ServiceResponse<object>("the nurse you assigned doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
 
                 }
-                patientObj.NurseId = updateMedicalStaffDto.NurseId.Value;
-                patientObj.DoctorId = updateMedicalStaffDto.DoctorId.Value;
+                patientObj.NurseId = updateMedicalStaffDto.NurseId;
+                patientObj.DoctorId = updateMedicalStaffDto.DoctorId;
                 patientObj.ModifiedBy = userId;
                 patientObj.UpdatedAt = DateTime.UtcNow;
                 await _patientRepository.UpdateAsync(patientObj);
                 var patientAssignmentHistory = _mapper.Map<PatientAssignmentHistory>(updateMedicalStaffDto);
                 patientAssignmentHistory.CareType = MedicalRecordsData.Enum.PatientCareType.InPatient;
                 patientAssignmentHistory.PatientId = updateMedicalStaffDto.PatientId.Value;
-                patientAssignmentHistory.CreatedAt = DateTime.UtcNow;
+                patientAssignmentHistory.CreatedAt = DateTime.UtcNow;   
                 patientAssignmentHistory.CreatedBy = userId;
                 await _patientAssignmentHistoryRepository.CreateAsync(patientAssignmentHistory);
                 return new ServiceResponse<object>(new { Message = "the patient has been reassign to the doctor" }, InternalCode.Success, ServiceErrorMessages.Success);

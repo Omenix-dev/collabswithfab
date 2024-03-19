@@ -36,7 +36,7 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
         private readonly IGenericRepository<PatientAssignmentHistory> _patientAssignmentHistoryRepository;
         private readonly IGenericRepository<Treatment> _treatmentRepository;
         private readonly IGenericRepository<Visit> _visitRepository;
-        private readonly IGenericRepository<Lab> _labRepository;
+        private readonly IGenericRepository<LabRequest> _labRepository;
         private readonly IGenericRepository<BedAssignment> _bedAssignmentRepository;
         private readonly IConfiguration _configuration;
         private readonly IGenericRepository<User> _userRepository;
@@ -51,7 +51,7 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
             IGenericRepository<PatientReferrer> patientReferrerRepository,
             IGenericRepository<Treatment> treatmentRepository, IGenericRepository<Visit> visitRepository,
             MedicalRecordDbContext dbContext, IGenericRepository<Employee> employeeRepository,
-            IGenericRepository<Lab> labRepository, IGenericRepository<User> userRepository, IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository, IGenericRepository<BedAssignment> bedAssignmentRepository)
+            IGenericRepository<LabRequest> labRepository, IGenericRepository<User> userRepository, IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository, IGenericRepository<BedAssignment> bedAssignmentRepository)
         {
             _patientRepository = patientRepository;
             _mapper = mapper;

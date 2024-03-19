@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MedicalRecordsData.Migrations
 {
     [DbContext(typeof(MedicalRecordDbContext))]
-    [Migration("20240122014808_FirstUpdate")]
-    partial class FirstUpdate
+    [Migration("20240319203758_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,7 +21,7 @@ namespace MedicalRecordsData.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("MedicalRecordsData.Entities.AuthEntity.Clinic", b =>
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.BedAssignment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -37,260 +37,30 @@ namespace MedicalRecordsData.Migrations
                     b.Property<int>("CreatedBy")
                         .HasColumnType("int");
 
-                    b.Property<string>("DateEstablished")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Mandate")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("FacilityId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<int>("ModifiedBy")
                         .HasColumnType("int");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Clinics");
-                });
-
-            modelBuilder.Entity("MedicalRecordsData.Entities.AuthEntity.Department", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("ActionTaken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DateEstablished")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Mandate")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ModifiedBy")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Departments");
-                });
-
-            modelBuilder.Entity("MedicalRecordsData.Entities.AuthEntity.Employee", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("ActionTaken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AuthenticationToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Bvn")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ClinicId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DateOfBirth")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FirstName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Gender")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastLoginTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MaritalStatus")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MiddleName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ModifiedBy")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MotherMaidenName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("NationalityId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Nin")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("PasswordHash")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<byte[]>("PasswordSalt")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("PlaceOfBirth")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProfilePicture")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ReligionId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ResumptionDate")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SalaryAccountNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SalaryDomiciledBank")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Signature")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StaffId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("StateId")
+                    b.Property<int>("PatientId")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<string>("Title")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WeddingAnniversary")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WorkGrade")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("Employees");
-                });
-
-            modelBuilder.Entity("MedicalRecordsData.Entities.AuthEntity.Role", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("ActionTaken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ModifiedBy")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
-                });
-
-            modelBuilder.Entity("MedicalRecordsData.Entities.AuthEntity.UserRole", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("EmployeeId1")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("EmployeeId1");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("UserRoles");
+                    b.ToTable("BedAssignments");
                 });
 
             modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.Contact", b =>
@@ -327,7 +97,7 @@ namespace MedicalRecordsData.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("LGAResidence")
+                    b.Property<string>("LgaResidence")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ModifiedBy")
@@ -354,6 +124,54 @@ namespace MedicalRecordsData.Migrations
                         .IsUnique();
 
                     b.ToTable("Contacts");
+                });
+
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.CustomerFeedback", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ActionTaken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Comments")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ModifiedBy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CustomerFeedbacks");
                 });
 
             modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.EmergencyContact", b =>
@@ -393,10 +211,10 @@ namespace MedicalRecordsData.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("LGA")
+                    b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("LastName")
+                    b.Property<string>("Lga")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ModifiedBy")
@@ -426,6 +244,51 @@ namespace MedicalRecordsData.Migrations
                         .IsUnique();
 
                     b.ToTable("EmergencyContacts");
+                });
+
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.Facility", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ActionTaken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FacilityType")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsOccupied")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ModifiedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Facilities");
                 });
 
             modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.Immunization", b =>
@@ -543,6 +406,59 @@ namespace MedicalRecordsData.Migrations
                     b.ToTable("ImmunizationDocuments");
                 });
 
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.LabRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ActionTaken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Diagnosis")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LabCentre")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LabNote")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LabType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ModifiedBy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("VisitId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VisitId");
+
+                    b.ToTable("LabRequests");
+                });
+
             modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.MedicalRecord", b =>
                 {
                     b.Property<int>("Id")
@@ -637,6 +553,50 @@ namespace MedicalRecordsData.Migrations
                     b.ToTable("Medications");
                 });
 
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.NurseNote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ActionTaken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ModifiedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("VisitId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VisitId");
+
+                    b.ToTable("NurseNote");
+                });
+
             modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.Patient", b =>
                 {
                     b.Property<int>("Id")
@@ -674,13 +634,16 @@ namespace MedicalRecordsData.Migrations
                     b.Property<string>("Gender")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("HasHmo")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("LGA")
+                    b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("LastName")
+                    b.Property<string>("Lga")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MaritalStatus")
@@ -689,11 +652,11 @@ namespace MedicalRecordsData.Migrations
                     b.Property<int>("ModifiedBy")
                         .HasColumnType("int");
 
+                    b.Property<string>("Nationality")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("NurseId")
                         .HasColumnType("int");
-
-                    b.Property<string>("PatientId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
@@ -716,6 +679,184 @@ namespace MedicalRecordsData.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Patients");
+                });
+
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.PatientAssignmentHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ActionTaken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CareType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ModifiedBy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NurseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("PatientAssignmentHistories");
+                });
+
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.PatientLabDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ActionTaken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DocName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DocPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ModifiedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ModifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PatientLabReportId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientLabReportId");
+
+                    b.ToTable("PatientLabDocuments");
+                });
+
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.PatientLabReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ActionTaken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Age")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Diagnosis")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LabFindings")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LabRequest")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("LabRequestDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LabRequestId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LabTechnicianEmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ModifiedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ModifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PatientFullName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PatientUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Subject")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PatientLabReports");
                 });
 
             modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.PatientReferrer", b =>
@@ -815,12 +956,18 @@ namespace MedicalRecordsData.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("VisitId")
+                        .HasColumnType("int");
+
                     b.Property<double>("Weight")
                         .HasColumnType("float");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PatientId");
+
+                    b.HasIndex("VisitId")
+                        .IsUnique();
 
                     b.ToTable("Treatments");
                 });
@@ -865,9 +1012,6 @@ namespace MedicalRecordsData.Migrations
                     b.Property<int>("ModifiedBy")
                         .HasColumnType("int");
 
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("NurseId")
                         .HasColumnType("int");
 
@@ -883,6 +1027,9 @@ namespace MedicalRecordsData.Migrations
                     b.Property<double>("Temperature")
                         .HasColumnType("float");
 
+                    b.Property<int>("TreatmentId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -894,48 +1041,6 @@ namespace MedicalRecordsData.Migrations
                     b.HasIndex("PatientId");
 
                     b.ToTable("Visits");
-                });
-
-            modelBuilder.Entity("MedicalRecordsData.Entities.Resources", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("ApiEndPoint")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HomeLink")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Resources");
-                });
-
-            modelBuilder.Entity("MedicalRecordsData.Entities.AuthEntity.Employee", b =>
-                {
-                    b.HasOne("MedicalRecordsData.Entities.AuthEntity.Role", "Role")
-                        .WithMany("Employees")
-                        .HasForeignKey("RoleId");
-                });
-
-            modelBuilder.Entity("MedicalRecordsData.Entities.AuthEntity.UserRole", b =>
-                {
-                    b.HasOne("MedicalRecordsData.Entities.AuthEntity.Employee", null)
-                        .WithMany("Roles")
-                        .HasForeignKey("EmployeeId");
-
-                    b.HasOne("MedicalRecordsData.Entities.AuthEntity.Employee", null)
-                        .WithMany("Userroles")
-                        .HasForeignKey("EmployeeId1");
-
-                    b.HasOne("MedicalRecordsData.Entities.AuthEntity.Role", null)
-                        .WithMany("Userroles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.Contact", b =>
@@ -974,6 +1079,15 @@ namespace MedicalRecordsData.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.LabRequest", b =>
+                {
+                    b.HasOne("MedicalRecordsData.Entities.MedicalRecordsEntity.Visit", "Visit")
+                        .WithMany("Labs")
+                        .HasForeignKey("VisitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.MedicalRecord", b =>
                 {
                     b.HasOne("MedicalRecordsData.Entities.MedicalRecordsEntity.Patient", "Patient")
@@ -988,6 +1102,33 @@ namespace MedicalRecordsData.Migrations
                     b.HasOne("MedicalRecordsData.Entities.MedicalRecordsEntity.Treatment", "Treatment")
                         .WithMany("Medications")
                         .HasForeignKey("TreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.NurseNote", b =>
+                {
+                    b.HasOne("MedicalRecordsData.Entities.MedicalRecordsEntity.Visit", "Visit")
+                        .WithMany("NurseNotes")
+                        .HasForeignKey("VisitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.PatientAssignmentHistory", b =>
+                {
+                    b.HasOne("MedicalRecordsData.Entities.MedicalRecordsEntity.Patient", "Patient")
+                        .WithMany("PatientAssignmentHistory")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.PatientLabDocument", b =>
+                {
+                    b.HasOne("MedicalRecordsData.Entities.MedicalRecordsEntity.PatientLabReport", "PatientLabReport")
+                        .WithMany("PatientLabDocuments")
+                        .HasForeignKey("PatientLabReportId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1007,6 +1148,12 @@ namespace MedicalRecordsData.Migrations
                         .WithMany("Treatments")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedicalRecordsData.Entities.MedicalRecordsEntity.Visit", "Visit")
+                        .WithOne("Treatment")
+                        .HasForeignKey("MedicalRecordsData.Entities.MedicalRecordsEntity.Treatment", "VisitId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
 

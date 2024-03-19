@@ -14,13 +14,14 @@ namespace MedicalRecordsApi.Services.Profiles
 			CreateMap<UserDto, Employee>().ReverseMap();
 			CreateMap<ReadPatientDto, Patient>().ReverseMap();
             CreateMap<ReadVisitHistoryDto, Visit>().ReverseMap();
-            CreateMap<CreateLabReferDto, Lab>().ReverseMap();
+            CreateMap<CreateLabReferDto, LabRequest>().ReverseMap();
             CreateMap<CreateCustomerFeedbackDto, CustomerFeedback>().ReverseMap();
             CreateMap<Contact, ReadContactDetailsDto>();
             CreateMap<EmergencyContact, ReadEmergencyContactDetailsDto>();
             CreateMap<Immunization, ReadImmunizationRecordDto>();
             CreateMap<ImmunizationDocument, ReadImmunizationDocumentDto>();
             CreateMap<Treatment, ReadTreatmentRecordDto>();
+            CreateMap<PatientLabReport, ReadPatientLabReport>();
         }
     }
 }

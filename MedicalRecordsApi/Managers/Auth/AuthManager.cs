@@ -76,6 +76,9 @@ namespace MedicalRecordsApi.Managers.Auth
                     .Include(e => e.EmployeePrivilegeAccesses)
                     .FirstOrDefaultAsync(m => m.Email == user.Data.Email);
 
+                var role = await _roleRepository.Query()
+                    .FirstOrDefaultAsync(m => m.Id == user.Data.RoleId);
+
                 if (profile != null)
                 {
                     profile.AuthenticationToken = user.Data.Token;
@@ -89,6 +92,10 @@ namespace MedicalRecordsApi.Managers.Auth
                 AuthResponseDTO authResponseDTO = new AuthResponseDTO();
                 authResponseDTO.jwt = jwt;
                 authResponseDTO.RefreshToken = refreshToken;
+                authResponseDTO.FirstName = profile.FirstName;
+                authResponseDTO.LastName = profile.LastName;
+                authResponseDTO.Role = role.Name;
+                authResponseDTO.Username = profile.Username;
 
                 return new ServiceResponse<AuthResponseDTO>(authResponseDTO, InternalCode.Success);
             }

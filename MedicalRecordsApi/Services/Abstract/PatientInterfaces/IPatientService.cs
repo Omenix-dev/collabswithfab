@@ -40,9 +40,9 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
         /// This gets the lab note of a patient
         /// </summary>
         /// <param name="patientId"></param>
-        /// <param name="labId"></param>
+        /// <param name="labrequestId"></param>
         /// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
-        Task<ServiceResponse<string>> GetLabNoteAsync(int patientId, int labId);
+        Task<ServiceResponse<ReadPatientLabReport>> GetLabReportAsync(int patientId, int labrequestId);
         /// <summary>
         /// This gets nurses notes for a particular visit of a patient
         /// </summary>

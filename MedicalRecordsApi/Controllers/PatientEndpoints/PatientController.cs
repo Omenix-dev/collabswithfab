@@ -387,7 +387,6 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             return result.FormatResponse();
         }
 
-        
         /// <summary>
         /// used to add the patient to the nurse or doctors queue
         /// </summary>
@@ -471,8 +470,8 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 
         }
 
-        [HttpPost("EmergerncyContact")]
-        public async Task<IActionResult> InsertOrUpdateEmergerncyContact(UpdateEmergencyContactDto emergencyContact)
+        [HttpPost("emergencyContact")]
+        public async Task<IActionResult> InsertOrUpdateEmergencyContact(UpdateEmergencyContactDto emergencyContact)
         {
 
             if (!ModelState.IsValid)
@@ -510,8 +509,8 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 
         }
 
-        [HttpPost("AddMedicalReport")]
-        public async Task<IActionResult> AddMedicalReport(MedicalRecordsDto medicalReportDto)
+        [HttpPost("AddMedicalRecord")]
+        public async Task<IActionResult> AddMedicalRecord(MedicalRecordsDto medicalReportDto)
         {
 
             if (!ModelState.IsValid)
@@ -917,8 +916,8 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// </summary>
         /// <param name="UpdatePatientDto"></param>
         /// <returns></returns>
-        [HttpPost("UpdatePatient")]
-        public async Task<IActionResult> UpdatePatient([FromBody] CreatePatientRequestDto createPatientDto)
+        [HttpPut("UpdatePatient")]
+        public async Task<IActionResult> UpdatePatient([FromBody] UpdatePatientDto UpdatePatientDto)
         {
 
             if (!ModelState.IsValid)
@@ -945,7 +944,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
-                var response = await _service.AddPatient(createPatientDto, userId);
+                var response = await _service.UpdatePatient(UpdatePatientDto, userId);
                 return response.FormatResponse();
             }
             else
@@ -953,7 +952,6 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
                 return value.FormatResponse();
             }
-
         }
     }
 }

@@ -148,5 +148,6 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
         ServiceResponse<PaginatedList<GetAllPatientsDto>> GetAllPatient(int pageIndex, int pageSize);
         ServiceResponse<GetAllPatientsDto> GetAllPatientById(int patientId);
         ServiceResponse<PaginatedList<GetAllNurseDto>> GetAllNurses(int pageIndex, int pageSize);
+        Task<ServiceResponse<object>> UpdatePatient(UpdatePatientDto updatePatientDto, int userId);
     }
 }

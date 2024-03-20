@@ -50,4 +50,24 @@ namespace MedicalRecordsRepository.DTO.PatientDto
         [Required(ErrorMessage = "DoctorId is required")]
         public int? DoctorId { get; set; }
     }
+    public class UpdatePatientDto 
+    { 
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Gender { get; set; }
+        [Required(ErrorMessage ="The Date is required")]
+        [DataType(DataType.Date, ErrorMessage = "Invalid date format")]
+        [DateNotGreaterThanNow(ErrorMessage = "Date should not be greater than current date")]
+        public DateTime DateOfBirth { get; set; }
+        [Required(ErrorMessage ="the email address is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        public string Email { get; set; }
+        [Phone(ErrorMessage ="the is not a valid phone number") ]
+        public string PhoneNumber { get; set; }
+        public string StateOfOrigin { get; set; }
+        public string Lga { get; set; }
+        public string PlaceOfBirth { get; set; }
+        public string MaritalStatus { get; set; }
+        public string Nationality { get; set; }
+    }
 }

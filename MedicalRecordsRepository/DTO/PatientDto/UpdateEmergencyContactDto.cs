@@ -9,7 +9,7 @@ namespace MedicalRecordsRepository.DTO.PatientDto
         public string Phone { get; set; }
         public string Email { get; set; }
         public string ContactAddress { get; set; }
-        public string StateOfResidnece { get; set; }
+        public string StateOfResidence { get; set; }
         public string Lga { get; set; }
         public string City { get; set; }
         public string AltPhone { get; set; }

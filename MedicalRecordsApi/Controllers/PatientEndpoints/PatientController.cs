@@ -894,5 +894,49 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             var response = _service.GetAllNurses(pageIndex, pageSize);
             return response.FormatResponse();
         }
+
+        /// <summary>
+        /// used to update the patient record
+        /// </summary>
+        /// <param name="UpdatePatientDto"></param>
+        /// <returns></returns>
+        [HttpPost("UpdatePatient")]
+        public async Task<IActionResult> UpdatePatient([FromBody] CreatePatientRequestDto createPatientDto)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("id")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
+            int userId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                userId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse)
+            {
+                // caling the service here
+                var response = await _service.AddPatient(createPatientDto, userId);
+                return response.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+
+        }
     }
 }

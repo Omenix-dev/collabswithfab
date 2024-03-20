@@ -22,12 +22,15 @@ namespace MedicalRecordsApi.Services.Profiles
             CreateMap<UpdateContactDto, Contact>();
             CreateMap<UpdateEmergencyContactDto, EmergencyContact>();
             CreateMap<MedicalRecordsDto, MedicalRecord>();
-            CreateMap<MedicalRecord, MedicalRecordsDto>()
+            CreateMap<MedicalRecord, MedicalRecordsDto>();
+            CreateMap<MedicalRecord, ResponseMedicalRecordsDto>()
                 .ForMember(x => x.RecordId, opt => opt.MapFrom(src => src.Id));
-            CreateMap<Immunization, ImmunizationDto>()
+            CreateMap<Immunization, ImmunizationDto>();
+            CreateMap<Immunization, ResponseImmunizationDto>()
                 .ForMember(x => x.ImmunizationId, opt => opt.MapFrom(src => src.Id));
             CreateMap<ImmunizationDto, Immunization>();
-            CreateMap<Visit, PatientsVisitsDto>()
+            CreateMap<Visit, PatientsVisitsDto>();
+            CreateMap<Visit, ResponsePatientsVisitsDto>()
                 .ForMember(x => x.VisitId, opt => opt.MapFrom(src => src.Id));
             CreateMap<PatientsVisitsDto, Visit>();
             CreateMap<AssignedPatientsDto, BedAssignment>().ReverseMap();

@@ -132,18 +132,18 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
         Task<ServiceResponse<object>> UpdateEmergencyContact(UpdateEmergencyContactDto emergencyContactDto, int userId);
 
 		//servoce for the medical records
-		Task<ServiceResponse<List<MedicalRecordsDto>>> GetAllMedicalReportByPatientId(int patientId);
+		Task<ServiceResponse<List<ResponseMedicalRecordsDto>>> GetAllMedicalReportByPatientId(int patientId);
 		Task<ServiceResponse<string>> DeleteMedicalReport(int recordId);
 		Task<ServiceResponse<object>> AddMedicalReport(MedicalRecordsDto medicalRecords, int userId);
 
 		//services for the immunization records
-		Task<ServiceResponse<List<ImmunizationDto>>> GetAllImmunizatiobByPatientId(int patientId);
+		Task<ServiceResponse<List<ResponseImmunizationDto>>> GetAllImmunizatiobByPatientId(int patientId);
 		Task<ServiceResponse<string>> DeleteImmunizationRecord(int recordId);
 		Task<ServiceResponse<object>> AddImmunizationRecords(ImmunizationDto immunizationRecords, int userId);
 		// visation services
 		Task<ServiceResponse<object>> DeleteVisitsRecord(int visitId);
 		Task<ServiceResponse<object>> AddPatientVistsRecords(PatientsVisitsDto patientVisitsObj, int userId);
-		Task<ServiceResponse<List<PatientsVisitsDto>>> GetAllVisitationByPatientId(int PatientId);
+		Task<ServiceResponse<List<ResponsePatientsVisitsDto>>> GetAllVisitationByPatientId(int PatientId);
         Task<ServiceResponse<object>> UpdateMedicalStaffByPatientId(UpdateMedicalStaffDto updateMedicalStaffDto, int userId);
         ServiceResponse<PaginatedList<GetAllPatientsDto>> GetAllPatient(int pageIndex, int pageSize);
         ServiceResponse<GetAllPatientsDto> GetAllPatientById(int patientId);

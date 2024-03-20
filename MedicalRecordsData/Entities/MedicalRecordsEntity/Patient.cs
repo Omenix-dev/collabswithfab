@@ -34,8 +34,8 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
         public int UserId { get; set; }
 
 		//Staff taking care of patient
-		public int NurseId { get; set; }
-		public int DoctorId { get; set; }
+		public int? NurseId { get; set; }
+		public int? DoctorId { get; set; }
 
 		//Clinic
 		public int ClinicId { get; set; }

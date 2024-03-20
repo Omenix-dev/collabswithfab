@@ -32,18 +32,19 @@ namespace MedicalRecordsApi.Services.Implementation.CustomerEngagementServices
 		private readonly IGenericService<ReadCustomerFeedbackDto> _genericService;
 		private readonly IGenericRepository<CustomerFeedback> _customerFeedbackRepository;
 		private readonly IConfiguration _configuration;
-		
-		public CustomerEngagementService(MedicalRecordDbContext dbContext, IGenericRepository<CustomerFeedback> customerFeedbackRepository, IConfiguration configuration, IGenericRepository<Employee> employeeRepository, IGenericService<ReadCustomerFeedbackDto> genericService)
-		{
-			_dbContext = dbContext;
-			_customerFeedbackRepository = customerFeedbackRepository;
-			_configuration = configuration;
-			_employeeRepository = employeeRepository;
-			_genericService = genericService;
-		}
-		#endregion
 
-		public async Task<ServiceResponse<string>> AddCustomerFeedbackAsync(CreateCustomerFeedbackDto customerFeedbackDto)
+        public CustomerEngagementService(MedicalRecordDbContext dbContext, IGenericRepository<CustomerFeedback> customerFeedbackRepository, IConfiguration configuration, IGenericRepository<Employee> employeeRepository, IGenericService<ReadCustomerFeedbackDto> genericService, IMapper mapper)
+        {
+            _dbContext = dbContext;
+            _customerFeedbackRepository = customerFeedbackRepository;
+            _configuration = configuration;
+            _employeeRepository = employeeRepository;
+            _genericService = genericService;
+            _mapper = mapper;
+        }
+        #endregion
+
+        public async Task<ServiceResponse<string>> AddCustomerFeedbackAsync(CreateCustomerFeedbackDto customerFeedbackDto)
 		{
 			if (customerFeedbackDto == null)
 			{

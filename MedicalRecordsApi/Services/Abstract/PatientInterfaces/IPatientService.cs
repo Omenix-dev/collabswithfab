@@ -13,13 +13,14 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 {
 	public interface IPatientService
 	{
-		/// <summary>
-		/// This adds to the prescription data in the patients record
-		/// </summary>
-		/// <param name="patientId"></param>
-		/// <param name="prescriptionDto"></param>
-		/// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
-		Task<ServiceResponse<string>> AddPrescriptionAsync(int patientId, CreatePatientPrescriptionDto prescriptionDto);
+        /// <summary>
+        /// This adds to the prescription data in the patients record
+        /// </summary>
+        /// <param name="patientId"></param>
+		/// <param name="visitId"></param>
+        /// <param name="prescriptionDto"></param>
+        /// <returns>Returns a <see cref="ServiceResponse{string}"/> object.</returns>
+        Task<ServiceResponse<string>> AddPrescriptionAsync(int patientId, int visitId, CreatePatientPrescriptionDto prescriptionDto);
 		/// <summary>
 		/// This adds to the patient note in the patients record
 		/// </summary>

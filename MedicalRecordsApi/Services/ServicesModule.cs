@@ -76,6 +76,7 @@ namespace MedicalRecordsApi.Services
 
 
             services.AddAutoMapper(typeof(PatientProfileMapper));
+            services.AddAutoMapper(typeof(MedicalRecordsMapProfile));
         }
     }
 }

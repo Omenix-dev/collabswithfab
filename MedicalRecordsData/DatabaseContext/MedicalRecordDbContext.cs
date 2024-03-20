@@ -95,16 +95,30 @@ namespace MedicalRecordsData.DatabaseContext
 				.Entries()
 				.Where(e => e.State == EntityState.Modified);
 
-			foreach (var entityEntry in entries)
+
+            var addedEntries = ChangeTracker
+                .Entries()
+                .Where(e => e.State == EntityState.Added);
+
+            foreach (var entityEntry in entries)
 			{
-				var dateUpdatedProp = entityEntry.Metadata.FindProperty("DateUpdated");
+				var dateUpdatedProp = entityEntry.Metadata.FindProperty("UpdatedAt");
 				if (dateUpdatedProp != null)
 				{
 					entityEntry.Property("DateUpdated").CurrentValue = DateTime.UtcNow;
 				}
 			}
 
-			return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+            foreach (var entityEntry in addedEntries)
+            {
+                var dateCreatedProp = entityEntry.Metadata.FindProperty("CreatedAt");
+                if (dateCreatedProp != null)
+                {
+                    entityEntry.Property("CreatedAt").CurrentValue = DateTime.UtcNow;
+                }
+            }
+
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 		}
 	}
 }

@@ -22,6 +22,7 @@ namespace MedicalRecordsApi.Services.Profiles
             CreateMap<ImmunizationDocument, ReadImmunizationDocumentDto>();
             CreateMap<Treatment, ReadTreatmentRecordDto>();
             CreateMap<PatientLabReport, ReadPatientLabReport>();
+            CreateMap<CustomerFeedback, ReadCustomerFeedbackDto>();
         }
     }
 }

@@ -168,13 +168,14 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// This adds to the prescription data in the patients record
         /// </summary>
         /// <param name="patientId"></param>
+        /// <param name="visitId"></param>
         /// <param name="prescriptionDto"></param>
         /// <returns>Returns a <see>
         ///         <cref>ServiceResponse{string}</cref>
         ///     </see>
         ///     object.</returns>
         [HttpPost]
-		[Route("{patientId}/addtreatmentprescription")]
+		[Route("{patientId}/visit/{visitId}/addtreatmentprescription")]
 		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
 		[ProducesResponseType((int)HttpStatusCode.Created)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -182,10 +183,10 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
-        // POST api/patients/5/addtreatmentprescription
-        public async Task<IActionResult> Post([FromRoute] int patientId, [FromBody]CreatePatientPrescriptionDto prescriptionDto)
+        // POST api/patients/5/visit/6/addtreatmentprescription
+        public async Task<IActionResult> Post([FromRoute] int patientId, [FromRoute] int visitId, [FromBody]CreatePatientPrescriptionDto prescriptionDto)
 		{
-			ServiceResponse<string> result = await _service.AddPrescriptionAsync(patientId, prescriptionDto);
+			ServiceResponse<string> result = await _service.AddPrescriptionAsync(patientId, visitId, prescriptionDto);
 
 			return result.FormatResponse();
 		}

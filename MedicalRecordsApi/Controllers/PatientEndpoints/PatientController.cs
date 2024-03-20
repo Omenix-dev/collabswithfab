@@ -896,17 +896,17 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             return response.FormatResponse();
         }
         [HttpGet("GetAllMedicalTypes")]
-        public IActionResult GetAllMedicalTypes([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        public IActionResult GetAllMedicalTypes()
         {
             var enumValues = Enum.GetValues(typeof(MedicalRecordType));
-            var listTypes = new List<(int position, string value)>();
-            for (int i = 0; i < enumValues.Length; i++)
+            var listTypes = new List<object>();
+            for (int i = 1; i <= enumValues.Length; i++)
             {
-                var enumName = Enum.GetName(typeof(MedicalRecordType), enumValues.GetValue(i));
-                listTypes.Add(( i, enumName));
+                var enumName = Enum.GetName(typeof(MedicalRecordType), enumValues.GetValue(i-1));
+                listTypes.Add(new { index =i, value =enumName });
             } 
             // caling the service here
-            return new ServiceResponse<List<(int position, string value)>>
+            return new ServiceResponse<List<object>>
                    (listTypes, InternalCode.Success, ServiceErrorMessages.Success)
                    .FormatResponse();
         }

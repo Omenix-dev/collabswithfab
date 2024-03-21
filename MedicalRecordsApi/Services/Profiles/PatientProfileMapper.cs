@@ -16,9 +16,7 @@ namespace MedicalRecordsApi.Services.Profiles
             CreateMap<CreatePatientProfileDto, User>();
             CreateMap<CreatePatientRequestDto, Patient>();
             CreateMap<Patient, GetAllPatientsDto>()
-                .ForMember(x =>x.PatientId, src => src.MapFrom(s => s.Id));
-            CreateMap<User, GetAllNurseDto>()
-                .ForMember(x => x.NurseId, src => src.MapFrom(s => s.Id));
+                .ForMember(x =>x.PatientId, src => src.MapFrom(s => s.Id)); 
             CreateMap<UpdateContactDto, Contact>();
             CreateMap<UpdateEmergencyContactDto, EmergencyContact>();
             CreateMap<MedicalRecordsDto, MedicalRecord>();
@@ -32,7 +30,9 @@ namespace MedicalRecordsApi.Services.Profiles
             CreateMap<Visit, PatientsVisitsDto>();
             CreateMap<Visit, ResponsePatientsVisitsDto>()
                 .ForMember(x => x.VisitId, opt => opt.MapFrom(src => src.Id));
-            CreateMap<PatientsVisitsDto, Visit>();
+            CreateMap<PatientsVisitsDto, Visit>()
+                .ForMember(x => x.NurseId, opt => opt.MapFrom(src => src.NurseEmployeeId))
+                .ForMember(x => x.DoctorId, opt => opt.MapFrom(src => src.DoctorEmployeeId));
             CreateMap<AssignedPatientsDto, BedAssignment>().ReverseMap();
             CreateMap<PatientReferrer, ReferralNoteDto>().ReverseMap();
             CreateMap<CreatePatientRequestDto, PatientAssignmentHistory>();

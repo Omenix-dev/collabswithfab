@@ -722,17 +722,15 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
-                var doctorModel = _userRepository.GetById(patientVisitsObj.DoctorId.Value);
-                if (doctorModel == null)
+                var doctorModel = patientVisitsObj.DoctorEmployeeId != null ? _userRepository.GetById(patientVisitsObj.DoctorEmployeeId.Value) : null;
+                if (doctorModel == null && patientVisitsObj.DoctorEmployeeId != null)
                 {
-                    return new ServiceResponse<object>("the doctor you assigned doesnt exist", InternalCode.EntityNotFound, "The doctor you assigned doesnt exist");
-
+                    return new ServiceResponse<object>("The doctor you assigned doesnt exist", InternalCode.EntityNotFound, "The Doctor you assigned doesnt exist");
                 }
-
-                var nurseModel = _userRepository.GetById(patientVisitsObj.NurseId.Value);
-                if (nurseModel == null)
+                var nurseModel = patientVisitsObj.NurseEmployeeId != null ? _userRepository.GetById(patientVisitsObj.NurseEmployeeId.Value) : null;
+                if (nurseModel == null && patientVisitsObj.NurseEmployeeId != null)
                 {
-                    return new ServiceResponse<object>("The nurse you assigned doesnt exist", InternalCode.EntityNotFound, "The nurse you assigned doesnt exist");
+                    return new ServiceResponse<object>("The Nurse you assigned doesnt exist", InternalCode.EntityNotFound, "The Nurse you assigned doesnt exist");
 
                 }
                 var visitRecordObj = _mapper.Map<Visit>(patientVisitsObj);
@@ -742,8 +740,8 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 var patientAssignmentHistory = new PatientAssignmentHistory();
                 patientAssignmentHistory.CareType = MedicalRecordsData.Enum.PatientCareType.InPatient;
                 patientAssignmentHistory.PatientId = patientVisitsObj.PatientId.Value;
-                patientAssignmentHistory.NurseId  = patientVisitsObj.NurseId.Value;
-                patientAssignmentHistory.DoctorId  = patientVisitsObj.DoctorId.Value;
+                patientAssignmentHistory.NurseId  = patientVisitsObj.NurseEmployeeId;
+                patientAssignmentHistory.DoctorId  = patientVisitsObj.DoctorEmployeeId;
                 patientAssignmentHistory.CreatedAt = DateTime.UtcNow;
                 patientAssignmentHistory.CreatedBy = userId;
                 await _patientAssignmentHistoryRepository.CreateAsync(patientAssignmentHistory);
@@ -861,21 +859,18 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 var patientObj = _patientRepository.GetById(updateMedicalStaffDto.PatientId.Value);
                 if(patientObj == null)
                     return new ServiceResponse<object>("the patientId doesnt exist", InternalCode.EntityIsNull, ServiceErrorMessages.Failed);
-                var doctorModel = _userRepository.GetById(updateMedicalStaffDto.DoctorId.Value);
-                if (doctorModel == null)
+                var doctorModel = updateMedicalStaffDto.DoctorEmployeeId != null ? _userRepository.GetById(updateMedicalStaffDto.DoctorEmployeeId.Value) : null;
+                if (doctorModel == null && updateMedicalStaffDto.DoctorEmployeeId != null)
                 {
-                    return new ServiceResponse<object>("the doctor you assigned doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
-
+                    return new ServiceResponse<object>("the doctor you assigned doesnt exist", InternalCode.EntityNotFound, "The doctor you assigned doesnt exist");
                 }
-
-                var nurseModel = _userRepository.GetById(updateMedicalStaffDto.NurseId.Value);
-                if (nurseModel == null)
+                var nurseModel = updateMedicalStaffDto.NurseEmployeeId != null ?_userRepository.GetById(updateMedicalStaffDto.NurseEmployeeId.Value):null;
+                if (nurseModel == null && updateMedicalStaffDto.NurseEmployeeId != null)
                 {
-                    return new ServiceResponse<object>("the nurse you assigned doesnt exist", InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
-
+                    return new ServiceResponse<object>("the nurse you assigned doesnt exist", InternalCode.EntityNotFound, "The nurse you assigned doesnt exist");
                 }
-                patientObj.NurseId = updateMedicalStaffDto.NurseId;
-                patientObj.DoctorId = updateMedicalStaffDto.DoctorId;
+                patientObj.NurseId = updateMedicalStaffDto.NurseEmployeeId;
+                patientObj.DoctorId = updateMedicalStaffDto.DoctorEmployeeId;
                 patientObj.ModifiedBy = userId;
                 patientObj.UpdatedAt = DateTime.UtcNow;
                 await _patientRepository.UpdateAsync(patientObj);
@@ -909,8 +904,20 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
-                var NursesData = _userRepository.GetAll().AsEnumerable().Select(x => _mapper.Map<GetAllNurseDto>(x)).AsQueryable();
-                var valObject = new GenericService<GetAllNurseDto>().SortPaginateByText(pageIndex, pageSize, NursesData, x => x.NurseId.ToString(), Order.Asc);
+                var uservalue = _userRepository.GetAll();
+                var allEmployee = _employeeRepository.GetAll();
+                var AllNurseDto = (from a in uservalue
+                                     join b in allEmployee on a.Id equals b.UserId
+                                     select new GetAllNurseDto
+                                     {
+                                        NurseEmployeeId = b.Id,
+                                        Email = a.Email,
+                                        Username=a.Username,
+                                        RoleId=a.RoleId,
+                                        StaffId=a.StaffId,
+                                        EmployeeId=b.Id
+                                    }).Where(x =>x.RoleId == (int)MedicalRole.Nurse);
+                var valObject = new GenericService<GetAllNurseDto>().SortPaginateByText(pageIndex, pageSize, AllNurseDto, x => x.NurseEmployeeId.ToString(), Order.Asc);
                 return new ServiceResponse<PaginatedList<GetAllNurseDto>>(valObject, InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)

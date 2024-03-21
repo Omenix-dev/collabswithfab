@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MedicalRecordsData.Migrations
 {
     [DbContext(typeof(MedicalRecordDbContext))]
-    [Migration("20240319144700_madenurseanddoctoridnullable")]
-    partial class madenurseanddoctoridnullable
+    [Migration("20240320200443_nullifynurseanddoctorIdonpatientmodel")]
+    partial class nullifynurseanddoctorIdonpatientmodel
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -527,7 +527,7 @@ namespace MedicalRecordsData.Migrations
                     b.Property<string>("Relationship")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("StateOfResidnece")
+                    b.Property<string>("StateOfResidence")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
@@ -704,7 +704,7 @@ namespace MedicalRecordsData.Migrations
                     b.ToTable("ImmunizationDocuments");
                 });
 
-            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.Lab", b =>
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.LabRequest", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -754,7 +754,7 @@ namespace MedicalRecordsData.Migrations
 
                     b.HasIndex("VisitId");
 
-                    b.ToTable("Labs");
+                    b.ToTable("LabRequests");
                 });
 
             modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.MedicalRecord", b =>
@@ -1029,6 +1029,134 @@ namespace MedicalRecordsData.Migrations
                     b.ToTable("PatientAssignmentHistories");
                 });
 
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.PatientLabDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ActionTaken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DocName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DocPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ModifiedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ModifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PatientLabReportId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientLabReportId");
+
+                    b.ToTable("PatientLabDocuments");
+                });
+
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.PatientLabReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ActionTaken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Age")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Diagnosis")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LabFindings")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LabRequest")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("LabRequestDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LabRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LabTechnicianEmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ModifiedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ModifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PatientFullName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PatientUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Subject")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PatientLabReports");
+                });
+
             modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.PatientReferrer", b =>
                 {
                     b.Property<int>("Id")
@@ -1285,7 +1413,7 @@ namespace MedicalRecordsData.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.Lab", b =>
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.LabRequest", b =>
                 {
                     b.HasOne("MedicalRecordsData.Entities.MedicalRecordsEntity.Visit", "Visit")
                         .WithMany("Labs")
@@ -1326,6 +1454,15 @@ namespace MedicalRecordsData.Migrations
                     b.HasOne("MedicalRecordsData.Entities.MedicalRecordsEntity.Patient", "Patient")
                         .WithMany("PatientAssignmentHistory")
                         .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MedicalRecordsData.Entities.MedicalRecordsEntity.PatientLabDocument", b =>
+                {
+                    b.HasOne("MedicalRecordsData.Entities.MedicalRecordsEntity.PatientLabReport", "PatientLabReport")
+                        .WithMany("PatientLabDocuments")
+                        .HasForeignKey("PatientLabReportId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -24,9 +24,9 @@ namespace MedicalRecordsRepository.DTO.PatientDto
         [Required(ErrorMessage = "The Weight is required")]
         public int? Weight { get; set; }
         [Required(ErrorMessage = "The DoctorId is required")]
-        public int? DoctorId { get; set; }
+        public int? DoctorEmployeeId { get; set; }
         [Required(ErrorMessage = "The NurseId is required")]
-        public int? NurseId { get;set; }
+        public int? NurseEmployeeId { get;set; }
         [Required(ErrorMessage = "The Notes is required")]
         public string Notes { get; set; }
         [Required(ErrorMessage = "The PatientId is required")]

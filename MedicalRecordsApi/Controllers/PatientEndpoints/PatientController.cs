@@ -680,7 +680,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
-                var response = await _service.DeleteImmunizationRecord(visitationId);
+                var response = await _service.DeleteVisitsRecord(visitationId);
                 return response.FormatResponse();
             }
             else

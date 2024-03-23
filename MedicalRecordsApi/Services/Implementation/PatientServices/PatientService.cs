@@ -589,7 +589,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 patientDetails.UserId = userId;
                 await _patientRepository.Insert(patientDetails);
                 var PatientId = _patientRepository.GetAll().FirstOrDefault(x => x.Email == patientDto.Email).Id;
-                return new ServiceResponse<object>(new { Messages = "The patient has been assigned", PatientId = PatientId }, InternalCode.Success, ServiceErrorMessages.Success);
+                return new ServiceResponse<object>(new { Messages = "The patient has been created successfully", PatientId = PatientId }, InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)
             {
@@ -602,6 +602,10 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
+                var patientExist = _patientRepository.GetById(medicalRecords.PatientId.Value);
+                if(patientExist == null)
+                    return new ServiceResponse<object>("Patient doesnt exist, insert patient", InternalCode.EntityExist, "Patient doesnt exist, insert patient");
+
                 var patientDetails = _mapper.Map<MedicalRecord>(medicalRecords);
                 patientDetails.CreatedAt = DateTime.UtcNow;
                 patientDetails.CreatedBy = userId;
@@ -722,13 +726,13 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
-                var doctorModel = patientVisitsObj.DoctorEmployeeId != null ? _userRepository.GetById(patientVisitsObj.DoctorEmployeeId.Value) : null;
-                if (doctorModel == null && patientVisitsObj.DoctorEmployeeId != null)
+                var doctorModel = patientVisitsObj.DoctorEmployeeId != null ? _employeeRepository.GetById(patientVisitsObj.DoctorEmployeeId.Value) : null;
+                if (doctorModel == null && patientVisitsObj.DoctorEmployeeId != null && doctorModel.RoleId.Value != (int)MedicalRole.Doctors)
                 {
                     return new ServiceResponse<object>("The doctor you assigned doesnt exist", InternalCode.EntityNotFound, "The Doctor you assigned doesnt exist");
                 }
-                var nurseModel = patientVisitsObj.NurseEmployeeId != null ? _userRepository.GetById(patientVisitsObj.NurseEmployeeId.Value) : null;
-                if (nurseModel == null && patientVisitsObj.NurseEmployeeId != null)
+                var nurseModel = patientVisitsObj.NurseEmployeeId != null ? _employeeRepository.GetById(patientVisitsObj.NurseEmployeeId.Value) : null;
+                if (nurseModel == null && patientVisitsObj.NurseEmployeeId != null && nurseModel.RoleId.Value != (int)MedicalRole.Nurse)
                 {
                     return new ServiceResponse<object>("The Nurse you assigned doesnt exist", InternalCode.EntityNotFound, "The Nurse you assigned doesnt exist");
 
@@ -859,15 +863,16 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 var patientObj = _patientRepository.GetById(updateMedicalStaffDto.PatientId.Value);
                 if(patientObj == null)
                     return new ServiceResponse<object>("the patientId doesnt exist", InternalCode.EntityIsNull, ServiceErrorMessages.Failed);
-                var doctorModel = updateMedicalStaffDto.DoctorEmployeeId != null ? _userRepository.GetById(updateMedicalStaffDto.DoctorEmployeeId.Value) : null;
-                if (doctorModel == null && updateMedicalStaffDto.DoctorEmployeeId != null)
+                var doctorModel = updateMedicalStaffDto.DoctorEmployeeId != null ? _employeeRepository.GetById(updateMedicalStaffDto.DoctorEmployeeId.Value) : null;
+                if (doctorModel == null && updateMedicalStaffDto.DoctorEmployeeId != null&& doctorModel.RoleId.Value != (int)MedicalRole.Doctors)
                 {
-                    return new ServiceResponse<object>("the doctor you assigned doesnt exist", InternalCode.EntityNotFound, "The doctor you assigned doesnt exist");
+                    return new ServiceResponse<object>("The doctor you assigned doesnt exist", InternalCode.EntityNotFound, "The Doctor you assigned doesnt exist");
                 }
-                var nurseModel = updateMedicalStaffDto.NurseEmployeeId != null ?_userRepository.GetById(updateMedicalStaffDto.NurseEmployeeId.Value):null;
-                if (nurseModel == null && updateMedicalStaffDto.NurseEmployeeId != null)
+                var nurseModel = updateMedicalStaffDto.NurseEmployeeId != null ? _employeeRepository.GetById(updateMedicalStaffDto.NurseEmployeeId.Value) : null;
+                if (nurseModel == null && updateMedicalStaffDto.NurseEmployeeId != null && nurseModel.RoleId.Value != (int)MedicalRole.Nurse)
                 {
-                    return new ServiceResponse<object>("the nurse you assigned doesnt exist", InternalCode.EntityNotFound, "The nurse you assigned doesnt exist");
+                    return new ServiceResponse<object>("The Nurse you assigned doesnt exist", InternalCode.EntityNotFound, "The Nurse you assigned doesnt exist");
+
                 }
                 patientObj.NurseId = updateMedicalStaffDto.NurseEmployeeId;
                 patientObj.DoctorId = updateMedicalStaffDto.DoctorEmployeeId;
@@ -880,7 +885,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 patientAssignmentHistory.CreatedAt = DateTime.UtcNow;   
                 patientAssignmentHistory.CreatedBy = userId;
                 await _patientAssignmentHistoryRepository.CreateAsync(patientAssignmentHistory);
-                return new ServiceResponse<object>(new { Message = "the patient has been reassign to the doctor" }, InternalCode.Success, ServiceErrorMessages.Success);
+                return new ServiceResponse<object>(new { Message = "the patient has been reassign" }, InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)
             {

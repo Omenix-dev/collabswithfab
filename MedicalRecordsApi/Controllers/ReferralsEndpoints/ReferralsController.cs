@@ -11,6 +11,7 @@ using System.Net.Mime;
 using System.Net;
 using System.Threading.Tasks;
 using MedicalRecordsRepository.DTO.ReferralDto;
+using System;
 
 namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
 {
@@ -38,7 +39,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         // remove a patient from a bed
-        public async Task<IActionResult> AddReferralNotes(ReferralNoteDto ReferralNoteDto)
+        public async Task<IActionResult> AddReferralNotes(ReferralDto ReferralNoteDto)
         {
             if (!ModelState.IsValid)
             {
@@ -63,7 +64,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             }
             if (userRoleId == (int)MedicalRole.Nurse)
             {
-                ServiceResponse<string> result = await _service.AddReferralNote(ReferralNoteDto, UserId);
+                ServiceResponse<string> result = await _service.AddReferral(ReferralNoteDto, UserId);
 
                 return result.FormatResponse();
             }
@@ -113,7 +114,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             }
             if (userRoleId == (int)MedicalRole.Nurse)
             {
-                ServiceResponse<string> result = await _service.DeleteReferralNote(PatientId);
+                ServiceResponse<object> result = await _service.RemoveReferredPatient(PatientId);
 
                 return result.FormatResponse();
             }
@@ -130,7 +131,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         /// <param name=""></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("GetAll-Referral-notes")]
+        [Route("GetAll-Referral-notes/{clinicId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<GetPatientReferralDto>>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
@@ -138,7 +139,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         // remove a patient from a bed
-        public async Task<IActionResult> GetAllReferral()
+        public async Task<IActionResult> GetAllReferral([FromRoute] int clinicId, [FromQuery]int pageIndex, int PageSize)
         {
             if (!ModelState.IsValid)
             {
@@ -163,7 +164,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             }
             if (userRoleId == (int)MedicalRole.Nurse)
             {
-                var result = await _service.GetAllReferral();
+                var result = await _service.GetAllReferral(clinicId,pageIndex,PageSize);
 
                 return result.FormatResponse();
             }
@@ -180,7 +181,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         /// <param name=""></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("Get-Referral-notes-byPatientId")]
+        [Route("Get-Referral-notes-byPatientId/{ClinicId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<GetPatientReferralDto>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
@@ -188,7 +189,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         // remove a patient from a bed
-        public async Task<IActionResult> GetAllReferralByPatientId(int PatientId)
+        public async Task<IActionResult> GetAllReferralByPatientId([FromRoute] int ClinicId,[FromQuery]int PatientId)
         {
             if (!ModelState.IsValid)
             {
@@ -213,7 +214,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             }
             if (userRoleId == (int)MedicalRole.Nurse)
             {
-                var result = await _service.GetAllReferralByPatientId(PatientId);
+                var result = await _service.GetAllReferralByPatientId(ClinicId,PatientId);
 
                 return result.FormatResponse();
             }
@@ -271,6 +272,21 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
                 var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
                 return value.FormatResponse();
             }
+        }
+        [HttpGet("GetAllAcceptanceStatus")]
+        public IActionResult GetAllAcceptanceStatus()
+        {
+            var enumValues = Enum.GetValues(typeof(AcceptanceStatus));
+            var listTypes = new List<object>();
+            for (int i = 1; i <= enumValues.Length; i++)
+            {
+                var enumName = Enum.GetName(typeof(AcceptanceStatus), enumValues.GetValue(i - 1));
+                listTypes.Add(new { index = i, value = enumName });
+            }
+            // caling the service here
+            return new ServiceResponse<List<object>>
+                   (listTypes, InternalCode.Success, ServiceErrorMessages.Success)
+                   .FormatResponse();
         }
     }
 }

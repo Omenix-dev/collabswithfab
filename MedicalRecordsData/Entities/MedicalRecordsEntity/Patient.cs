@@ -29,8 +29,9 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public string MaritalStatus { get; set; }
         public string Nationality { get; set; }
 		public bool HasHmo { get; set; } = false;
+		public bool IsReferred { get; set; }	
 
-        //PatientAuth
+        //UserAuth
         public int UserId { get; set; }
 
 		//Staff taking care of patient
@@ -43,7 +44,6 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 
 		//Navigation Properties
 		public virtual Contact Contact { get; set; }
-		public virtual PatientReferrer PatientReferrer { get; set; }
 		public virtual EmergencyContact EmergencyContact { get; set; }
 
 		public virtual ICollection<MedicalRecord> MedicalRecords { get; set; }

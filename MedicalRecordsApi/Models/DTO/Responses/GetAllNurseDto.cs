@@ -8,5 +8,6 @@
         public int RoleId { get; set; }
         public int StaffId { get; set; }
         public int EmployeeId { get; set; }
+        public int? ClinicId { get; set; }
     }
 }

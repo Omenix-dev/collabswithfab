@@ -10,5 +10,6 @@ namespace MedicalRecordsApi.Models.DTO
         public string LastName { get; set; }
         public string Role { get; set; }
         public string Username { get; set; }
+        public int? ClinicId { get; set; }
     }
 }

@@ -53,6 +53,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         private readonly IConfiguration _configuration;
         private readonly IGenericRepository<User> _userRepository;
         private readonly IGenericRepository<PatientAssignmentHistory> _patientAssignmentHistoryRepository;
+        private readonly IGenericRepository<Clinic> _clinicRepository;
 
 
 
@@ -66,8 +67,8 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             IGenericRepository<PatientReferrer> patientReferrerRepository,
             IGenericRepository<Treatment> treatmentRepository, IGenericRepository<Visit> visitRepository,
             MedicalRecordDbContext dbContext, IGenericRepository<Employee> employeeRepository,
-            IGenericRepository<LabRequest> labRepository, IGenericRepository<User> userRepository, 
-            IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository, IGenericRepository<PatientLabReport> patientLabReportRepository)
+            IGenericRepository<LabRequest> labRepository, IGenericRepository<User> userRepository,
+            IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository, IGenericRepository<PatientLabReport> patientLabReportRepository, IGenericRepository<Clinic> clinicRepository)
         {
             _patientRepository = patientRepository;
             _mapper = mapper;
@@ -87,6 +88,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             _userRepository = userRepository;
             _patientAssignmentHistoryRepository = patientAssignmentHistoryRepository;
             _patientLabReportRepository = patientLabReportRepository;
+            _clinicRepository = clinicRepository;
         }
         #endregion
 
@@ -216,8 +218,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                                                   .Include(x => x.Contact).Include(x => x.EmergencyContact)
                                                   .Include(x => x.Immunizations).Include(x => x.MedicalRecords)
                                                   .Include(x => x.Visits).Include(x => x.Treatments)
-                                                  .Include(x => x.PatientReferrer)
-                                                    .ProjectTo<ReadPatientDto>(_mapper.ConfigurationProvider)
+                                                  //.Include(x => x.PatientReferrer)
                                                   .FirstOrDefaultAsync(x => x.Id == patientId);
 
             if (patient == null)
@@ -567,6 +568,12 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
+                var clinicExist = _clinicRepository.GetById(patientDto.ClinicId);
+                if (clinicExist == null)
+                {
+                    return new ServiceResponse<object>("Invalid Clinic", InternalCode.Unprocessable, "Invalid Clinic");
+
+                }
                 if (patientDto.DateOfBirth > DateTime.Now)
                 {
                     return new ServiceResponse<object>("The invalid date of birth ", InternalCode.Unprocessable, "The invalid date of birth");
@@ -577,7 +584,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                     return new ServiceResponse<object>("The invalid Phone number ", InternalCode.Unprocessable, "The invalid Phone number ");
 
                 }
-                var EmailExist = _patientRepository.GetAll().FirstOrDefault(x => x.Email == patientDto.Email);
+                var EmailExist = _patientRepository.GetAll().FirstOrDefault(x => x.Email == patientDto.Email && x.ClinicId == patientDto.ClinicId);
                 if (EmailExist != null)
                 {
                     return new ServiceResponse<object>("The patient already exist", InternalCode.EntityExist, ServiceErrorMessages.EntityExist);
@@ -726,12 +733,14 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
-                var doctorModel = patientVisitsObj.DoctorEmployeeId != null ? _employeeRepository.GetById(patientVisitsObj.DoctorEmployeeId.Value) : null;
+                var doctorModel = patientVisitsObj.DoctorEmployeeId != null ? await _employeeRepository.FirstOrDefault
+                    (x => x.Id == patientVisitsObj.DoctorEmployeeId.Value && x.ClinicId == patientVisitsObj.ClinicId) : null;
                 if (doctorModel == null && patientVisitsObj.DoctorEmployeeId != null && doctorModel.RoleId.Value != (int)MedicalRole.Doctors)
                 {
                     return new ServiceResponse<object>("The doctor you assigned doesnt exist", InternalCode.EntityNotFound, "The Doctor you assigned doesnt exist");
                 }
-                var nurseModel = patientVisitsObj.NurseEmployeeId != null ? _employeeRepository.GetById(patientVisitsObj.NurseEmployeeId.Value) : null;
+                var nurseModel = patientVisitsObj.NurseEmployeeId != null ? await _employeeRepository.FirstOrDefault
+                    (x => x.Id == patientVisitsObj.NurseEmployeeId.Value && x.ClinicId == patientVisitsObj.ClinicId) : null;
                 if (nurseModel == null && patientVisitsObj.NurseEmployeeId != null && nurseModel.RoleId.Value != (int)MedicalRole.Nurse)
                 {
                     return new ServiceResponse<object>("The Nurse you assigned doesnt exist", InternalCode.EntityNotFound, "The Nurse you assigned doesnt exist");
@@ -863,12 +872,14 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 var patientObj = _patientRepository.GetById(updateMedicalStaffDto.PatientId.Value);
                 if(patientObj == null)
                     return new ServiceResponse<object>("the patientId doesnt exist", InternalCode.EntityIsNull, ServiceErrorMessages.Failed);
-                var doctorModel = updateMedicalStaffDto.DoctorEmployeeId != null ? _employeeRepository.GetById(updateMedicalStaffDto.DoctorEmployeeId.Value) : null;
-                if (doctorModel == null && updateMedicalStaffDto.DoctorEmployeeId != null&& doctorModel.RoleId.Value != (int)MedicalRole.Doctors)
+                var doctorModel = updateMedicalStaffDto.DoctorEmployeeId != null ? await _employeeRepository.FirstOrDefault
+                    (x => x.Id == updateMedicalStaffDto.DoctorEmployeeId.Value && x.ClinicId == updateMedicalStaffDto.ClinicId) : null;
+                if (doctorModel == null && updateMedicalStaffDto.DoctorEmployeeId != null && doctorModel.RoleId.Value != (int)MedicalRole.Doctors)
                 {
                     return new ServiceResponse<object>("The doctor you assigned doesnt exist", InternalCode.EntityNotFound, "The Doctor you assigned doesnt exist");
                 }
-                var nurseModel = updateMedicalStaffDto.NurseEmployeeId != null ? _employeeRepository.GetById(updateMedicalStaffDto.NurseEmployeeId.Value) : null;
+                var nurseModel = updateMedicalStaffDto.NurseEmployeeId != null ? await _employeeRepository.FirstOrDefault
+                    (x => x.Id == updateMedicalStaffDto.NurseEmployeeId.Value && x.ClinicId == updateMedicalStaffDto.ClinicId) : null;
                 if (nurseModel == null && updateMedicalStaffDto.NurseEmployeeId != null && nurseModel.RoleId.Value != (int)MedicalRole.Nurse)
                 {
                     return new ServiceResponse<object>("The Nurse you assigned doesnt exist", InternalCode.EntityNotFound, "The Nurse you assigned doesnt exist");
@@ -892,11 +903,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 return new ServiceResponse<object>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }
         }
-        public ServiceResponse<PaginatedList<GetAllPatientsDto>> GetAllPatient(int pageIndex,int pageSize)
+        public ServiceResponse<PaginatedList<GetAllPatientsDto>> GetAllPatient(int pageIndex,int pageSize , int ClinicId)
         {
             try
             {
-                var patientsData = _patientRepository.GetAll().AsEnumerable().Select(x => _mapper.Map<GetAllPatientsDto>(x)).AsQueryable();
+                var patientsData = _patientRepository.GetAll().Where(x => x.ClinicId == ClinicId).AsEnumerable().Select(x => _mapper.Map<GetAllPatientsDto>(x)).AsQueryable();
                 var valObject =  new GenericService<GetAllPatientsDto>().SortPaginateByText(pageIndex, pageSize, patientsData, x => x.PatientId.ToString(), Order.Asc);
                 return new ServiceResponse<PaginatedList<GetAllPatientsDto>>(valObject, InternalCode.Success, ServiceErrorMessages.Success);
             }
@@ -905,7 +916,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 return new ServiceResponse<PaginatedList<GetAllPatientsDto>>(null, InternalCode.Incompleted, ex.Message);
             }
         }
-        public ServiceResponse<PaginatedList<GetAllNurseDto>> GetAllNurses(int pageIndex, int pageSize)
+        public ServiceResponse<PaginatedList<GetAllNurseDto>> GetAllNurses(int pageIndex, int pageSize,int clinicId)
         {
             try
             {
@@ -920,8 +931,9 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                                         Username=a.Username,
                                         RoleId=a.RoleId,
                                         StaffId=a.StaffId,
-                                        EmployeeId=b.Id
-                                    }).Where(x =>x.RoleId == (int)MedicalRole.Nurse);
+                                        EmployeeId=b.Id,
+                                        ClinicId = b.ClinicId
+                                    }).Where(x =>x.RoleId == (int)MedicalRole.Nurse && x.ClinicId == clinicId);
                 var valObject = new GenericService<GetAllNurseDto>().SortPaginateByText(pageIndex, pageSize, AllNurseDto, x => x.NurseEmployeeId.ToString(), Order.Asc);
                 return new ServiceResponse<PaginatedList<GetAllNurseDto>>(valObject, InternalCode.Success, ServiceErrorMessages.Success);
             }
@@ -972,6 +984,20 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             await _patientRepository.UpdateAsync(EmailExist);
             return new ServiceResponse<object>(new { Messages = "The patient has details have been updated", PatientId = EmailExist.Id }, InternalCode.Success, ServiceErrorMessages.Success);
         }
+        public ServiceResponse<object> EndOfVisit(int patientId, int userId)
+        {
+            var patientObj = _patientRepository.GetById(patientId);
+            if(patientObj == null)
+                return new ServiceResponse<object>("The patient doesnt exist", InternalCode.EntityNotFound, "The patient doesnt exist");
+            patientObj.NurseId = null;
+            patientObj.DoctorId = null;
+            patientObj.ModifiedBy = userId;
+            patientObj.ActionTaken = $"Patient completed treatment on {DateTime.UtcNow.ToString()}";
+            patientObj.UpdatedAt = DateTime.UtcNow;
+            _patientRepository.UpdateAsync(patientObj);
+            return new ServiceResponse<object>(new { Message = "The patient has ended the visit completely" }, InternalCode.Success, "The patient has ended the visit completely");
+        }
+
         #region Helpers
         public static string CalculateAge(DateTime dateOfBirth, DateTime? currentDate = null)
 		{

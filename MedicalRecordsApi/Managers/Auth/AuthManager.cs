@@ -96,6 +96,7 @@ namespace MedicalRecordsApi.Managers.Auth
                 authResponseDTO.LastName = profile.LastName;
                 authResponseDTO.Role = role.Name;
                 authResponseDTO.Username = profile.Username;
+                authResponseDTO.ClinicId = profile.ClinicId;
 
                 return new ServiceResponse<AuthResponseDTO>(authResponseDTO, InternalCode.Success);
             }

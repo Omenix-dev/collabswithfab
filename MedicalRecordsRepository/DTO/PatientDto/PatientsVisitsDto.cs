@@ -12,7 +12,7 @@ namespace MedicalRecordsRepository.DTO.PatientDto
         [DateNotGreaterThanNow(ErrorMessage = "Date should not be greater than current date")]
         public DateTime DateOfVisit { get; set; }
         [Required(ErrorMessage = "The Temperature is required")]
-        public double Temperature { get; set; }
+        public double? Temperature { get; set; }
         [Required(ErrorMessage = "The BloodPressure is required")]
         public string BloodPressure { get; set; }
         [Required(ErrorMessage = "The HeartPulse is required")]
@@ -31,6 +31,7 @@ namespace MedicalRecordsRepository.DTO.PatientDto
         public string Notes { get; set; }
         [Required(ErrorMessage = "The PatientId is required")]
         public int? PatientId { get; set; }
+        public int ClinicId { get; set; }   
     }
     public class ResponsePatientsVisitsDto
     {

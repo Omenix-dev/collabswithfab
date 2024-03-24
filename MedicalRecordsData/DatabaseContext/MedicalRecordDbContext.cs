@@ -47,6 +47,7 @@ namespace MedicalRecordsData.DatabaseContext
 		public virtual DbSet<LabRequest> LabRequests { get; set; }
 		public virtual DbSet<CustomerFeedback> CustomerFeedbacks { get; set; }
 		public virtual DbSet<PatientAssignmentHistory> PatientAssignmentHistories { get; set; }
+		public virtual DbSet<Clinic> Clinics { get; set; }
 
 
 
@@ -84,6 +85,11 @@ namespace MedicalRecordsData.DatabaseContext
 				.HasOne(v => v.Treatment)
 				.WithOne(t => t.Visit)
 				.HasForeignKey<Treatment>(t => t.VisitId)
+				.OnDelete(DeleteBehavior.NoAction);
+			modelBuilder.Entity<PatientReferrer>()
+				.HasOne(v => v.Treatment)
+				.WithMany(x => x.PatientReferrers)
+				.HasForeignKey(y => y.TreatmentId)
 				.OnDelete(DeleteBehavior.NoAction);
 		}
 

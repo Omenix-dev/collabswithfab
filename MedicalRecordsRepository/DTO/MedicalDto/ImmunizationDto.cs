@@ -18,9 +18,9 @@ namespace MedicalRecordsRepository.DTO.MedicalDto
         [Required(ErrorMessage= "the Age is required")]
         public int? Age { get; set; }
         [Required(ErrorMessage= "the Weight is required")]
-        public double Weight { get; set; }
+        public double? Weight { get; set; }
         [Required(ErrorMessage= "the Temperature is required")]
-        public double Temperature { get; set; }
+        public double? Temperature { get; set; }
         [Required(ErrorMessage= "the DateGiven is required")]
         [DataType(DataType.DateTime)]
         [DateNotGreaterThanNow(ErrorMessage = "Date should not be greater than current date")]

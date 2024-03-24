@@ -43,5 +43,6 @@ namespace MedicalRecordsApi.Services.Abstract.DashBoardInterfaces
         /// </summary>
         /// <returns>Returns a <see cref="ServiceResponse{PatientByGender}"/> object.</returns>
         Task<ServiceResponse<ReadPatientByGenderDto>> PatientByGenderAsync(int userId);
+        ServiceResponse<object> AvaliableStaff(int clinicId);
     }
 }

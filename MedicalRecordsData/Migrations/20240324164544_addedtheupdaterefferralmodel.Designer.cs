@@ -4,14 +4,16 @@ using MedicalRecordsData.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MedicalRecordsData.Migrations
 {
     [DbContext(typeof(MedicalRecordDbContext))]
-    partial class MedicalRecordDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240324164544_addedtheupdaterefferralmodel")]
+    partial class addedtheupdaterefferralmodel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

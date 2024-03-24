@@ -39,6 +39,8 @@ namespace MedicalRecordsRepository.DTO.PatientDto
 
         [Required(ErrorMessage = "Nationality is required")]
         public string Nationality { get; set; }
+        public int ClinicId { get; set; }
+
     }
 
     public class UpdateMedicalStaffDto
@@ -47,6 +49,7 @@ namespace MedicalRecordsRepository.DTO.PatientDto
         public int? PatientId { get; set; }
         public int? NurseEmployeeId { get; set; }
         public int? DoctorEmployeeId { get; set; }
+        public int ClinicId { get; set; }   
     }
     public class UpdatePatientDto 
     { 

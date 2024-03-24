@@ -1,9 +1,13 @@
 ﻿using AutoMapper;
 using MedicalRecordsApi.Constants;
+using MedicalRecordsApi.Models.DTO.Responses;
 using MedicalRecordsApi.Services.Abstract.ReferralInterfaces;
+using MedicalRecordsApi.Services.Common;
 using MedicalRecordsData.DatabaseContext;
 using MedicalRecordsData.Entities.AuthEntity;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
+using MedicalRecordsData.Enum;
+using MedicalRecordsRepository.DTO;
 using MedicalRecordsRepository.DTO.ReferralDto;
 using MedicalRecordsRepository.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +19,6 @@ using System.Threading.Tasks;
 
 namespace MedicalRecordsApi.Services.Implementation.ReferralServices
 {
-
     public class ReferralServices : IReferralServices
     {
         private readonly IMapper _mapper;
@@ -29,19 +32,45 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
         private readonly IGenericRepository<MedicalRecord> _medicalRecordRepository;
         private readonly IGenericRepository<Medication> _medicationRepository;
         private readonly IGenericRepository<PatientReferrer> _patientReferrerRepository;
+        private readonly IGenericRepository<Clinic> _clinicRepository;
         private readonly IConfiguration _configuration;
-        public ReferralServices()
+        public ReferralServices(IGenericRepository<Clinic> clinicRepository, IGenericRepository<PatientReferrer> patientReferrerRepository, IGenericRepository<Medication> medicationRepository, IGenericRepository<MedicalRecord> medicalRecordRepository, IGenericRepository<ImmunizationDocument> immunizationDocumentRepository, IGenericRepository<EmergencyContact> emrgencyContactRepository, IGenericRepository<Contact> contactRepository, IGenericRepository<Employee> employeeRepository, IGenericRepository<Patient> patientRepository, MedicalRecordDbContext dbContext, IMapper mapper)
         {
-
+            _clinicRepository = clinicRepository;
+            _patientReferrerRepository = patientReferrerRepository;
+            _medicationRepository = medicationRepository;
+            _medicalRecordRepository = medicalRecordRepository;
+            _immunizationDocumentRepository = immunizationDocumentRepository;
+            _emrgencyContactRepository = emrgencyContactRepository;
+            _contactRepository = contactRepository;
+            _employeeRepository = employeeRepository;
+            _patientRepository = patientRepository;
+            _dbContext = dbContext;
+            _mapper = mapper;
         }
-        public async Task<ServiceResponse<string>> AddReferralNote(ReferralNoteDto Note, int UserId)
+        public async Task<ServiceResponse<string>> AddReferral(ReferralDto Note, int UserId)
         {
             try
             {
-                var PatientReferralObject = _mapper.Map<PatientReferrer>(Note);
+                var patientObject = _patientRepository.GetById(Note.PatientId);
+                if (patientObject == null)
+                    return new ServiceResponse<string>("The Patient doesnt Exist", InternalCode.Success, "The Patient doesnt Exist");
+                var clinicObject = _clinicRepository.GetById(Note.ClinicId);
+                if (clinicObject == null)
+                    return new ServiceResponse<string>("The Clinic doenst Exist", InternalCode.Success, "The Clinic doenst Exist");
+                var ReferralclinicObject = _clinicRepository.GetById(Note.ReferredClinicId);
+                if (clinicObject == null)
+                    return new ServiceResponse<string>("The Referral Clinic doenst Exist on the System", InternalCode.Success, "The Referral Clinic doenst Exist on the System");
+
+                var PatientReferralObject = new PatientReferrer();
+                PatientReferralObject.AcceptanceStatus = AcceptanceStatus.Pending;
+                PatientReferralObject.ReferredClinicId = Note.ReferredClinicId;
+                PatientReferralObject.TreatmentId = Note.TreatmentId;
+                PatientReferralObject.PatientId = Note.PatientId;
+                PatientReferralObject.ClinicId = Note.ClinicId;
                 PatientReferralObject.CreatedBy = UserId;
                 PatientReferralObject.CreatedAt = DateTime.UtcNow;
-                PatientReferralObject.ActionTaken = "ADDED A CUSTOMER REFERRAL NOTE";
+                PatientReferralObject.ActionTaken = "ADDED A CUSTOMER TO REFERRAL Table";
                 await _patientReferrerRepository.Insert(PatientReferralObject);
                 return new ServiceResponse<string>("Referral note added successfully", InternalCode.Success, ServiceErrorMessages.Success);
             }
@@ -51,63 +80,87 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
             }
         }
 
-        public async Task<ServiceResponse<string>> DeleteReferralNote(int Id)
+        public async Task<ServiceResponse<object>> RemoveReferredPatient(int Id)
         {
             try
             {
                 var noteObj = _patientReferrerRepository.GetById(Id);
                 if (noteObj == null)
-                    return new ServiceResponse<string>("referral note with ID doesnt exist", InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+                    return new ServiceResponse<object>($"There is no such referral with Id {Id}", InternalCode.Unprocessable, $"There is no such referral with Id {Id}");
+                if (noteObj.AcceptanceStatus == AcceptanceStatus.Accepted)
+                    return new ServiceResponse<object>($"Cant Delete ReferralId {Id}, It has already been accepted", InternalCode.Unprocessable, $"Cant Delete ReferralId {Id}, It has already been accepted");
                 await _patientReferrerRepository.DeleteAsync(Id);
-                return new ServiceResponse<string>("referral note deleted successfully", InternalCode.Success, ServiceErrorMessages.Success);
+                return new ServiceResponse<object>(new { Message = "The Patient has been removed from referral table", ReferralId = Id }, InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)
             {
-                return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+                return new ServiceResponse<object>(ex.Message, InternalCode.Incompleted, ex.Message);
             }
         }
 
-        public async Task<ServiceResponse<IEnumerable<GetPatientReferralDto>>> GetAllReferral()
+        public async Task<ServiceResponse<PaginatedList<GetPatientReferralDto>>> GetAllReferral(int ClinicId, int pageIndex, int pageSize)
         {
             try
             {
-                var patientObject = _patientRepository.GetAll().Include(x => x.Treatments);
-                if (patientObject is null)
-                    return new ServiceResponse<IEnumerable<GetPatientReferralDto>>(null, InternalCode.Success, ServiceErrorMessages.Success);
-                var ReferrelResponseDto = patientObject.Select(x => new GetPatientReferralDto
+                var clinicExist = _clinicRepository.GetById(ClinicId);
+                if (clinicExist == null)
                 {
-                    PatientId = x.Id,
-                    ClinicId = x.ClinicId,
-                    FirstName = x.FirstName,
-                    LastName = x.LastName,
-                    Diagnosis = x.Treatments.FirstOrDefault().Diagnosis,
-                    DateCreated = x.CreatedAt.ToString()
+                    return new ServiceResponse<PaginatedList<GetPatientReferralDto>>(null, InternalCode.Unprocessable, "Invalid Clinic");
+                }
+                var ReferredPatient = _patientReferrerRepository.GetAll().Where(x => x.ClinicId == ClinicId &&
+                                     x.AcceptanceStatus == AcceptanceStatus.Pending).Include(x => x.Treatment)
+                                     .Include(x => x.Clinic).Include(x => x.Patient);
+                if (ReferredPatient is null)
+                    return new ServiceResponse<PaginatedList<GetPatientReferralDto>>(null, InternalCode.Success, ServiceErrorMessages.Success);
+                var ReferrelResponseDto = ReferredPatient.Select(x => new GetPatientReferralDto
+                {
+                    ReferralId = x.Id,
+                    PatientId = x.PatientId,
+                    HospitalName = x.Clinic.Name,
+                    FirstName = x.Patient.FirstName,
+                    LastName = x.Patient.LastName,
+                    Diagnosis = x.Treatment.Diagnosis,
+                    DateCreated = x.CreatedAt.ToString(),
+                    AcceptanceStatus = x.AcceptanceStatus.ToString(),
                 });
-                return new ServiceResponse<IEnumerable<GetPatientReferralDto>>(ReferrelResponseDto, InternalCode.Success, ServiceErrorMessages.Success);
+                var valObject = new GenericService<GetPatientReferralDto>().SortPaginateByText(pageIndex, pageSize, ReferrelResponseDto, x => x.ReferralId.ToString(), Order.Asc);
+                return new ServiceResponse<PaginatedList<GetPatientReferralDto>>(valObject, InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)
             {
-                return new ServiceResponse<IEnumerable<GetPatientReferralDto>>(null, InternalCode.Incompleted, ex.Message);
+                return new ServiceResponse<PaginatedList<GetPatientReferralDto>>(null, InternalCode.Incompleted, ex.Message);
             }
         }
 
-        public async Task<ServiceResponse<GetPatientReferralDto>> GetAllReferralByPatientId(int patientId)
+        public async Task<ServiceResponse<GetPatientReferralDto>> GetAllReferralByPatientId(int ClinicId, int patientId)
         {
             try
             {
-                var patientObject = _patientRepository.GetAll().Include(x => x.Treatments).FirstOrDefault(x => x.Id == patientId);
-                if (patientObject is null)
-                    return new ServiceResponse<GetPatientReferralDto>(null, InternalCode.Success, ServiceErrorMessages.Success);
-                var ReferrelResponseDto = new GetPatientReferralDto
+                var patientExist = _patientRepository.GetById(patientId);
+                if (patientExist == null)
                 {
-                    PatientId = patientObject.Id,
-                    ClinicId = patientObject.ClinicId,
-                    FirstName = patientObject.FirstName,
-                    LastName = patientObject.LastName,
-                    Diagnosis = patientObject.Treatments.FirstOrDefault()?.Diagnosis,
-                    DateCreated = patientObject.CreatedAt.ToString()
-                };
-                return new ServiceResponse<GetPatientReferralDto>(ReferrelResponseDto, InternalCode.Success, ServiceErrorMessages.Success);
+                    return new ServiceResponse<GetPatientReferralDto>(null, InternalCode.Unprocessable, "Patient doesnt Exist");
+                }
+                var clinicExist = _clinicRepository.GetById(ClinicId);
+                if (clinicExist == null)
+                {
+                    return new ServiceResponse<GetPatientReferralDto>(null, InternalCode.Unprocessable, "Invalid Clinic");
+                }
+                var ReferredPatient = _patientReferrerRepository.GetAll().Where(x => x.ClinicId == ClinicId &&
+                                    x.PatientId == patientId && x.AcceptanceStatus == AcceptanceStatus.Pending)
+                                    .Include(x => x.Treatment).Include(x => x.Clinic).Include(x => x.Patient).
+                                    Select(x => new GetPatientReferralDto
+                                    {
+                                        ReferralId = x.Id,
+                                        PatientId = x.PatientId,
+                                        HospitalName = x.Clinic.Name,
+                                        FirstName = x.Patient.FirstName,
+                                        LastName = x.Patient.LastName,
+                                        Diagnosis = x.Treatment.Diagnosis,
+                                        DateCreated = x.CreatedAt.ToString(),
+                                        AcceptanceStatus = x.AcceptanceStatus.ToString(),
+                                    }).FirstOrDefault();
+                return new ServiceResponse<GetPatientReferralDto>(ReferredPatient, InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)
             {
@@ -119,18 +172,44 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
         {
             try
             {
-                var noteObj = _patientReferrerRepository.GetById(Note.PatientId);
+                var noteObj = _patientReferrerRepository.GetAll().Include(x => x.Treatment).Include(x => x.Patient).Where(x => x.Id == Note.ReferredId).First();
                 if (noteObj == null)
-                    return new ServiceResponse<string>("referral note with ID doesnt exist", InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+                    return new ServiceResponse<string>($"Referral with Id {Note.ReferredId} doesnt exist", InternalCode.Incompleted, $"Referral with Id {Note.ReferredId} doesnt exist");
                 noteObj.Notes = Note.Notes;
                 noteObj.UpdatedAt = DateTime.Now;
                 noteObj.ModifiedBy = UserId;
+                noteObj.AcceptanceStatus = Note.AcceptanceStatus;
                 await _patientReferrerRepository.UpdateAsync(noteObj);
-                return new ServiceResponse<string>("referral note update successfully", InternalCode.Success, ServiceErrorMessages.Success);
+                if(noteObj.AcceptanceStatus == AcceptanceStatus.Accepted)
+                {
+                    var patientData = noteObj.Patient;
+                    var Exist = _patientRepository.GetAll().Where(x => x.Email == patientData.Email && x.ClinicId == noteObj.ReferredClinicId).FirstOrDefault();
+                    if(Exist == null)
+                    {
+                        patientData.ClinicId = noteObj.ReferredClinicId;
+                        patientData.CreatedAt = DateTime.Now;
+                        patientData.CreatedBy = UserId;
+                        patientData.IsReferred = true;
+                        patientData.Id = 0;
+                        patientData.NurseId = null;
+                        patientData.DoctorId = null;
+                        patientData.Treatments.Add(noteObj.Treatment);
+                        await _patientRepository.CreateAsync(patientData);
+                    }
+                    else
+                    {
+                        // only added the treatments for situation where the user already exist
+                        Exist.Treatments.Add(noteObj.Treatment);
+                        await _patientRepository.Update(Exist);
+                    }
+
+                    // Transfer the patient data to the present clinic database
+                }
+                return new ServiceResponse<string>("Referral note update successfully", InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)
             {
-                return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+                return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ex.Message);
             }
         }
     }

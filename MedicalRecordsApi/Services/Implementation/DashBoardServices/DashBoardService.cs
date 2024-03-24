@@ -251,5 +251,21 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
 
             return new ServiceResponse<long>(patientCount, InternalCode.Success);
         }
+
+        public ServiceResponse<object> AvaliableStaff(int ClinicId)
+        {
+            try
+            {
+                var NurseAndDoctorData = _employeeRepository.GetAll().Where(x => (x.RoleId == (int)MedicalRole.Nurse || x.RoleId == (int)MedicalRole.Doctors) && x.ClinicId == ClinicId).Select(x => x.Id);
+                var PatientsNurseData = _patientRepository.GetAll().Where(x => x.ClinicId == ClinicId).Select(x => x.NurseId);
+                var PatientsDoctorData = _patientRepository.GetAll().Where(x => x.ClinicId == ClinicId).Select(x => x.DoctorId);
+                var totalAvailable = NurseAndDoctorData.Count() - NurseAndDoctorData.Where(x => PatientsNurseData.Contains(x) || PatientsDoctorData.Contains(x)).Count();
+                return new ServiceResponse<object>(new { Message = "Success", AvaliableStaff = totalAvailable }, InternalCode.Success, ServiceErrorMessages.Success);
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<object>(null, InternalCode.Incompleted, ex.Message);
+            }
+        }
     }
 }

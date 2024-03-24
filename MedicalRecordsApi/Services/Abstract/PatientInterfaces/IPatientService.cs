@@ -145,9 +145,10 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 		Task<ServiceResponse<object>> AddPatientVistsRecords(PatientsVisitsDto patientVisitsObj, int userId);
 		Task<ServiceResponse<List<ResponsePatientsVisitsDto>>> GetAllVisitationByPatientId(int PatientId);
         Task<ServiceResponse<object>> UpdateMedicalStaffByPatientId(UpdateMedicalStaffDto updateMedicalStaffDto, int userId);
-        ServiceResponse<PaginatedList<GetAllPatientsDto>> GetAllPatient(int pageIndex, int pageSize);
+        ServiceResponse<PaginatedList<GetAllPatientsDto>> GetAllPatient(int pageIndex, int pageSize, int ClinicId);
         ServiceResponse<GetAllPatientsDto> GetAllPatientById(int patientId);
-        ServiceResponse<PaginatedList<GetAllNurseDto>> GetAllNurses(int pageIndex, int pageSize);
+        ServiceResponse<PaginatedList<GetAllNurseDto>> GetAllNurses(int pageIndex, int pageSize, int clinicId);
         Task<ServiceResponse<object>> UpdatePatient(UpdatePatientDto updatePatientDto, int userId);
+        ServiceResponse<object> EndOfVisit(int patientId, int userId);
     }
 }

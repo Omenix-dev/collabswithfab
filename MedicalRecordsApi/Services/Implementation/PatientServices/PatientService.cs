@@ -226,12 +226,12 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 return new ServiceResponse<ReadPatientDto>(null, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
             }
 
-            //var patientdata = _mapper.Map<ReadPatientDto>(patient);
+            var patientdata = _mapper.Map<ReadPatientDto>(patient);
 
-			patient.NurseName = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patient.NurseId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync();
-			patient.DoctorName = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patient.DoctorId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync();
+            patientdata.NurseName = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patient.NurseId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync();
+            patientdata.DoctorName = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patient.DoctorId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync();
 
-			return new ServiceResponse<ReadPatientDto>(patient, InternalCode.Success);
+			return new ServiceResponse<ReadPatientDto>(patientdata, InternalCode.Success);
         }
 
 		public async Task<ServiceResponse<IEnumerable<ReadVisitHistoryDto>>> GetAllAdmissionHistoryAsync(int patientId)

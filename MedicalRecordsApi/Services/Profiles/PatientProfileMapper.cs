@@ -33,10 +33,11 @@ namespace MedicalRecordsApi.Services.Profiles
             CreateMap<PatientsVisitsDto, Visit>()
                 .ForMember(x => x.NurseId, opt => opt.MapFrom(src => src.NurseEmployeeId))
                 .ForMember(x => x.DoctorId, opt => opt.MapFrom(src => src.DoctorEmployeeId));
-            CreateMap<AssignedPatientsDto, BedAssignment>().ReverseMap();
+            //CreateMap<AssignedPatientsDto, BedAssignment>().ReverseMap();
             CreateMap<PatientReferrer, ReferralNoteDto>().ReverseMap();
             CreateMap<CreatePatientRequestDto, PatientAssignmentHistory>();
             CreateMap<UpdateMedicalStaffDto, PatientAssignmentHistory>();
+            CreateMap<Patient, AssignedPatientsDto>();
         }
     }
 }

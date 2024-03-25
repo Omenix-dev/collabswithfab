@@ -23,74 +23,73 @@ namespace MedicalRecordsApi.Services.Implementation.FacilityServices
         private readonly IMapper _mapper;
         private readonly MedicalRecordDbContext _dbContext;
         private readonly IGenericRepository<Patient> _patientRepository;
-        private readonly IGenericRepository<Facility> _facilityRepository;
-        private readonly IGenericRepository<BedAssignment> _bedAssignmentRepository;
+        private readonly IGenericRepository<Bed> _bedRepository;
+        private readonly IGenericRepository<AssignPatientBed> _assignPatientBedRepository;
         private readonly IConfiguration _configuration;
         private readonly IGenericRepository<User> _userRepository;
 
-        public FacilityService(IMapper mapper, MedicalRecordDbContext dbContext, 
-            IGenericRepository<Patient> patientRepository, IGenericRepository<Facility> facilityRepository, 
-            IGenericRepository<BedAssignment> bedAssignmentRepository, IConfiguration configuration, 
-            IGenericRepository<User> userRepository)
+        public FacilityService(IMapper mapper, MedicalRecordDbContext dbContext,
+            IGenericRepository<Patient> patientRepository, IConfiguration configuration,
+            IGenericRepository<User> userRepository, IGenericRepository<Bed> bedRepository, IGenericRepository<AssignPatientBed> assignPatientBedRepository)
         {
             _mapper = mapper;
             _dbContext = dbContext;
             _patientRepository = patientRepository;
-            _facilityRepository = facilityRepository;
-            _bedAssignmentRepository = bedAssignmentRepository;
             _configuration = configuration;
             _userRepository = userRepository;
+            _bedRepository = bedRepository;
+            _assignPatientBedRepository = assignPatientBedRepository;
         }
 
-        public async Task<ServiceResponse<string>> AssignBed(AssignBedRequestDto bedSpaceDto, int userId)
-        {
-            try
-            {
-                var FacilityResponse = _facilityRepository.GetById(bedSpaceDto.PatientId);
-                if (FacilityResponse is null || FacilityResponse.IsOccupied)
-                {
-                    return new ServiceResponse<string>("unable to complete since the bedSpace is not available", InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
-                }
-                var bedSpaceObject = _mapper.Map<BedAssignment>(bedSpaceDto);
-                bedSpaceObject.CreatedAt = DateTime.Now;
-                bedSpaceObject.CreatedBy = userId;
-                bedSpaceObject.ActionTaken = "Assigned BedSpace";
-                await _bedAssignmentRepository.Insert(bedSpaceObject);
-                FacilityResponse.IsOccupied = true;
-                await _facilityRepository.UpdateAsync(FacilityResponse);
-                return new ServiceResponse<string>("bedSpace successfully Assigned", InternalCode.Success, ServiceErrorMessages.Success);
-            }
-            catch (Exception ex)
-            {
-                return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
-            }
-            
-        }
+        //public async Task<ServiceResponse<string>> AssignBed(AssignBedRequestDto bedSpaceDto, int userId)
+        //{
+        //    try
+        //    {
+        //        var FacilityResponse = _facilityRepository.GetById(bedSpaceDto.PatientId);
+        //        if (FacilityResponse is null || FacilityResponse.IsOccupied)
+        //        {
+        //            return new ServiceResponse<string>("unable to complete since the bedSpace is not available", InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+        //        }
+        //        var bedSpaceObject = _mapper.Map<BedAssignment>(bedSpaceDto);
+        //        bedSpaceObject.CreatedAt = DateTime.Now;
+        //        bedSpaceObject.CreatedBy = userId;
+        //        bedSpaceObject.ActionTaken = "Assigned BedSpace";
+        //        await _bedAssignmentRepository.Insert(bedSpaceObject);
+        //        FacilityResponse.IsOccupied = true;
+        //        await _facilityRepository.UpdateAsync(FacilityResponse);
+        //        return new ServiceResponse<string>("bedSpace successfully Assigned", InternalCode.Success, ServiceErrorMessages.Success);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+        //    }
 
-        public async Task<ServiceResponse<string>> FreeBedSpace(int patientBedSpace, int userId)
-        {
-            try
-            {
-                var FacilityResponse = _facilityRepository.GetById(patientBedSpace);
-                if (FacilityResponse is null || !FacilityResponse.IsOccupied)
-                {
-                    return new ServiceResponse<string>("unable to complete since the bedSpace is not available or is already free", InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
-                }
-                var bedSpaceObject = await _bedAssignmentRepository.GetByIdAsync(patientBedSpace);
-                bedSpaceObject.CreatedAt = DateTime.Now;
-                bedSpaceObject.CreatedBy = userId;
-                bedSpaceObject.ActionTaken = "Assigned BedSpace";
-                await _bedAssignmentRepository.DeleteAsync(patientBedSpace);
-                FacilityResponse.IsOccupied = false;
-                await _facilityRepository.UpdateAsync(FacilityResponse);
-                return new ServiceResponse<string>("bedSpace successfully removed", InternalCode.Success, ServiceErrorMessages.Success);
-            }
-            catch (Exception ex)
-            {
-                return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
-            }
+        //}
 
-        }
+        //public async Task<ServiceResponse<string>> FreeBedSpace(int patientBedSpace, int userId)
+        //{
+        //    try
+        //    {
+        //        var FacilityResponse = _facilityRepository.GetById(patientBedSpace);
+        //        if (FacilityResponse is null || !FacilityResponse.IsOccupied)
+        //        {
+        //            return new ServiceResponse<string>("unable to complete since the bedSpace is not available or is already free", InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+        //        }
+        //        var bedSpaceObject = await _bedAssignmentRepository.GetByIdAsync(patientBedSpace);
+        //        bedSpaceObject.CreatedAt = DateTime.Now;
+        //        bedSpaceObject.CreatedBy = userId;
+        //        bedSpaceObject.ActionTaken = "Assigned BedSpace";
+        //        await _bedAssignmentRepository.DeleteAsync(patientBedSpace);
+        //        FacilityResponse.IsOccupied = false;
+        //        await _facilityRepository.UpdateAsync(FacilityResponse);
+        //        return new ServiceResponse<string>("bedSpace successfully removed", InternalCode.Success, ServiceErrorMessages.Success);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ServiceResponse<string>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
+        //    }
+
+        //}
         #endregion
 
         public async Task<ServiceResponse<IEnumerable<ReadBedDetailsDto>>> GetBedsAssignedToDoctor(int userId)
@@ -102,10 +101,9 @@ namespace MedicalRecordsApi.Services.Implementation.FacilityServices
 
 
             //Get Facility Details
-            var beds = await _facilityRepository.Query()
-                                                .AsNoTracking()
-                                                .Where(x => x.FacilityType == FacilityType.Bed)
-                                                .ToListAsync();
+            var beds = await _bedRepository.Query()
+                                           .AsNoTracking()
+                                           .ToListAsync();
             if (!beds.Any())
             {
                 return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(Enumerable.Empty<ReadBedDetailsDto>(), InternalCode.Success);
@@ -117,10 +115,12 @@ namespace MedicalRecordsApi.Services.Implementation.FacilityServices
                                                   .AsNoTracking()
                                                   .Where(x => x.DoctorId == userId).ToListAsync();
 
+            var patientIds = patients.Select(x => x.Id).ToList();
+
             //Get Bed Assignment
-            var bedAssignments = await _bedAssignmentRepository.Query()
+            var bedAssignments = await _assignPatientBedRepository.Query()
                                                                .AsNoTracking() 
-                                                               .Where(x => x.IsDeleted == false)
+                                                               .Where(x => x.Status == 1 && patientIds.Contains(x.PatientAssignedId))
                                                                .ToListAsync();
 
             List<ReadBedDetailsDto> bedDetailsList = new List<ReadBedDetailsDto>();
@@ -128,17 +128,23 @@ namespace MedicalRecordsApi.Services.Implementation.FacilityServices
             foreach ( var bed in beds )
             {
                 ReadBedDetailsDto bedDetailsDto = new ReadBedDetailsDto();
+                bedDetailsDto.Id = bed.Id;
                 bedDetailsDto.BedName = bed.Name;
-                bedDetailsDto.IsOccupied = bed.IsOccupied;
+                bedDetailsDto.IsOccupied = bed.Status;
 
-                if (bed.IsOccupied)
+                if (bed.Status.ToLower() == "Occupied".ToLower())
                 {
-                    string patientName = patients.Where(x => x.Id == bedAssignments.FirstOrDefault(x => x.FacilityId == bed.Id).PatientId)
-                                                                                .Select(s => $"{s.FirstName} {s.LastName}")
-                                                                                .FirstOrDefault();
+                    int patientAssignnedId = bedAssignments.FirstOrDefault(x => x.BedId == bed.Id)?.PatientAssignedId ?? 0;
 
-                    bedDetailsDto.PatientName = patientName ?? null;
-                    bedDetailsDto.PatientId = bedAssignments.FirstOrDefault(x => x.FacilityId == bed.Id).PatientId;
+                    if (patientAssignnedId > 0)
+                    {
+                        string patientName = patients.Where(x => x.Id == patientAssignnedId)
+                                                     .Select(s => $"{s.FirstName} {s.LastName}")
+                                                     .FirstOrDefault();
+
+                        bedDetailsDto.PatientName = patientName ?? null;
+                        bedDetailsDto.PatientId = bedAssignments.FirstOrDefault(x => x.BedId == bed.Id).PatientAssignedId;
+                    }
                 }
 
                 bedDetailsList.Add(bedDetailsDto);
@@ -147,85 +153,85 @@ namespace MedicalRecordsApi.Services.Implementation.FacilityServices
             return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(bedDetailsList, InternalCode.Success);
         }
 
-        public async Task<ServiceResponse<IEnumerable<ReadBedDetailsDto>>> GetBedsAssignedToNurse(int userId)
-        {
-            if (userId <= 0)
-            {
-                return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(Enumerable.Empty<ReadBedDetailsDto>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
-            }
+        //public async Task<ServiceResponse<IEnumerable<ReadBedDetailsDto>>> GetBedsAssignedToNurse(int userId)
+        //{
+        //    if (userId <= 0)
+        //    {
+        //        return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(Enumerable.Empty<ReadBedDetailsDto>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+        //    }
 
 
-            //Get Facility Details
-            var beds = await _facilityRepository.Query()
-                                                .AsNoTracking()
-                                                .Where(x => x.FacilityType == FacilityType.Bed)
-                                                .ToListAsync();
-            if (!beds.Any())
-            {
-                return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(Enumerable.Empty<ReadBedDetailsDto>(), InternalCode.Success);
+        //    //Get Facility Details
+        //    var beds = await _facilityRepository.Query()
+        //                                        .AsNoTracking()
+        //                                        .Where(x => x.FacilityType == FacilityType.Bed)
+        //                                        .ToListAsync();
+        //    if (!beds.Any())
+        //    {
+        //        return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(Enumerable.Empty<ReadBedDetailsDto>(), InternalCode.Success);
 
-            }
+        //    }
 
-            //Get Patients
-            var patients = await _patientRepository.Query()
-                                                  .AsNoTracking()
-                                                  .Where(x => x.NurseId == userId).ToListAsync();
+        //    //Get Patients
+        //    var patients = await _patientRepository.Query()
+        //                                          .AsNoTracking()
+        //                                          .Where(x => x.NurseId == userId).ToListAsync();
 
-            //Get Bed Assignment
-            var bedAssignments = await _bedAssignmentRepository.Query()
-                                                               .AsNoTracking()
-                                                               .Where(x => x.IsDeleted == false)
-                                                               .ToListAsync();
+        //    //Get Bed Assignment
+        //    var bedAssignments = await _bedAssignmentRepository.Query()
+        //                                                       .AsNoTracking()
+        //                                                       .Where(x => x.IsDeleted == false)
+        //                                                       .ToListAsync();
 
-            List<ReadBedDetailsDto> bedDetailsList = new List<ReadBedDetailsDto>();
+        //    List<ReadBedDetailsDto> bedDetailsList = new List<ReadBedDetailsDto>();
 
-            foreach (var bed in beds)
-            {
-                ReadBedDetailsDto bedDetailsDto = new ReadBedDetailsDto();
-                bedDetailsDto.BedName = bed.Name;
-                bedDetailsDto.IsOccupied = bed.IsOccupied;
+        //    foreach (var bed in beds)
+        //    {
+        //        ReadBedDetailsDto bedDetailsDto = new ReadBedDetailsDto();
+        //        bedDetailsDto.BedName = bed.Name;
+        //        bedDetailsDto.IsOccupied = bed.IsOccupied;
 
-                if (bed.IsOccupied)
-                {
-                    string patientName = patients.Where(x => x.Id == bedAssignments.FirstOrDefault(x => x.FacilityId == bed.Id).PatientId)
-                                                                                .Select(s => $"{s.FirstName} {s.LastName}")
-                                                                                .FirstOrDefault();
+        //        if (bed.IsOccupied)
+        //        {
+        //            string patientName = patients.Where(x => x.Id == bedAssignments.FirstOrDefault(x => x.FacilityId == bed.Id).PatientId)
+        //                                                                        .Select(s => $"{s.FirstName} {s.LastName}")
+        //                                                                        .FirstOrDefault();
 
-                    bedDetailsDto.PatientName = patientName ?? null;
-                    bedDetailsDto.PatientId = bedAssignments.FirstOrDefault(x => x.FacilityId == bed.Id).PatientId;
-                }
+        //            bedDetailsDto.PatientName = patientName ?? null;
+        //            bedDetailsDto.PatientId = bedAssignments.FirstOrDefault(x => x.FacilityId == bed.Id).PatientId;
+        //        }
 
-                bedDetailsList.Add(bedDetailsDto);
-            }
+        //        bedDetailsList.Add(bedDetailsDto);
+        //    }
 
-            return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(bedDetailsList, InternalCode.Success);
-        }
+        //    return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(bedDetailsList, InternalCode.Success);
+        //}
 
-        public async Task<ServiceResponse<IEnumerable<ReadBedDetailsDto>>> GetBedStatus()
-        {
-            //Get Facility Details
-            var beds = await _facilityRepository.Query()
-                                                .AsNoTracking()
-                                                .Where(x => x.FacilityType == FacilityType.Bed)
-                                                .ToListAsync();
-            if (!beds.Any())
-            {
-                return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(Enumerable.Empty<ReadBedDetailsDto>(), InternalCode.Success);
+        //public async Task<ServiceResponse<IEnumerable<ReadBedDetailsDto>>> GetBedStatus()
+        //{
+        //    //Get Facility Details
+        //    var beds = await _facilityRepository.Query()
+        //                                        .AsNoTracking()
+        //                                        .Where(x => x.FacilityType == FacilityType.Bed)
+        //                                        .ToListAsync();
+        //    if (!beds.Any())
+        //    {
+        //        return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(Enumerable.Empty<ReadBedDetailsDto>(), InternalCode.Success);
 
-            }
+        //    }
 
-            List<ReadBedDetailsDto> bedDetailsList = new List<ReadBedDetailsDto>();
+        //    List<ReadBedDetailsDto> bedDetailsList = new List<ReadBedDetailsDto>();
 
-            foreach (var bed in beds)
-            {
-                ReadBedDetailsDto bedDetailsDto = new ReadBedDetailsDto();
-                bedDetailsDto.BedName = bed.Name;
-                bedDetailsDto.IsOccupied = bed.IsOccupied;
+        //    foreach (var bed in beds)
+        //    {
+        //        ReadBedDetailsDto bedDetailsDto = new ReadBedDetailsDto();
+        //        bedDetailsDto.BedName = bed.Name;
+        //        bedDetailsDto.IsOccupied = bed.IsOccupied;
 
-                bedDetailsList.Add(bedDetailsDto);
-            }
+        //        bedDetailsList.Add(bedDetailsDto);
+        //    }
 
-            return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(bedDetailsList, InternalCode.Success);
-        }
+        //    return new ServiceResponse<IEnumerable<ReadBedDetailsDto>>(bedDetailsList, InternalCode.Success);
+        //}
     }
 }

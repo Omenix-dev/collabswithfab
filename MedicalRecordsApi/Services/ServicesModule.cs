@@ -68,10 +68,13 @@ namespace MedicalRecordsApi.Services
             services.AddScoped<IGenericService<Visit>, GenericService<Visit>>();
             services.AddScoped<IGenericService<LabRequest>, GenericService<LabRequest>>();
             services.AddScoped<IGenericService<User>, GenericService<User>>();
+            services.AddScoped<IGenericService<Bed>, GenericService<Bed>>();
+            services.AddScoped<IGenericService<AssignPatientBed>, GenericService<AssignPatientBed>>();
             services.AddScoped<IGenericService<Employee>, GenericService<Employee>>();
             services.AddScoped<IGenericService<PatientLabReport>, GenericService<PatientLabReport>>();
             services.AddScoped<IGenericService<EmployeePrivilegeAccess>, GenericService<EmployeePrivilegeAccess>>();
             services.AddScoped<IGenericService<ReadCustomerFeedbackDto>, GenericService<ReadCustomerFeedbackDto>>();
+            services.AddScoped<IGenericService<AssignedPatientsDto>, GenericService<AssignedPatientsDto>>();
             services.AddScoped<IGenericService<PatientAssignmentHistory>, GenericService<PatientAssignmentHistory>>();
 
 

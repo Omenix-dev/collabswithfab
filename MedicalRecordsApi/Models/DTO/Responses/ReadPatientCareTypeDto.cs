@@ -6,7 +6,7 @@ namespace MedicalRecordsApi.Models.DTO.Responses
     {
         public double InPatientPercentage { get; set; }
         public double OutPatientPercentage { get; set; }
-        public List<DailyAverageCount> DailyAverageCount { get; set;}
+        public List<DailyAverageCount> DailyAverageCount { get; set; } = new List<DailyAverageCount>();
     }
 
     public class DailyAverageCount

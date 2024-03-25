@@ -139,7 +139,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         // remove a patient from a bed
-        public async Task<IActionResult> GetAllReferral([FromRoute] int clinicId, [FromQuery]int pageIndex, int PageSize)
+        public IActionResult GetAllReferral([FromRoute] int clinicId, [FromQuery] int pageIndex, int PageSize)
         {
             if (!ModelState.IsValid)
             {
@@ -164,7 +164,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             }
             if (userRoleId == (int)MedicalRole.Nurse)
             {
-                var result = await _service.GetAllReferral(clinicId,pageIndex,PageSize);
+                var result = _service.GetAllReferral(clinicId, pageIndex, PageSize);
 
                 return result.FormatResponse();
             }
@@ -189,7 +189,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         // remove a patient from a bed
-        public async Task<IActionResult> GetAllReferralByPatientId([FromRoute] int ClinicId,[FromQuery]int PatientId)
+        public IActionResult GetAllReferralByPatientId([FromRoute] int ClinicId, [FromQuery] int PatientId)
         {
             if (!ModelState.IsValid)
             {
@@ -214,7 +214,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             }
             if (userRoleId == (int)MedicalRole.Nurse)
             {
-                var result = await _service.GetAllReferralByPatientId(ClinicId,PatientId);
+                var result = _service.GetAllReferralByPatientId(ClinicId, PatientId);
 
                 return result.FormatResponse();
             }

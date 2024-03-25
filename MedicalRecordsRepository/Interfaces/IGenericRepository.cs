@@ -51,9 +51,11 @@ namespace MedicalRecordsRepository.Interfaces
 
 		int SaveChangesToDb();
 
-		#endregion Non Async
+		IQueryable<T> TakeAndSkip(IQueryable<T> data, int pageSize, int pageIndex);
 
-		IQueryable<T> GetAll();
+        #endregion Non Async
+
+        IQueryable<T> GetAll();
 
 		DbSet<T> GetDbSet();
 

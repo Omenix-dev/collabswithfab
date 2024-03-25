@@ -8,8 +8,8 @@ namespace MedicalRecordsApi.Services.Abstract.ReferralInterfaces
     public interface IReferralServices
     {
         Task<ServiceResponse<string>> AddReferral(ReferralDto Note, int UserId);
-        Task<ServiceResponse<PaginatedList<GetPatientReferralDto>>> GetAllReferral(int ClinicId, int pageIndex, int pageSize);
-        Task<ServiceResponse<GetPatientReferralDto>> GetAllReferralByPatientId(int ClinicId, int patientId);
+        ServiceResponse<PaginatedList<GetPatientReferralDto>> GetAllReferral(int ClinicId, int pageIndex, int pageSize);
+        ServiceResponse<GetPatientReferralDto> GetAllReferralByPatientId(int ClinicId, int patientId);
         Task<ServiceResponse<object>> RemoveReferredPatient(int Id);
         Task<ServiceResponse<string>> UpdateReferralNote(ReferralNoteDto Note, int UserId);
     }

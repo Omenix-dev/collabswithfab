@@ -21,8 +21,8 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public string Respiratory { get; set; }
 		public int Height { get; set; }
 		public int Weight { get; set; }
-		public int DoctorId { get; set; }
-		public int NurseId { get; set; }
+		public int? DoctorId { get; set; }
+		public int? NurseId { get; set; }
 
 
 		//Navigation Properties

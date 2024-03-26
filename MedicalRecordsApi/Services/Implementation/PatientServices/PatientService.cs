@@ -37,7 +37,8 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 		#region config
 		private readonly IMapper _mapper;
 		private readonly MedicalRecordDbContext _dbContext;
-		private readonly IGenericRepository<Patient> _patientRepository;
+        private readonly IGenericService<AssignedPatientsDto> _genericAssignedPatientService;
+        private readonly IGenericRepository<Patient> _patientRepository;
 		private readonly IGenericRepository<Employee> _employeeRepository;
 		private readonly IGenericRepository<Contact> _contactRepository;
 		private readonly IGenericRepository<EmergencyContact> _emergencyContactRepository;
@@ -68,7 +69,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             IGenericRepository<Treatment> treatmentRepository, IGenericRepository<Visit> visitRepository,
             MedicalRecordDbContext dbContext, IGenericRepository<Employee> employeeRepository,
             IGenericRepository<LabRequest> labRepository, IGenericRepository<User> userRepository,
-            IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository, IGenericRepository<PatientLabReport> patientLabReportRepository, IGenericRepository<Clinic> clinicRepository)
+            IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository, IGenericRepository<PatientLabReport> patientLabReportRepository, IGenericRepository<Clinic> clinicRepository, IGenericService<AssignedPatientsDto> genericAssignedPatientService)
         {
             _patientRepository = patientRepository;
             _mapper = mapper;
@@ -89,6 +90,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             _patientAssignmentHistoryRepository = patientAssignmentHistoryRepository;
             _patientLabReportRepository = patientLabReportRepository;
             _clinicRepository = clinicRepository;
+            _genericAssignedPatientService = genericAssignedPatientService;
         }
         #endregion
 
@@ -158,52 +160,80 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 			return new ServiceResponse<string>("Successful", InternalCode.Success);
 		}
 
-		public async Task<ServiceResponse<IEnumerable<AssignedPatientsDto>>> GetAssignedPatientsAsync(int userId)
+		public async Task<ServiceResponse<PaginatedList<AssignedPatientsDto>>> GetAssignedPatientsAsync(int pageIndex, int pageSize, int userId)
 		{
 			if (userId <= 0)
 			{
-				return new ServiceResponse<IEnumerable<AssignedPatientsDto>>(Enumerable.Empty<AssignedPatientsDto>(), InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
+				return new ServiceResponse<PaginatedList<AssignedPatientsDto>>(null, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
 			}
 
-            var patients = await _patientRepository.Query()
-                                                  .AsNoTracking()
-                                                  .Include(x => x.Visits)
-                                                  .Where(x => x.DoctorId == userId).ToListAsync();
+            //var patients = await _patientRepository.Query()
+            //                                      .AsNoTracking()
+            //                                      .Include(x => x.Visits)
+            //                                      .Where(x => x.DoctorId == userId).ToListAsync();
 
-            if (!patients.Any())
+            //if (!patients.Any())
+            //{
+            //    return new ServiceResponse<IEnumerable<AssignedPatientsDto>>(Enumerable.Empty<AssignedPatientsDto>(), InternalCode.Success, ServiceErrorMessages.Success);
+            //}
+
+
+            IQueryable<Patient> patients = _patientRepository.Query()
+                                                              .AsNoTracking()
+                                                              .Include(x => x.Visits)
+                                                              .Where(x => x.DoctorId == userId);
+
+            IQueryable<AssignedPatientsDto> data = patients.ProjectTo<AssignedPatientsDto>(_mapper.ConfigurationProvider);
+
+            Expression<Func<AssignedPatientsDto, string>> expression = x => x.FirstName;
+
+            // Materialize the query by executing it and loading data into memory
+            var dataList = await data.ToListAsync();
+
+            PaginatedList<AssignedPatientsDto> result = _genericAssignedPatientService.SortPaginateByText(pageIndex, pageSize, dataList.AsQueryable(), expression, Order.Asc);
+
+            foreach (var patientData in result.Data)
             {
-                return new ServiceResponse<IEnumerable<AssignedPatientsDto>>(Enumerable.Empty<AssignedPatientsDto>(), InternalCode.Success, ServiceErrorMessages.Success);
+                patientData.AssignedNurse = await _employeeRepository.Query()
+                    .AsNoTracking()
+                    .Where(x => x.Id == patientData.NurseId)
+                    .Select(s => $"{s.FirstName} {s.LastName}")
+                    .FirstOrDefaultAsync();
+                patientData.Age = CalculateAge(patientData.DateOfBirth);
             }
 
-            List<AssignedPatientsDto> assignedPatientsDTOs = new List<AssignedPatientsDto>();
+            return new ServiceResponse<PaginatedList<AssignedPatientsDto>>(result, InternalCode.Success);
 
-            foreach (var patient in patients)
-            {
-                Visit patientVisit = null;
 
-                if (patient.Visits.Any())
-                {
-                    patientVisit = patient.Visits.OrderBy(x => x.DateOfVisit).Last();
-                }
-                AssignedPatientsDto assignedPatient = new AssignedPatientsDto()
-                {
-                    PatientId = patient.Id,
-                    FirstName = patient.FirstName,
-                    LastName = patient.LastName,
-                    AssignedNurse = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patient.NurseId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync(),
-                    Age = CalculateAge(patient.DateOfBirth),
-                    DateCreated = patient.CreatedAt.ToString("dd MMMM yyyy"),
-                    Weight = patientVisit?.Weight ?? 0,
-                    Height = patientVisit?.Height ?? 0,
-                    Temperature = patientVisit?.Temperature ?? 0,
-                    Heart = patientVisit?.HeartPulse ?? 0,
-                    Resp = patientVisit?.Respiratory.ToString() ?? "0"
-                };
+            //List<AssignedPatientsDto> assignedPatientsDTOs = new List<AssignedPatientsDto>();
 
-                assignedPatientsDTOs.Add(assignedPatient);
-            }
+            //foreach (var patient in patients)
+            //{
+            //    Visit patientVisit = null;
 
-            return new ServiceResponse<IEnumerable<AssignedPatientsDto>>(assignedPatientsDTOs, InternalCode.Success);
+            //    if (patient.Visits.Any())
+            //    {
+            //        patientVisit = patient.Visits.OrderBy(x => x.DateOfVisit).Last();
+            //    }
+            //    AssignedPatientsDto assignedPatient = new AssignedPatientsDto()
+            //    {
+            //        PatientId = patient.Id,
+            //        FirstName = patient.FirstName,
+            //        LastName = patient.LastName,
+            //        AssignedNurse = await _employeeRepository.Query().AsNoTracking().Where(x => x.Id == patient.NurseId).Select(s => $"{s.FirstName} {s.LastName}").FirstOrDefaultAsync(),
+            //        Age = CalculateAge(patient.DateOfBirth),
+            //        DateCreated = patient.CreatedAt.ToString("dd MMMM yyyy"),
+            //        Weight = patientVisit?.Weight ?? 0,
+            //        Height = patientVisit?.Height ?? 0,
+            //        Temperature = patientVisit?.Temperature ?? 0,
+            //        Heart = patientVisit?.HeartPulse ?? 0,
+            //        Resp = patientVisit?.Respiratory.ToString() ?? "0"
+            //    };
+
+            //    assignedPatientsDTOs.Add(assignedPatient);
+            //}
+
+            //return new ServiceResponse<IEnumerable<AssignedPatientsDto>>(assignedPatientsDTOs, InternalCode.Success);
         }
 
         public async Task<ServiceResponse<ReadPatientDto>> GetPatientDataAsync(int patientId)
@@ -219,6 +249,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                                                   .Include(x => x.Immunizations).Include(x => x.MedicalRecords)
                                                   .Include(x => x.Visits).Include(x => x.Treatments)
                                                   //.Include(x => x.PatientReferrer)
+                                                  .ProjectTo<ReadPatientDto>(_mapper.ConfigurationProvider)
                                                   .FirstOrDefaultAsync(x => x.Id == patientId);
 
             if (patient == null)
@@ -541,6 +572,73 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             treatmentRecords.ToList().ForEach(visit => visit.Age = CalculateAge(patientDOB, visit.DateOfVisit));
 
             return new ServiceResponse<IEnumerable<ReadTreatmentRecordDto>>(treatmentRecords, InternalCode.Success);
+        }
+
+        public ServiceResponse<PaginatedList<ReadPatientDto>> GetFilteredPatientInfo(string firstName, string lastName, string gender, string email, DateTime? startDate, DateTime? endDate, string phoneNumber, int pageIndex, int pageSize)
+        {
+            Expression<Func<Patient, bool>> fulfilmentExpression = x => x != null;
+
+            IQueryable<Patient> requests = GetPatients(null);
+
+            if (!string.IsNullOrEmpty(firstName))
+            {
+                requests = requests.Where(request => request.FirstName == firstName);
+            }
+
+            if (!string.IsNullOrEmpty(lastName))
+            {
+                requests = requests.Where(request => request.LastName == lastName);
+            }
+
+            if (!string.IsNullOrEmpty(gender))
+            {
+                requests = requests.Where(request => request.Gender == gender);
+            }
+
+            if (!string.IsNullOrEmpty(email))
+            {
+                requests = requests.Where(request => request.Email == email);
+            }
+
+            if (!string.IsNullOrEmpty(phoneNumber))
+            {
+                requests = requests.Where(request => request.PhoneNumber == phoneNumber);
+            }
+
+            if (startDate != null)
+            {
+                if (endDate == null)
+                {
+                    requests = requests
+                      .Where(request => request.CreatedAt.Date == startDate.Value.Date);
+                }
+                else
+                {
+                    if (endDate < startDate)
+                    {
+                        endDate = startDate;
+                    }
+                    requests = requests
+                        .Where(request => request.CreatedAt.Date >= startDate.Value.Date.ToLocalTime()
+                            && request.CreatedAt.Date <= endDate.Value.Date.ToLocalTime());
+                }
+            }
+
+            int count = requests.Count();
+
+            IQueryable<Patient> fetchedData = _patientRepository.TakeAndSkip(requests, pageSize, pageIndex);
+
+            var data = fetchedData.ProjectTo<ReadPatientDto>(_mapper.ConfigurationProvider).ToList();
+
+            PaginatedList<ReadPatientDto> paginatedList = new PaginatedList<ReadPatientDto>
+            {
+                Data = data,
+                PageCount = count / pageSize,
+                PageIndex = pageIndex,
+                PageSize = pageSize
+            };
+
+            return new ServiceResponse<PaginatedList<ReadPatientDto>>(paginatedList, InternalCode.Success);
         }
 
         public async Task<ServiceResponse<string>> CreatePatientProfile(CreatePatientProfileDto profileDto, int userId)
@@ -1020,8 +1118,28 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 
 			return ageString;
 		}
+        private IQueryable<Patient> GetPatients(Expression<Func<Patient, bool>> expression)
+        {
+            IQueryable<Patient> requests = _patientRepository.Query()
+                .OrderByDescending(request => request.CreatedAt)
+                                                  .Include(x => x.Contact).Include(x => x.EmergencyContact)
+                                                  .Include(x => x.Immunizations).Include(x => x.MedicalRecords)
+                                                  .Include(x => x.Visits).Include(x => x.Treatments)
+                                                  .AsNoTracking();
 
-        
+            if (expression != null)
+            {
+                requests = _patientRepository.Query()
+                    .Where(expression)
+                    .OrderByDescending(request => request.CreatedAt)
+                                                  .Include(x => x.Contact).Include(x => x.EmergencyContact)
+                                                  .Include(x => x.Immunizations).Include(x => x.MedicalRecords)
+                                                  .Include(x => x.Visits).Include(x => x.Treatments)
+                    .AsNoTracking();
+            }
+
+            return requests;
+        }
         #endregion
     }
 }

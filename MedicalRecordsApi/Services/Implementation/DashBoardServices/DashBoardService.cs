@@ -22,55 +22,18 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
     public class DashBoardService : IDashBoardService
     {
         #region config
-        private readonly IMapper _mapper;
-        private readonly MedicalRecordDbContext _dbContext;
         private readonly IGenericRepository<Patient> _patientRepository;
         private readonly IGenericRepository<Employee> _employeeRepository;
-        private readonly IGenericRepository<Contact> _contactRepository;
-        private readonly IGenericRepository<EmergencyContact> _emergencyContactRepository;
-        private readonly IGenericRepository<Immunization> _immunizationRepository;
-        private readonly IGenericRepository<ImmunizationDocument> _immunizationDocumentRepository;
-        private readonly IGenericRepository<MedicalRecord> _medicalRecordRepository;
-        private readonly IGenericRepository<Medication> _medicationRepository;
-        private readonly IGenericRepository<PatientReferrer> _patientReferrerRepository;
         private readonly IGenericRepository<PatientAssignmentHistory> _patientAssignmentHistoryRepository;
-        private readonly IGenericRepository<Treatment> _treatmentRepository;
-        private readonly IGenericRepository<Visit> _visitRepository;
-        private readonly IGenericRepository<LabRequest> _labRepository;
-        private readonly IGenericRepository<BedAssignment> _bedAssignmentRepository;
-        private readonly IConfiguration _configuration;
-        private readonly IGenericRepository<User> _userRepository;
+        private readonly IGenericRepository<AssignPatientBed> _assignPatientBedRepository;
 
-        public DashBoardService(IGenericRepository<Patient> patientRepository,
-            IMapper mapper, IConfiguration configuration, IGenericRepository<Contact> contactRepository,
-            IGenericRepository<EmergencyContact> emrgencyContactRepository,
-            IGenericRepository<Immunization> immunizationRepository,
-            IGenericRepository<ImmunizationDocument> immunizationDocumentRepository,
-            IGenericRepository<MedicalRecord> medicalRecordRepository,
-            IGenericRepository<Medication> medicationRepository,
-            IGenericRepository<PatientReferrer> patientReferrerRepository,
-            IGenericRepository<Treatment> treatmentRepository, IGenericRepository<Visit> visitRepository,
-            MedicalRecordDbContext dbContext, IGenericRepository<Employee> employeeRepository,
-            IGenericRepository<LabRequest> labRepository, IGenericRepository<User> userRepository, IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository, IGenericRepository<BedAssignment> bedAssignmentRepository)
+        public DashBoardService(IGenericRepository<Patient> patientRepository, IGenericRepository<Employee> employeeRepository,
+            IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository, IGenericRepository<AssignPatientBed> assignPatientBedRepository)
         {
             _patientRepository = patientRepository;
-            _mapper = mapper;
-            _configuration = configuration;
-            _contactRepository = contactRepository;
-            _emergencyContactRepository = emrgencyContactRepository;
-            _immunizationRepository = immunizationRepository;
-            _immunizationDocumentRepository = immunizationDocumentRepository;
-            _medicalRecordRepository = medicalRecordRepository;
-            _medicationRepository = medicationRepository;
-            _patientReferrerRepository = patientReferrerRepository;
-            _treatmentRepository = treatmentRepository;
-            _visitRepository = visitRepository;
-            _dbContext = dbContext;
             _employeeRepository = employeeRepository;
-            _labRepository = labRepository;
-            _userRepository = userRepository;
             _patientAssignmentHistoryRepository = patientAssignmentHistoryRepository;
-            _bedAssignmentRepository = bedAssignmentRepository;
+            _assignPatientBedRepository = assignPatientBedRepository;
         }
         #endregion
 
@@ -96,7 +59,7 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
             {
                 patientCount = await _patientRepository.Query()
                                                       .AsNoTracking()
-                                                      .Where(x => x.DoctorId == userId).CountAsync();
+                                                      .Where(x => x.DoctorId == userId || x.NurseId == userId).CountAsync();
             }
 
             return new ServiceResponse<long>(patientCount, InternalCode.Success);
@@ -108,7 +71,7 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
                 return new ServiceResponse<long>(0, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
             }
 
-            var bedsAssigned = _bedAssignmentRepository.Query()
+            var bedsAssigned = _assignPatientBedRepository.Query()
                                                        .AsNoTracking().ToList();
 
             if (!bedsAssigned.Any())
@@ -126,7 +89,7 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
                 return new ServiceResponse<long>(0, InternalCode.Success);
             }
 
-            HashSet<int> patientIds = new HashSet<int>(bedsAssigned.Select(x => x.PatientId).ToList());
+            HashSet<int> patientIds = new HashSet<int>(bedsAssigned.Select(x => x.PatientAssignedId).ToList());
             IEnumerable<int> patientCount = patients.Select(x => x.Id).ToList().Where(patientIds.Contains);
 
             return new ServiceResponse<long>(patientCount.Count(), InternalCode.Success);
@@ -153,10 +116,16 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
                 return new ServiceResponse<ReadPatientCareTypeDto>(null, InternalCode.EntityIsNull, ServiceErrorMessages.ParameterEmptyOrNull);
             }
 
-            int totalCount = await _patientAssignmentHistoryRepository.Query().AsNoTracking()
+            var patientAssignment = await _patientAssignmentHistoryRepository.Query().AsNoTracking()
                                                             .Where(history => history.DoctorId == userId)
-                                                            .CountAsync();
+                                                            .ToListAsync();
 
+            if (!patientAssignment.Any())
+            {
+                return new ServiceResponse<ReadPatientCareTypeDto>(null, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
+            }
+
+            var totalCount = patientAssignment.Count();
             var careCount = await _patientAssignmentHistoryRepository.Query().AsNoTracking()
                                                                      .Where(history => history.DoctorId == userId)
                                                                      .GroupBy(history => history.CareType)
@@ -172,17 +141,18 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
                 return new ServiceResponse<ReadPatientCareTypeDto>(null, InternalCode.EntityNotFound, ServiceErrorMessages.EntityNotFound);
             }
 
-            var dailyAverages = await _patientAssignmentHistoryRepository.Query().AsNoTracking()
-                                                                         .Where(history => history.DoctorId == userId)
-                                                                         .GroupBy(history => history.CreatedAt)
-                                                                         .Select(group => new DailyAverageCount
-                                                                         {
-                                                                             Date = group.Key.ToString("MMM dd"),
-                                                                             InPatientCount = group.Count(x => x.CareType == PatientCareType.InPatient),
-                                                                             OutPatientCount = group.Count(x => x.CareType == PatientCareType.OutPatient)
-                                                                         })
-                                                                         .ToListAsync();
-            careCount.DailyAverageCount.AddRange(dailyAverages);  
+            var average = patientAssignment.GroupBy(history => history.CreatedAt);
+
+            foreach (var item in average.OrderBy(x => x.Key))
+            {
+                DailyAverageCount dailyAverageCount = new DailyAverageCount();
+                dailyAverageCount.Date = item.Key.ToString("MMM dd");
+                dailyAverageCount.InPatientCount = item.Count(x => x.CareType == PatientCareType.InPatient);
+                dailyAverageCount.OutPatientCount = item.Count(x => x.CareType == PatientCareType.OutPatient);
+
+
+                careCount.DailyAverageCount.Add(dailyAverageCount);
+            }
 
             return new ServiceResponse<ReadPatientCareTypeDto>(careCount, InternalCode.Success);
         }
@@ -222,12 +192,12 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
             }
 
             var patientAdmission = await _patientRepository.Query().AsNoTracking()
-                                                     .Where(history => history.DoctorId == userId)
+                                                     .Where(history => history.DoctorId == userId && history.CreatedAt > DateTime.Now.AddDays(-1))
                                                      .GroupBy(admission => admission.CreatedAt.Hour)
                                                      .Select(group => new ReadPatientAdmissionDto
                                                      {
                                                          Time = $"{group.Key}:00 - {group.Key + 1}:00",
-                                                         Count = (long)Math.Round(group.Average(admission => admission.CreatedAt.Hour), MidpointRounding.ToEven)
+                                                         Count = group.Count()
                                                      })
                                                      .ToListAsync();
 

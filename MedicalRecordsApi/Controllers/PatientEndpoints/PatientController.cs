@@ -42,27 +42,29 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// <summary>
         /// This gets the patients assigned to a particular doctor
         /// </summary>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
         /// <returns>Returns a <see>
-        ///         <cref>ServiceResponse{IEnumerable{AssignedPatientsDTO}}</cref>
+        ///         <cref>ServiceResponse{PaginatedList{AssignedPatientsDTO}}</cref>
         ///     </see>
         ///     object.</returns>
         [HttpGet]
 		[Route("assignedtodoctor")]
-		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<IEnumerable<AssignedPatientsDto>>))]
+		[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<PaginatedList<AssignedPatientsDto>>))]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
 		// GET api/patients/assignedtodoctor
-		public async Task<IActionResult> Get()
+		public async Task<IActionResult> Get([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 100)
 		{
 			int userId = int.Parse(User.FindFirst("Id").Value);
 
             //Get Employee Id
             var employeeId = await _employeeService.GetEmployeeId(userId);
 
-            ServiceResponse<IEnumerable<AssignedPatientsDto>> result = await _service.GetAssignedPatientsAsync(employeeId.Data);
+            ServiceResponse<PaginatedList<AssignedPatientsDto>> result = await _service.GetAssignedPatientsAsync(pageIndex, pageSize, employeeId.Data);
 
             return result.FormatResponse();
         }
@@ -105,7 +107,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
 		[Consumes(MediaTypeNames.Application.Json)]
 		[Produces(MediaTypeNames.Application.Json)]
 		// GET api/patients/5/nursenotes/2
-		public async Task<IActionResult> Get([FromRoute] int patientId, [FromRoute] int visitId)
+		public async Task<IActionResult> GetNurseNote([FromRoute] int patientId, [FromRoute] int visitId)
 		{
 			ServiceResponse<ReadNurseNotesDto> result = await _service.GetNurseNoteAsync(patientId, visitId);
 
@@ -386,6 +388,39 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         public async Task<IActionResult> GetTreatmentRecord([FromRoute] int patientId)
         {
             ServiceResponse<IEnumerable<ReadTreatmentRecordDto>> result = await _service.GetTreatmentRecordAsync(patientId);
+            return result.FormatResponse();
+        }
+
+        //15. Filter endpoint
+        /// <summary>
+        /// This gets the filtered result of parameters sent
+        /// </summary>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <param name="startDate"></param>
+        /// <param name="gender"></param>
+        /// <param name="email"></param>
+        /// <param name="endDate"></param>
+        /// <param name="phoneNumber"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{PaginatedList{ReadPatientDto}}</cref>
+        ///     </see>
+        ///     object.</returns>
+        [HttpGet]
+        [Route("filter")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<PaginatedList<ReadPatientDto>>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        public IActionResult GetFilteredPatientInfo([FromQuery] string firstName, [FromQuery] string lastName, [FromQuery] DateTime? startDate,
+            [FromQuery] string? gender, [FromQuery] string? email, [FromQuery] DateTime? endDate, [FromQuery] string? phoneNumber, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 100)
+        {
+            ServiceResponse<PaginatedList<ReadPatientDto>> result = _service.GetFilteredPatientInfo(firstName, lastName, gender, email, startDate, endDate, phoneNumber, pageIndex, pageSize);
+
             return result.FormatResponse();
         }
 
@@ -961,7 +996,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// <param name="patientId"></param>
         /// <returns></returns>
         [HttpPut("EndOfVisit/{patientId}")]
-        public async Task<IActionResult> EndOfVisit([FromRoute]int patientId)
+        public IActionResult EndOfVisit([FromRoute] int patientId)
         {
 
             if (!ModelState.IsValid)
@@ -988,7 +1023,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
-                var response =  _service.EndOfVisit(patientId, userId);
+                var response = _service.EndOfVisit(patientId, userId);
                 return response.FormatResponse();
             }
             else
@@ -997,6 +1032,6 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return value.FormatResponse();
             }
         }
-        
+
     }
 }

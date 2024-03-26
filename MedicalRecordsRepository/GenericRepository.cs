@@ -383,7 +383,19 @@ namespace MedicalRecordsRepository
 			return saveResult;
 		}
 
-		public bool EntityExists(int id)
+        public IQueryable<T> TakeAndSkip(IQueryable<T> data, int pageSize, int pageIndex)
+        {
+            int numRowSkipped = pageSize * (pageIndex - 1);
+
+            if (numRowSkipped == 0)
+            {
+                return data.Take(pageSize);//.AsEnumerable() //.ToListAsync();
+            }
+
+            return data.Skip(numRowSkipped).Take(pageSize);//.AsEnumerable() //.ToListAsync();
+        }
+
+        public bool EntityExists(int id)
 		{
 			T entityFound = Db.Set<T>().Find(id);
 			if (entityFound == null)

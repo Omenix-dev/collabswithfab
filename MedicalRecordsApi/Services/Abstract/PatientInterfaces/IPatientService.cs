@@ -8,6 +8,7 @@ using MedicalRecordsApi.Services;
 using MedicalRecordsRepository.DTO.MedicalDto;
 using MedicalRecordsRepository.DTO;
 using MedicalRecordsData.Migrations;
+using System;
 
 namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 {
@@ -34,11 +35,17 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
 		/// <param name="patientId"></param>
 		/// <returns>Returns a <see cref="ServiceResponse{IEnumerable{ReadVisitHistoryDTO}}"/> object.</returns>
 		Task<ServiceResponse<IEnumerable<ReadVisitHistoryDto>>> GetAllAdmissionHistoryAsync(int patientId);
-		/// <summary>
-		/// This gets the patients assigned to a particular doctor
-		/// </summary>
-		/// <returns>Returns a <see cref="ServiceResponse{List{AssignedPatientsDTO}}"/> object.</returns>
-		Task<ServiceResponse<IEnumerable<AssignedPatientsDto>>> GetAssignedPatientsAsync(int userId);
+
+        /// <summary>
+        /// This gets the patients assigned to a particular doctor
+        /// </summary>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{PaginatedList{AssignedPatientsDTO}}</cref>
+        ///     </see>
+        ///     object.</returns>
+        Task<ServiceResponse<PaginatedList<AssignedPatientsDto>>> GetAssignedPatientsAsync(int pageIndex, int pageSize, int userId);
         /// <summary>
         /// This gets the lab note of a patient
         /// </summary>
@@ -121,6 +128,23 @@ namespace MedicalRecordsApi.Services.Abstract.PatientInterfaces
         ///     </see>
         ///     object.</returns>
         Task<ServiceResponse<IEnumerable<ReadTreatmentRecordDto>>> GetTreatmentRecordAsync(int patientId);
+        /// <summary>
+        /// This gets the filtered result of parameters sent
+        /// </summary>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <param name="startDate"></param>
+        /// <param name="gender"></param>
+        /// <param name="email"></param>
+        /// <param name="endDate"></param>
+        /// <param name="phoneNumber"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <returns>Returns a <see>
+        ///         <cref>ServiceResponse{PaginatedList{ReadPatientDto}}</cref>
+        ///     </see>
+        ///     object.</returns>
+        ServiceResponse<PaginatedList<ReadPatientDto>> GetFilteredPatientInfo(string firstName, string lastName, string gender, string email, DateTime? startDate, DateTime? endDate, string phoneNumber, int pageIndex, int pageSize);
         Task<ServiceResponse<string>> CreatePatientProfile(CreatePatientProfileDto profileDto, int userId);
 		/// <summary>
 		/// used to add the patient 

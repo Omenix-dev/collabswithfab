@@ -21,32 +21,15 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
 {
     public class ReferralServices : IReferralServices
     {
-        private readonly IMapper _mapper;
-        private readonly MedicalRecordDbContext _dbContext;
         private readonly IGenericRepository<Patient> _patientRepository;
-        private readonly IGenericRepository<Employee> _employeeRepository;
-        private readonly IGenericRepository<Contact> _contactRepository;
-        private readonly IGenericRepository<EmergencyContact> _emrgencyContactRepository;
-        private readonly IGenericRepository<Immunization> _immunizationRepository;
-        private readonly IGenericRepository<ImmunizationDocument> _immunizationDocumentRepository;
-        private readonly IGenericRepository<MedicalRecord> _medicalRecordRepository;
-        private readonly IGenericRepository<Medication> _medicationRepository;
         private readonly IGenericRepository<PatientReferrer> _patientReferrerRepository;
         private readonly IGenericRepository<Clinic> _clinicRepository;
-        private readonly IConfiguration _configuration;
-        public ReferralServices(IGenericRepository<Clinic> clinicRepository, IGenericRepository<PatientReferrer> patientReferrerRepository, IGenericRepository<Medication> medicationRepository, IGenericRepository<MedicalRecord> medicalRecordRepository, IGenericRepository<ImmunizationDocument> immunizationDocumentRepository, IGenericRepository<EmergencyContact> emrgencyContactRepository, IGenericRepository<Contact> contactRepository, IGenericRepository<Employee> employeeRepository, IGenericRepository<Patient> patientRepository, MedicalRecordDbContext dbContext, IMapper mapper)
+        public ReferralServices(IGenericRepository<Patient> patientRepository, 
+            IGenericRepository<PatientReferrer> patientReferrerRepository, IGenericRepository<Clinic> clinicRepository)
         {
-            _clinicRepository = clinicRepository;
-            _patientReferrerRepository = patientReferrerRepository;
-            _medicationRepository = medicationRepository;
-            _medicalRecordRepository = medicalRecordRepository;
-            _immunizationDocumentRepository = immunizationDocumentRepository;
-            _emrgencyContactRepository = emrgencyContactRepository;
-            _contactRepository = contactRepository;
-            _employeeRepository = employeeRepository;
             _patientRepository = patientRepository;
-            _dbContext = dbContext;
-            _mapper = mapper;
+            _patientReferrerRepository = patientReferrerRepository;
+            _clinicRepository = clinicRepository;
         }
         public async Task<ServiceResponse<string>> AddReferral(ReferralDto Note, int UserId)
         {
@@ -98,7 +81,7 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
             }
         }
 
-        public async Task<ServiceResponse<PaginatedList<GetPatientReferralDto>>> GetAllReferral(int ClinicId, int pageIndex, int pageSize)
+        public ServiceResponse<PaginatedList<GetPatientReferralDto>> GetAllReferral(int ClinicId, int pageIndex, int pageSize)
         {
             try
             {
@@ -132,7 +115,7 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
             }
         }
 
-        public async Task<ServiceResponse<GetPatientReferralDto>> GetAllReferralByPatientId(int ClinicId, int patientId)
+        public ServiceResponse<GetPatientReferralDto> GetAllReferralByPatientId(int ClinicId, int patientId)
         {
             try
             {

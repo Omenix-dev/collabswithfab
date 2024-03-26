@@ -39,11 +39,11 @@ namespace MedicalRecordsData.DatabaseContext
 		public virtual DbSet<Immunization> Immunizations { get; set; }
 		public virtual DbSet<ImmunizationDocument> ImmunizationDocuments { get; set; }
 		public virtual DbSet<EmergencyContact> EmergencyContacts { get; set; }
-		public virtual DbSet<Contact> Contacts { get; set; }
+        public virtual DbSet<Contact> Contacts { get; set; }
+        public virtual DbSet<Bed> Beds { get; set; }
+        public virtual DbSet<AssignPatientBed> AssignPatientBeds { get; set; }
 		public virtual DbSet<PatientLabReport> PatientLabReports { get; set; }
 		public virtual DbSet<PatientLabDocument> PatientLabDocuments { get; set; }
-		public virtual DbSet<Facility> Facilities { get; set; }
-		public virtual DbSet<BedAssignment> BedAssignments { get; set; }
 		public virtual DbSet<LabRequest> LabRequests { get; set; }
 		public virtual DbSet<CustomerFeedback> CustomerFeedbacks { get; set; }
 		public virtual DbSet<PatientAssignmentHistory> PatientAssignmentHistories { get; set; }

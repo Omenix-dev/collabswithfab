@@ -111,7 +111,7 @@ namespace MedicalRecordsData.DatabaseContext
 				var dateUpdatedProp = entityEntry.Metadata.FindProperty("UpdatedAt");
 				if (dateUpdatedProp != null)
 				{
-					entityEntry.Property("DateUpdated").CurrentValue = DateTime.UtcNow;
+					entityEntry.Property("UpdatedAt").CurrentValue = DateTime.UtcNow;
 				}
 			}
 

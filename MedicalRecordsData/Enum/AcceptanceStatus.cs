@@ -3,7 +3,7 @@ namespace MedicalRecordsData.Enum
 {
     public enum AcceptanceStatus
     {
-        Pending,
+        Pending =1,
         Rejected,
         Accepted
     }

@@ -12,11 +12,13 @@ using System.Net;
 using System.Threading.Tasks;
 using MedicalRecordsRepository.DTO.ReferralDto;
 using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ReferralsController : ControllerBase
     {
         private readonly IReferralServices _service;
@@ -51,7 +53,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             int userRoleId = 0;
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
             {
-                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
                 return value.FormatResponse();
             }
             if (int.TryParse(username, out int convertedUserId))
@@ -64,7 +66,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             }
             if (userRoleId == (int)MedicalRole.Nurse)
             {
-                ServiceResponse<string> result = await _service.AddReferral(ReferralNoteDto, UserId);
+                var result = await _service.AddReferral(ReferralNoteDto, UserId);
 
                 return result.FormatResponse();
             }
@@ -181,7 +183,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         /// <param name=""></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("Get-Referral-notes-byPatientId/{ClinicId}")]
+        [Route("Get-Referral-notes-byPatientId/{ReferralId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<GetPatientReferralDto>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
@@ -189,7 +191,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         // remove a patient from a bed
-        public IActionResult GetAllReferralByPatientId([FromRoute] int ClinicId, [FromQuery] int PatientId)
+        public IActionResult GetAllReferralByPatientId([FromRoute] int ReferralId)
         {
             if (!ModelState.IsValid)
             {
@@ -214,7 +216,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             }
             if (userRoleId == (int)MedicalRole.Nurse)
             {
-                var result = _service.GetAllReferralByPatientId(ClinicId, PatientId);
+                var result = _service.GetAllReferralByReferralId(ReferralId);
 
                 return result.FormatResponse();
             }

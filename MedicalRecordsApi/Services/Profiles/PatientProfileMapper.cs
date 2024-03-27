@@ -38,6 +38,7 @@ namespace MedicalRecordsApi.Services.Profiles
             CreateMap<CreatePatientRequestDto, PatientAssignmentHistory>();
             CreateMap<UpdateMedicalStaffDto, PatientAssignmentHistory>();
             CreateMap<Patient, AssignedPatientsDto>();
+            CreateMap<ReferralDto, PatientReferrer>();
         }
     }
 }

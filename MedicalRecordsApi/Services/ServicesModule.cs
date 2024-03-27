@@ -6,6 +6,7 @@ using MedicalRecordsApi.Services.Abstract.DashBoardInterfaces;
 using MedicalRecordsApi.Services.Abstract.EmployeeInterfaces;
 using MedicalRecordsApi.Services.Abstract.FacilityInterfaces;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
+using MedicalRecordsApi.Services.Abstract.ReferralInterfaces;
 using MedicalRecordsApi.Services.Common;
 using MedicalRecordsApi.Services.Common.Interfaces;
 using MedicalRecordsApi.Services.Implementation.AuthServices;
@@ -14,6 +15,7 @@ using MedicalRecordsApi.Services.Implementation.DashBoardServices;
 using MedicalRecordsApi.Services.Implementation.EmployeeServices;
 using MedicalRecordsApi.Services.Implementation.FacilityServices;
 using MedicalRecordsApi.Services.Implementation.PatientServices;
+using MedicalRecordsApi.Services.Implementation.ReferralServices;
 using MedicalRecordsApi.Services.Profiles;
 using MedicalRecordsData.Entities.AuthEntity;
 using MedicalRecordsData.Entities.MedicalRecordsEntity;
@@ -55,6 +57,9 @@ namespace MedicalRecordsApi.Services
             //JWT
             services.AddScoped<IJwtService, JwtService>();
 
+            //Referrer Service
+            services.AddScoped<IReferralServices, ReferralServices>();
+
             //Generic class instantiations
             services.AddScoped<IGenericService<Patient>, GenericService<Patient>>();
 			services.AddScoped<IGenericService<Contact>, GenericService<Contact>>();
@@ -76,6 +81,7 @@ namespace MedicalRecordsApi.Services
             services.AddScoped<IGenericService<ReadCustomerFeedbackDto>, GenericService<ReadCustomerFeedbackDto>>();
             services.AddScoped<IGenericService<AssignedPatientsDto>, GenericService<AssignedPatientsDto>>();
             services.AddScoped<IGenericService<PatientAssignmentHistory>, GenericService<PatientAssignmentHistory>>();
+            services.AddScoped<IGenericService<Clinic>, GenericService<Clinic>>();
 
 
             services.AddAutoMapper(typeof(PatientProfileMapper));

@@ -1002,7 +1002,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 patientAssignmentHistory.CreatedAt = DateTime.UtcNow;   
                 patientAssignmentHistory.CreatedBy = userId;
                 await _patientAssignmentHistoryRepository.CreateAsync(patientAssignmentHistory);
-                return new ServiceResponse<object>(new { Message = "the patient has been reassign" }, InternalCode.Success, ServiceErrorMessages.Success);
+                return new ServiceResponse<object>(new { Message = "the patient has been reassigned" }, InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)
             {
@@ -1088,7 +1088,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             EmailExist.UpdatedAt = DateTime.UtcNow;
             EmailExist.ModifiedBy = userId;
             await _patientRepository.UpdateAsync(EmailExist);
-            return new ServiceResponse<object>(new { Messages = "The patient has details have been updated", PatientId = EmailExist.Id }, InternalCode.Success, ServiceErrorMessages.Success);
+            return new ServiceResponse<object>(new { Messages = "The patient details have been updated", PatientId = EmailExist.Id }, InternalCode.Success, ServiceErrorMessages.Success);
         }
         public ServiceResponse<object> EndOfVisit(int patientId, int userId)
         {

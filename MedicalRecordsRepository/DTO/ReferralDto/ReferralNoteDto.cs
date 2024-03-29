@@ -22,6 +22,9 @@ namespace MedicalRecordsRepository.DTO.ReferralDto
         [Range(1, int.MaxValue, ErrorMessage = "The Patient id is required")]
         public int PatientId { get; set; }
         [Range(1, int.MaxValue, ErrorMessage = "The Treatement id is required")]
-        public int TreatmentId { get; set; }    
+        public int TreatmentId { get; set; }
+        [Required(ErrorMessage = "the Note is required")]
+        public string ReferralNotes { get; set; }
+
     }
 }

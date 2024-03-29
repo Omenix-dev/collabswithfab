@@ -234,7 +234,7 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
 
             return result.FormatResponse();
         }
-        [HttpGet("AvalaibleStaff/{clinicId}")]
+        [HttpGet("AvaliableStaff/{clinicId}")]
         public IActionResult AvalaibleStaff([FromQuery] int clinicId)
         {
 

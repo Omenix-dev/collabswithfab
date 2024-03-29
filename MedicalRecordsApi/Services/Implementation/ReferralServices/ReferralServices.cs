@@ -57,6 +57,7 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
                 
                 var PatientReferralObject =_mapper.Map<PatientReferrer>(Note);
                 PatientReferralObject.AcceptanceStatus = AcceptanceStatus.Pending;
+                PatientReferralObject.ReferrerNote = Note.ReferralNotes;
                 PatientReferralObject.CreatedBy = UserId;
                 PatientReferralObject.CreatedAt = DateTime.UtcNow;
                 PatientReferralObject.ActionTaken = "ADDED A CUSTOMER TO REFERRAL TABLE";
@@ -96,8 +97,7 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
                 {
                     return new ServiceResponse<PaginatedList<GetPatientReferralDto>>(null, InternalCode.Unprocessable, "Invalid Clinic");
                 }
-                var ReferredPatient = _patientReferrerRepository.GetAll().Where(x => x.ClinicId == ClinicId &&
-                                     x.AcceptanceStatus == AcceptanceStatus.Pending).Include(x => x.Treatment)
+                var ReferredPatient = _patientReferrerRepository.GetAll().Where(x => x.ClinicId == ClinicId).Include(x => x.Treatment)
                                      .Include(x => x.Clinic).Include(x => x.Patient);
                 if (ReferredPatient is null)
                     return new ServiceResponse<PaginatedList<GetPatientReferralDto>>(null, InternalCode.Success, ServiceErrorMessages.Success);
@@ -127,8 +127,7 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
             {
 
                 var ReferredPatient = _patientReferrerRepository.GetAll()
-                                      .Where(x => x.Id == ReferralId 
-                                      && x.AcceptanceStatus == AcceptanceStatus.Pending)
+                                      .Where(x => x.Id == ReferralId)
                                     .Include(x => x.Treatment).Include(x => x.Clinic).Include(x => x.Patient).
                                     Select(x => new GetPatientReferralDto
                                     {
@@ -163,6 +162,7 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
                 noteObj.UpdatedAt = DateTime.Now;
                 noteObj.ModifiedBy = UserId;
                 noteObj.AcceptanceStatus = Note.AcceptanceStatus;
+                noteObj.Notes = Note.Notes;
                 await _patientReferrerRepository.UpdateAsync(noteObj);
                 if(noteObj.AcceptanceStatus == AcceptanceStatus.Accepted)
                 {
@@ -189,7 +189,7 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
 
                     // Transfer the patient data to the present clinic database
                 }
-                return new ServiceResponse<object>(new { Message = "Referral note update successfully" }, InternalCode.Success, ServiceErrorMessages.Success);
+                return new ServiceResponse<object>(new { Message = "Referral note updated successfully" }, InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)
             {

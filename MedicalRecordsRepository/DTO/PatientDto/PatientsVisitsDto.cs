@@ -1,4 +1,5 @@
 ﻿
+using MedicalRecordsData.Enum;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -31,7 +32,9 @@ namespace MedicalRecordsRepository.DTO.PatientDto
         public string Notes { get; set; }
         [Required(ErrorMessage = "The PatientId is required")]
         public int? PatientId { get; set; }
-        public int ClinicId { get; set; }   
+        [Required(ErrorMessage = "The CareType is required")]
+        public PatientCareType? CareType { get; set; }
+        public int ClinicId { get; set; }
     }
     public class ResponsePatientsVisitsDto
     {

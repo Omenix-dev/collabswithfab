@@ -33,7 +33,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         /// <param name="ReferralNoteDto"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("add-referral-notes")]
+        [Route("refer-patient")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<string>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
@@ -41,7 +41,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         // remove a patient from a bed
-        public async Task<IActionResult> AddReferralNotes(ReferralDto ReferralNoteDto)
+        public async Task<IActionResult> AddReferral(ReferralDto ReferralNoteDto)
         {
             if (!ModelState.IsValid)
             {
@@ -67,7 +67,6 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             if (userRoleId == (int)MedicalRole.Nurse)
             {
                 var result = await _service.AddReferral(ReferralNoteDto, UserId);
-
                 return result.FormatResponse();
             }
             else
@@ -80,7 +79,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         /// <summary>
         /// used to add note to the patient referral model
         /// </summary>
-        /// <param name="PatientId"></param>
+        /// <param name="ReferrerId</param>
         /// <returns></returns>
         [HttpDelete]
         [Route("Delete-referral-notes")]
@@ -91,7 +90,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         // remove a patient from a bed
-        public async Task<IActionResult> DeleteReferralNotes(int PatientId)
+        public async Task<IActionResult> DeleteReferralNotes(int ReferralId)
         {
             if (!ModelState.IsValid)
             {
@@ -116,7 +115,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             }
             if (userRoleId == (int)MedicalRole.Nurse)
             {
-                ServiceResponse<object> result = await _service.RemoveReferredPatient(PatientId);
+                ServiceResponse<object> result = await _service.RemoveReferredPatient(ReferralId);
 
                 return result.FormatResponse();
             }
@@ -232,7 +231,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         /// <param name=""></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("Update-Referral-notes")]
+        [Route("Update-patient-Referral")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<string>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]

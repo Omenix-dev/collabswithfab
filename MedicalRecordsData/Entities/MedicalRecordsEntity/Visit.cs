@@ -1,8 +1,7 @@
 ﻿using MedicalRecordsData.Entities.BaseEntity;
+using MedicalRecordsData.Enum;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 {
@@ -23,10 +22,11 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public int Weight { get; set; }
 		public int? DoctorId { get; set; }
 		public int? NurseId { get; set; }
+		public PatientCareType? CareType { get; set; }
+        public bool IsCompleted { get; set; }
 
-
-		//Navigation Properties
-		public int PatientId { get; set; }
+        //Navigation Properties
+        public int PatientId { get; set; }
 		public virtual Patient Patient { get; set; }
 
 		public int TreatmentId { get; set; }

@@ -852,12 +852,13 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 visitRecordObj.CreatedBy = userId;
                 visitRecordObj.DoctorId = patientVisitsObj.DoctorEmployeeId;
                 visitRecordObj.NurseId = patientVisitsObj.NurseEmployeeId;
+                visitRecordObj.CareType = patientVisitsObj.CareType;
                 await _visitRepository.Insert(visitRecordObj);
                 patientObj.NurseId = visitRecordObj.NurseId;
                 patientObj.DoctorId = visitRecordObj.DoctorId;
                 await _patientRepository.Update(patientObj);
                 var patientAssignmentHistory = new PatientAssignmentHistory();
-                patientAssignmentHistory.CareType = MedicalRecordsData.Enum.PatientCareType.InPatient;
+                patientAssignmentHistory.CareType = patientVisitsObj.CareType.Value;
                 patientAssignmentHistory.PatientId = patientVisitsObj.PatientId.Value;
                 patientAssignmentHistory.NurseId  = patientVisitsObj.NurseEmployeeId;
                 patientAssignmentHistory.DoctorId  = patientVisitsObj.DoctorEmployeeId;
@@ -870,7 +871,6 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             {
                 return new ServiceResponse<object>(ex.Message, InternalCode.Incompleted, ServiceErrorMessages.Incompleted);
             }
-
         }
 
         public async Task<ServiceResponse<List<ResponsePatientsVisitsDto>>> GetAllVisitationByPatientId(int PatientId)
@@ -1048,6 +1048,32 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 return new ServiceResponse<PaginatedList<GetAllNurseDto>>(null, InternalCode.Incompleted, ex.Message);
             }
         }
+        public ServiceResponse<PaginatedList<GetAllNurseDto>> GetAllDoctors(int pageIndex, int pageSize, int clinicId)
+        {
+            try
+            {
+                var uservalue = _userRepository.GetAll();
+                var allEmployee = _employeeRepository.GetAll();
+                var AllNurseDto = (from a in uservalue
+                                   join b in allEmployee on a.Id equals b.UserId
+                                   select new GetAllNurseDto
+                                   {
+                                       NurseEmployeeId = b.Id,
+                                       Email = a.Email,
+                                       Username = a.Username,
+                                       RoleId = a.RoleId,
+                                       StaffId = a.StaffId,
+                                       EmployeeId = b.Id,
+                                       ClinicId = b.ClinicId
+                                   }).Where(x => x.RoleId == (int)MedicalRole.Doctors && x.ClinicId == clinicId);
+                var valObject = new GenericService<GetAllNurseDto>().SortPaginateByText(pageIndex, pageSize, AllNurseDto, x => x.NurseEmployeeId.ToString(), Order.Asc);
+                return new ServiceResponse<PaginatedList<GetAllNurseDto>>(valObject, InternalCode.Success, ServiceErrorMessages.Success);
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<PaginatedList<GetAllNurseDto>>(null, InternalCode.Incompleted, ex.Message);
+            }
+        }
         public ServiceResponse<GetAllPatientsDto> GetAllPatientById(int patientId)
         {
             try
@@ -1090,8 +1116,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             await _patientRepository.UpdateAsync(EmailExist);
             return new ServiceResponse<object>(new { Messages = "The patient details have been updated", PatientId = EmailExist.Id }, InternalCode.Success, ServiceErrorMessages.Success);
         }
-        public ServiceResponse<object> EndOfVisit(int patientId, int userId)
+        public ServiceResponse<object> EndOfVisit(int patientId, int userId, int VisitId)
         {
+            var Visitobj = _visitRepository.GetAll().Include(x => x.Treatment).FirstOrDefault(x => x.Id == VisitId);
+            if (Visitobj == null)
+                return new ServiceResponse<object>("The patient doesnt exist", InternalCode.EntityNotFound, "The Treatment Id doesnt exist");
             var patientObj = _patientRepository.GetById(patientId);
             if(patientObj == null)
                 return new ServiceResponse<object>("The patient doesnt exist", InternalCode.EntityNotFound, "The patient doesnt exist");
@@ -1101,9 +1130,28 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             patientObj.ActionTaken = $"Patient completed treatment on {DateTime.UtcNow.ToString()}";
             patientObj.UpdatedAt = DateTime.UtcNow;
             _patientRepository.UpdateAsync(patientObj);
+            Visitobj.IsCompleted = true;
+            Visitobj.Treatment.TreatmentStatus = TreatmentStatus.Completed;
+            _treatmentRepository.Update(Visitobj.Treatment);
             return new ServiceResponse<object>(new { Message = "The patient has ended the visit completely" }, InternalCode.Success, "The patient has ended the visit completely");
         }
+        public ServiceResponse<object> AllOutPatientAndInPatientCount()
+        {
+            try
+            {
+                var InpatientCount = _visitRepository.GetAll()
+                                    .Where(x => !x.IsCompleted && x.CareType.Value == PatientCareType.InPatient).Count();
+                var OutpatientCount = _visitRepository.GetAll()
+                                     .Where(x => !x.IsCompleted && x.CareType.Value == PatientCareType.OutPatient).Count();
+                return new ServiceResponse<object>(new { Message = "Success", OutpatientCount = OutpatientCount,InpatientCount= InpatientCount },
+                                    InternalCode.Success);
+            }
+            catch (Exception)
+            {
 
+                throw;
+            }
+        }
         #region Helpers
         public static string CalculateAge(DateTime dateOfBirth, DateTime? currentDate = null)
 		{

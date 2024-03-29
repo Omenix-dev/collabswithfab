@@ -12,6 +12,7 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public int ClinicId { get; set; }
         public Clinic Clinic { get; set; }
         public string Notes { get; set; }
+		public string ReferrerNote { get; set; }
 		public AcceptanceStatus AcceptanceStatus { get; set; }
 		//Navigation Properties
 		public int PatientId { get; set; }

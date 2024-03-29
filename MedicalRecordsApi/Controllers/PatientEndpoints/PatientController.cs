@@ -13,11 +13,13 @@ using MedicalRecordsRepository.DTO;
 using MedicalRecordsRepository.DTO.AuthDTO;
 using MedicalRecordsRepository.DTO.MedicalDto;
 using MedicalRecordsRepository.DTO.PatientDto;
+using MedicalRecordsRepository.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Mime;
 using System.Threading.Tasks;
@@ -31,11 +33,13 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
     {
         private readonly IPatientService _service;
         private readonly IEmployeeService _employeeService;
+        private readonly IGenericRepository<Patient> _genericRepositoryPatient;
 
-        public PatientController(IPatientService service, IEmployeeService employeeService)
+        public PatientController(IPatientService service, IEmployeeService employeeService, IGenericRepository<Patient> genericRepositoryPatient)
         {
             _service = service;
             _employeeService = employeeService;
+            _genericRepositoryPatient = genericRepositoryPatient;
         }
 
         //1. GetAssignedWaitingPatients
@@ -932,6 +936,14 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             var response = _service.GetAllNurses(pageIndex, pageSize, clinicId);
             return response.FormatResponse();
         }
+        [HttpGet("AllDoctor/{clinicId}")]
+        public IActionResult GetAllDoctors([FromQuery] int clinicId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        {
+
+            // caling the service here
+            var response = _service.GetAllDoctors(pageIndex, pageSize, clinicId);
+            return response.FormatResponse();
+        }
         [HttpGet("GetAllMedicalTypes")]
         public IActionResult GetAllMedicalTypes()
         {
@@ -996,7 +1008,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// <param name="patientId"></param>
         /// <returns></returns>
         [HttpPut("EndOfVisit/{patientId}")]
-        public IActionResult EndOfVisit([FromRoute] int patientId)
+        public IActionResult EndOfVisit([FromRoute] int patientId, [FromRoute] int VisitId)
         {
 
             if (!ModelState.IsValid)
@@ -1023,7 +1035,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             if (userRoleId == (int)MedicalRole.Nurse)
             {
                 // caling the service here
-                var response = _service.EndOfVisit(patientId, userId);
+                var response = _service.EndOfVisit(patientId, userId,VisitId);
                 return response.FormatResponse();
             }
             else
@@ -1032,6 +1044,20 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return value.FormatResponse();
             }
         }
-
+        [HttpGet("AllPatientCount")]
+        public IActionResult AllPatientCount()
+        {
+            // caling the service here
+            var totalCount = _genericRepositoryPatient.GetAll().Count();
+            var response = new ServiceResponse<int>(totalCount, InternalCode.Success, ServiceErrorMessages.Success);
+            return response.FormatResponse();
+        }
+        [HttpGet("AllOutPatientAndInPatientCount")]
+        public IActionResult AllOutPatientAndInPatientCount()
+        {
+            // caling the service here
+            var response = _service.AllOutPatientAndInPatientCount();
+            return response.FormatResponse();
+        }
     }
 }

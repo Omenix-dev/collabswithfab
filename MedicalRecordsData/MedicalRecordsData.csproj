@@ -17,6 +17,8 @@
     <Compile Remove="Migrations\20240320200034_nullifynurseanddoctorIdonpatientmodel.Designer.cs" />
     <Compile Remove="Migrations\20240324164016_addedtheupdaterefferralmodel.cs" />
     <Compile Remove="Migrations\20240324164016_addedtheupdaterefferralmodel.Designer.cs" />
+    <Compile Remove="Migrations\20240329201831_addedthepatienthMOTable.cs" />
+    <Compile Remove="Migrations\20240329201831_addedthepatienthMOTable.Designer.cs" />
   </ItemGroup>
 
 	<ItemGroup>

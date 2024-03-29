@@ -51,5 +51,6 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 		public virtual ICollection<Visit> Visits { get; set; }
         public virtual ICollection<Treatment> Treatments { get; set; }
         public virtual ICollection<PatientAssignmentHistory> PatientAssignmentHistory { get; set; }
+		public virtual ICollection<PatientHmo> PatientHmo { get; set; }
     }
 }

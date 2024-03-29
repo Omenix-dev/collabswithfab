@@ -5,6 +5,7 @@ using MedicalRecordsApi.Services.Abstract.CustomerEngagementInterfaces;
 using MedicalRecordsApi.Services.Abstract.DashBoardInterfaces;
 using MedicalRecordsApi.Services.Abstract.EmployeeInterfaces;
 using MedicalRecordsApi.Services.Abstract.FacilityInterfaces;
+using MedicalRecordsApi.Services.Abstract.HMOInterface;
 using MedicalRecordsApi.Services.Abstract.PatientInterfaces;
 using MedicalRecordsApi.Services.Abstract.ReferralInterfaces;
 using MedicalRecordsApi.Services.Common;
@@ -14,6 +15,7 @@ using MedicalRecordsApi.Services.Implementation.CustomerEngagementServices;
 using MedicalRecordsApi.Services.Implementation.DashBoardServices;
 using MedicalRecordsApi.Services.Implementation.EmployeeServices;
 using MedicalRecordsApi.Services.Implementation.FacilityServices;
+using MedicalRecordsApi.Services.Implementation.HMOServices;
 using MedicalRecordsApi.Services.Implementation.PatientServices;
 using MedicalRecordsApi.Services.Implementation.ReferralServices;
 using MedicalRecordsApi.Services.Profiles;
@@ -59,6 +61,9 @@ namespace MedicalRecordsApi.Services
 
             //Referrer Service
             services.AddScoped<IReferralServices, ReferralServices>();
+
+            // HMO Services
+            services.AddScoped<IHMOService, HMOService>();
 
             //Generic class instantiations
             services.AddScoped<IGenericService<Patient>, GenericService<Patient>>();

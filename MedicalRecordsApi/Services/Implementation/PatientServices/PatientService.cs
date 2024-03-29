@@ -1148,8 +1148,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             }
             catch (Exception)
             {
-
-                throw;
+                return new ServiceResponse<object>("Unable to retrieve Data",InternalCode.Incompleted, "Unable to retrieve data");
             }
         }
         #region Helpers

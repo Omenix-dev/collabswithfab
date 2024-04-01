@@ -763,9 +763,19 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
+                var patientObj = _patientRepository.GetById(immunizationRecords.PatientId.Value);
+                if(patientObj is null)
+                    return new ServiceResponse<object>("the Patient doesnt exist", InternalCode.Unprocessable, "The patient Doenst Exist");
                 var immunizationObj = _mapper.Map<Immunization>(immunizationRecords);
                 immunizationObj.CreatedAt = DateTime.UtcNow;
                 immunizationObj.CreatedBy = userId;
+                var doc = new ImmunizationDocument {
+                    DocName = immunizationRecords.DocName,
+                    DocPath = immunizationRecords.DocPath,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = userId,
+                };
+                immunizationObj.ImmunizationDocuments.Add(doc);
                 await _immunizationRepository.Insert(immunizationObj);
                 return new ServiceResponse<object>(new { Message = "The Immunization record was added successfully" }, InternalCode.Success);
             }

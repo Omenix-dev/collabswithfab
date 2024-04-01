@@ -30,8 +30,9 @@ namespace MedicalRecordsRepository.DTO.MedicalDto
         //Navigation Properties
         [Required(ErrorMessage= "the PatientId is required")]
         public int? PatientId { get; set; }
+        public string DocName { get; set; }
+        public string DocPath { get; set; }
     }
-
     public class ResponseImmunizationDto
     {
         public string Vaccine { get; set; }

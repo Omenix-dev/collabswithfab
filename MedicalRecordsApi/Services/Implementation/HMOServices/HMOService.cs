@@ -45,6 +45,8 @@ namespace MedicalRecordsApi.Services.Implementation.HMOServices
                 PatientHMO.CreatedAt = DateTime.UtcNow;
                 PatientHMO.CreatedBy = UserId;
                 await _patientHmoRepository.Insert(PatientHMO);
+                patientObj.HasHmo = true;
+                await _patientRepository.Update(patientObj);
                 return new ServiceResponse<object>(new { Message = "Successfully added the patient HMO" }, InternalCode.Success);
             }
             catch (System.Exception ex)

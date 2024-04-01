@@ -4,6 +4,7 @@ using MedicalRecordsApi.Models.DTO.Responses;
 using MedicalRecordsApi.Services;
 using MedicalRecordsApi.Services.Abstract.HMOInterface;
 using MedicalRecordsData.Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -11,6 +12,7 @@ namespace MedicalRecordsApi.Controllers.HMO
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class HMOController : ControllerBase
     {
         private readonly IHMOService _service;

@@ -33,13 +33,11 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
     {
         private readonly IPatientService _service;
         private readonly IEmployeeService _employeeService;
-        private readonly IGenericRepository<Patient> _genericRepositoryPatient;
 
-        public PatientController(IPatientService service, IEmployeeService employeeService, IGenericRepository<Patient> genericRepositoryPatient)
+        public PatientController(IPatientService service, IEmployeeService employeeService)
         {
             _service = service;
             _employeeService = employeeService;
-            _genericRepositoryPatient = genericRepositoryPatient;
         }
 
         //1. GetAssignedWaitingPatients
@@ -929,7 +927,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             return response.FormatResponse();
         }
         [HttpGet("AllNurse/{clinicId}")]
-        public IActionResult GetAllNurses([FromQuery] int clinicId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        public IActionResult GetAllNurses([FromRoute] int clinicId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
 
             // caling the service here
@@ -937,7 +935,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
             return response.FormatResponse();
         }
         [HttpGet("AllDoctor/{clinicId}")]
-        public IActionResult GetAllDoctors([FromQuery] int clinicId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        public IActionResult GetAllDoctors([FromRoute] int clinicId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
 
             // caling the service here
@@ -1044,20 +1042,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
                 return value.FormatResponse();
             }
         }
-        [HttpGet("AllPatientCount")]
-        public IActionResult AllPatientCount()
-        {
-            // caling the service here
-            var totalCount = _genericRepositoryPatient.GetAll().Count();
-            var response = new ServiceResponse<int>(totalCount, InternalCode.Success, ServiceErrorMessages.Success);
-            return response.FormatResponse();
-        }
-        [HttpGet("AllOutPatientAndInPatientCount")]
-        public IActionResult AllOutPatientAndInPatientCount()
-        {
-            // caling the service here
-            var response = _service.AllOutPatientAndInPatientCount();
-            return response.FormatResponse();
-        }
+        
+        
     }
 }

@@ -26,14 +26,16 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
         private readonly IGenericRepository<Employee> _employeeRepository;
         private readonly IGenericRepository<PatientAssignmentHistory> _patientAssignmentHistoryRepository;
         private readonly IGenericRepository<AssignPatientBed> _assignPatientBedRepository;
+        private readonly IGenericRepository<Visit> _visitRepository;
 
         public DashBoardService(IGenericRepository<Patient> patientRepository, IGenericRepository<Employee> employeeRepository,
-            IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository, IGenericRepository<AssignPatientBed> assignPatientBedRepository)
+            IGenericRepository<PatientAssignmentHistory> patientAssignmentHistoryRepository, IGenericRepository<AssignPatientBed> assignPatientBedRepository, IGenericRepository<Visit> visitRepository)
         {
             _patientRepository = patientRepository;
             _employeeRepository = employeeRepository;
             _patientAssignmentHistoryRepository = patientAssignmentHistoryRepository;
             _assignPatientBedRepository = assignPatientBedRepository;
+            _visitRepository = visitRepository;
         }
         #endregion
 
@@ -235,6 +237,22 @@ namespace MedicalRecordsApi.Services.Implementation.DashBoardServices
             catch (Exception ex)
             {
                 return new ServiceResponse<object>(null, InternalCode.Incompleted, ex.Message);
+            }
+        }
+        public ServiceResponse<object> AllOutPatientAndInPatientCount()
+        {
+            try
+            {
+                var InpatientCount = _visitRepository.GetAll()
+                                    .Where(x => !x.IsCompleted && x.CareType.Value == PatientCareType.InPatient).Count();
+                var OutpatientCount = _visitRepository.GetAll()
+                                     .Where(x => !x.IsCompleted && x.CareType.Value == PatientCareType.OutPatient).Count();
+                return new ServiceResponse<object>(new { Message = "Success", OutpatientCount = OutpatientCount, InpatientCount = InpatientCount },
+                                    InternalCode.Success);
+            }
+            catch (Exception)
+            {
+                return new ServiceResponse<object>("Unable to retrieve Data", InternalCode.Incompleted, "Unable to retrieve data");
             }
         }
     }

@@ -126,13 +126,16 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
 				Age = CalculateAge(patient.DateOfBirth),
 				Weight = patient.Visits.OrderBy(x => x.DateOfVisit).Last().Weight,
 				PatientId = patientId,
+                VisitId = visitId,
 				Medications = prescriptionDto.Medication.Select(med => new Medication { Name = med }).ToList()
 			};
 
             patient.Treatments.Add(treatment);
 
             await _patientRepository.SaveChangesToDbAsync();
-
+            var treatmentId = _treatmentRepository.GetAll().FirstOrDefault(x => x.VisitId == visitId).Id;
+            visit.TreatmentId = treatmentId;
+            await _visitRepository.UpdateAsync(visit);
             return new ServiceResponse<string>("Successful", InternalCode.Success);
         }
 
@@ -776,8 +779,9 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                     CreatedBy = userId,
                 };
                 immunizationObj.ImmunizationDocuments.Add(doc);
-                await _immunizationRepository.Insert(immunizationObj);
-                return new ServiceResponse<object>(new { Message = "The Immunization record was added successfully" }, InternalCode.Success);
+               var value = await _immunizationRepository.Insert(immunizationObj);
+                var ImmuneId = _immunizationRepository.GetAll().FirstOrDefault(x => x.Patient.Id == patientObj.Id && x.CreatedAt == immunizationObj.CreatedAt).Id;
+                return new ServiceResponse<object>(new { Message = "The Immunization record was added successfully" ,Id = ImmuneId }, InternalCode.Success);
             }
             catch (Exception ex)
             {
@@ -1058,7 +1062,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 return new ServiceResponse<PaginatedList<GetAllNurseDto>>(null, InternalCode.Incompleted, ex.Message);
             }
         }
-        public ServiceResponse<PaginatedList<GetAllNurseDto>> GetAllDoctors(int pageIndex, int pageSize, int clinicId)
+        public ServiceResponse<PaginatedList<GetAllDoctorDto>> GetAllDoctors(int pageIndex, int pageSize, int clinicId)
         {
             try
             {
@@ -1066,9 +1070,9 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 var allEmployee = _employeeRepository.GetAll();
                 var AllNurseDto = (from a in uservalue
                                    join b in allEmployee on a.Id equals b.UserId
-                                   select new GetAllNurseDto
+                                   select new GetAllDoctorDto
                                    {
-                                       NurseEmployeeId = b.Id,
+                                       DoctorEmployeeId = b.Id,
                                        Email = a.Email,
                                        Username = a.Username,
                                        RoleId = a.RoleId,
@@ -1076,12 +1080,12 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                                        EmployeeId = b.Id,
                                        ClinicId = b.ClinicId
                                    }).Where(x => x.RoleId == (int)MedicalRole.Doctors && x.ClinicId == clinicId);
-                var valObject = new GenericService<GetAllNurseDto>().SortPaginateByText(pageIndex, pageSize, AllNurseDto, x => x.NurseEmployeeId.ToString(), Order.Asc);
-                return new ServiceResponse<PaginatedList<GetAllNurseDto>>(valObject, InternalCode.Success, ServiceErrorMessages.Success);
+                var valObject = new GenericService<GetAllDoctorDto>().SortPaginateByText(pageIndex, pageSize, AllNurseDto, x => x.DoctorEmployeeId.ToString(), Order.Asc);
+                return new ServiceResponse<PaginatedList<GetAllDoctorDto>>(valObject, InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)
             {
-                return new ServiceResponse<PaginatedList<GetAllNurseDto>>(null, InternalCode.Incompleted, ex.Message);
+                return new ServiceResponse<PaginatedList<GetAllDoctorDto>>(null, InternalCode.Incompleted, ex.Message);
             }
         }
         public ServiceResponse<GetAllPatientsDto> GetAllPatientById(int patientId)
@@ -1141,26 +1145,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             patientObj.UpdatedAt = DateTime.UtcNow;
             _patientRepository.UpdateAsync(patientObj);
             Visitobj.IsCompleted = true;
-            Visitobj.Treatment.TreatmentStatus = TreatmentStatus.Completed;
+            if(Visitobj.Treatment != null ) Visitobj.Treatment.TreatmentStatus = TreatmentStatus.Completed;
             _treatmentRepository.Update(Visitobj.Treatment);
             return new ServiceResponse<object>(new { Message = "The patient has ended the visit completely" }, InternalCode.Success, "The patient has ended the visit completely");
         }
-        public ServiceResponse<object> AllOutPatientAndInPatientCount()
-        {
-            try
-            {
-                var InpatientCount = _visitRepository.GetAll()
-                                    .Where(x => !x.IsCompleted && x.CareType.Value == PatientCareType.InPatient).Count();
-                var OutpatientCount = _visitRepository.GetAll()
-                                     .Where(x => !x.IsCompleted && x.CareType.Value == PatientCareType.OutPatient).Count();
-                return new ServiceResponse<object>(new { Message = "Success", OutpatientCount = OutpatientCount,InpatientCount= InpatientCount },
-                                    InternalCode.Success);
-            }
-            catch (Exception)
-            {
-                return new ServiceResponse<object>("Unable to retrieve Data",InternalCode.Incompleted, "Unable to retrieve data");
-            }
-        }
+        
         #region Helpers
         public static string CalculateAge(DateTime dateOfBirth, DateTime? currentDate = null)
 		{

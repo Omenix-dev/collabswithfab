@@ -155,9 +155,9 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
         {
             try
             {
-                var noteObj = _patientReferrerRepository.GetAll().Include(x => x.Treatment).Include(x => x.Patient).Where(x => x.Id == Note.ReferredId).First();
+                var noteObj = _patientReferrerRepository.GetAll().Include(x => x.Treatment).Include(x => x.Patient).Where(x => x.Id == Note.ReferralId).First();
                 if (noteObj == null)
-                    return new ServiceResponse<object>($"Referral with Id {Note.ReferredId} doesnt exist", InternalCode.Incompleted, $"Referral with Id {Note.ReferredId} doesnt exist");
+                    return new ServiceResponse<object>($"Referral with Id {Note.ReferralId} doesnt exist", InternalCode.Incompleted, $"Referral with Id {Note.ReferralId} doesnt exist");
                 noteObj.Notes = Note.Notes;
                 noteObj.UpdatedAt = DateTime.Now;
                 noteObj.ModifiedBy = UserId;

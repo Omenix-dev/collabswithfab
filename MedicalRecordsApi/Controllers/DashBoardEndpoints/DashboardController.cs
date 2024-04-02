@@ -11,6 +11,10 @@ using System.Threading.Tasks;
 using MedicalRecordsApi.Models.DTO.Request.Enums;
 using MedicalRecordsData.Enum;
 using MedicalRecordsApi.Services.Abstract.EmployeeInterfaces;
+using MedicalRecordsApi.Constants;
+using MedicalRecordsData.Entities.MedicalRecordsEntity;
+using MedicalRecordsRepository.Interfaces;
+using System.Linq;
 
 namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
 {
@@ -20,11 +24,13 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
     {
         private readonly IDashBoardService _service;
         private readonly IEmployeeService _employeeService;
+        private readonly IGenericRepository<Patient> _genericRepositoryPatient;
 
-        public DashboardController(IDashBoardService service, IEmployeeService employeeService)
+        public DashboardController(IDashBoardService service, IEmployeeService employeeService, IGenericRepository<Patient> genericRepositoryPatient)
         {
             _service = service;
             _employeeService = employeeService;
+            _genericRepositoryPatient = genericRepositoryPatient;
         }
 
         //1. GetAssignedPatientsCount-Waiting or All
@@ -240,6 +246,21 @@ namespace MedicalRecordsApi.Controllers.DashBoardEndpoints
 
             // caling the service here
             var response = _service.AvaliableStaff(clinicId);
+            return response.FormatResponse();
+        }
+        [HttpGet("AllOutPatientAndInPatientCount")]
+        public IActionResult AllOutPatientAndInPatientCount()
+        {
+            // caling the service here
+            var response = _service.AllOutPatientAndInPatientCount();
+            return response.FormatResponse();
+        }
+        [HttpGet("AllPatientCount")]
+        public IActionResult AllPatientCount()
+        {
+            // caling the service here
+            var totalCount = _genericRepositoryPatient.GetAll().Count();
+            var response = new ServiceResponse<int>(totalCount, InternalCode.Success, ServiceErrorMessages.Success);
             return response.FormatResponse();
         }
     }

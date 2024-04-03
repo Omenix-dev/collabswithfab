@@ -1132,7 +1132,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         }
         public ServiceResponse<object> EndOfVisit(int patientId, int userId, int VisitId)
         {
-            var Visitobj = _visitRepository.GetAll().Include(x => x.Treatment).FirstOrDefault(x => x.Id == VisitId);
+            var Visitobj = _visitRepository.GetAll().Include(x => x.Treatment).FirstOrDefault(x => x.Id == VisitId && x.PatientId == patientId);
             if (Visitobj == null)
                 return new ServiceResponse<object>("The patient doesnt exist", InternalCode.EntityNotFound, "The Treatment Id doesnt exist");
             var patientObj = _patientRepository.GetById(patientId);
@@ -1150,7 +1150,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
                 _treatmentRepository.Update(Visitobj.Treatment);
             }
             _visitRepository.Update(Visitobj);
-            return new ServiceResponse<object>(new { Message = "The patient has ended the visit completely" }, InternalCode.Success, "The patient has ended the visit completely");
+            return new ServiceResponse<object>(new { Message = "The patient visit has ended" }, InternalCode.Success, "The patient has ended the visit completely");
         }
         
         #region Helpers

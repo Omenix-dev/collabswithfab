@@ -112,18 +112,18 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
                     DateCreated = x.CreatedAt.ToString(),
                     AcceptanceStatus = x.AcceptanceStatus.ToString(),
                 });
+                var valObject = new GenericService<GetPatientReferralDto>().SortPaginateByText(pageIndex, pageSize, ReferrelResponseDto, x => x.ReferralId.ToString(), Order.Asc);
 
                 if(!string.IsNullOrEmpty(search) && FilterBy == FilterBy.AcceptanceStatus)
-                    ReferrelResponseDto = ReferrelResponseDto.Where(x => x.AcceptanceStatus.Contains(search));
+                    valObject.Data = valObject.Data.Where(x => x.AcceptanceStatus.ToUpper().Contains(search.ToUpper()));
                 else if (!string.IsNullOrEmpty(search) && FilterBy == FilterBy.FirstName)
-                    ReferrelResponseDto = ReferrelResponseDto.Where(x => x.FirstName.Contains(search));
+                    valObject.Data = valObject.Data.Where(x => x.FirstName.ToUpper().Contains(search.ToUpper()));
                 else if (!string.IsNullOrEmpty(search) && FilterBy == FilterBy.LastName)
-                    ReferrelResponseDto = ReferrelResponseDto.Where(x => x.LastName.Contains(search));
+                    valObject.Data = valObject.Data.Where(x => x.LastName.ToUpper().Contains(search.ToUpper()));
                 else if (!string.IsNullOrEmpty(search) && FilterBy == FilterBy.HospitalName)
-                    ReferrelResponseDto = ReferrelResponseDto.Where(x => x.HospitalName.Contains(search));
+                    valObject.Data = valObject.Data.Where(x => x.HospitalName.ToUpper().Contains(search.ToUpper()));
                 else if (!string.IsNullOrEmpty(search) && FilterBy == FilterBy.Diagnosis)
-                    ReferrelResponseDto = ReferrelResponseDto.Where(x => x.Diagnosis.Contains(search));
-                var valObject = new GenericService<GetPatientReferralDto>().SortPaginateByText(pageIndex, pageSize, ReferrelResponseDto, x => x.ReferralId.ToString(), Order.Asc);
+                    valObject.Data = valObject.Data.Where(x => x.Diagnosis.ToUpper().Contains(search.ToUpper()));
                 return new ServiceResponse<PaginatedList<GetPatientReferralDto>>(valObject, InternalCode.Success, ServiceErrorMessages.Success);
             }
             catch (Exception ex)

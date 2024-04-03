@@ -1006,7 +1006,7 @@ namespace MedicalRecordsApi.Controllers.PatientEndpoints
         /// <param name="patientId"></param>
         /// <returns></returns>
         [HttpPut("EndOfVisit/{patientId}")]
-        public IActionResult EndOfVisit([FromRoute] int patientId, [FromRoute] int VisitId)
+        public IActionResult EndOfVisit([FromRoute] int patientId, [FromQuery] int VisitId)
         {
 
             if (!ModelState.IsValid)

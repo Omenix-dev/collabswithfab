@@ -88,13 +88,13 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
             }
         }
 
-        public ServiceResponse<PaginatedList<GetPatientReferralDto>> GetAllReferral(int ClinicId, int pageIndex, int pageSize)
+        public ServiceResponse<PaginatedList<GetPatientReferralDto>> GetAllReferral(int ClinicId, int pageIndex, int pageSize, string search, FilterBy FilterBy)
         {
             try
             {
                 var clinicExist = _clinicRepository.GetById(ClinicId);
                 if (clinicExist == null)
-                {
+                { 
                     return new ServiceResponse<PaginatedList<GetPatientReferralDto>>(null, InternalCode.Unprocessable, "Invalid Clinic");
                 }
                 var ReferredPatient = _patientReferrerRepository.GetAll().Where(x => x.ClinicId == ClinicId).Include(x => x.Treatment)
@@ -112,6 +112,17 @@ namespace MedicalRecordsApi.Services.Implementation.ReferralServices
                     DateCreated = x.CreatedAt.ToString(),
                     AcceptanceStatus = x.AcceptanceStatus.ToString(),
                 });
+
+                if(!string.IsNullOrEmpty(search) && FilterBy == FilterBy.AcceptanceStatus)
+                    ReferrelResponseDto = ReferrelResponseDto.Where(x => x.AcceptanceStatus.Contains(search));
+                else if (!string.IsNullOrEmpty(search) && FilterBy == FilterBy.FirstName)
+                    ReferrelResponseDto = ReferrelResponseDto.Where(x => x.FirstName.Contains(search));
+                else if (!string.IsNullOrEmpty(search) && FilterBy == FilterBy.LastName)
+                    ReferrelResponseDto = ReferrelResponseDto.Where(x => x.LastName.Contains(search));
+                else if (!string.IsNullOrEmpty(search) && FilterBy == FilterBy.HospitalName)
+                    ReferrelResponseDto = ReferrelResponseDto.Where(x => x.HospitalName.Contains(search));
+                else if (!string.IsNullOrEmpty(search) && FilterBy == FilterBy.Diagnosis)
+                    ReferrelResponseDto = ReferrelResponseDto.Where(x => x.Diagnosis.Contains(search));
                 var valObject = new GenericService<GetPatientReferralDto>().SortPaginateByText(pageIndex, pageSize, ReferrelResponseDto, x => x.ReferralId.ToString(), Order.Asc);
                 return new ServiceResponse<PaginatedList<GetPatientReferralDto>>(valObject, InternalCode.Success, ServiceErrorMessages.Success);
             }

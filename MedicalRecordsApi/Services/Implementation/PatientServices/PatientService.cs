@@ -1145,8 +1145,11 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             patientObj.UpdatedAt = DateTime.UtcNow;
             _patientRepository.UpdateAsync(patientObj);
             Visitobj.IsCompleted = true;
-            if(Visitobj.Treatment != null ) Visitobj.Treatment.TreatmentStatus = TreatmentStatus.Completed;
-            _treatmentRepository.Update(Visitobj.Treatment);
+            if (Visitobj.Treatment != null) { 
+                Visitobj.Treatment.TreatmentStatus = TreatmentStatus.Completed;
+                _treatmentRepository.Update(Visitobj.Treatment);
+            }
+            _visitRepository.Update(Visitobj);
             return new ServiceResponse<object>(new { Message = "The patient has ended the visit completely" }, InternalCode.Success, "The patient has ended the visit completely");
         }
         

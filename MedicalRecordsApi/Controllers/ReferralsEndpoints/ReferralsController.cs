@@ -140,7 +140,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         // remove a patient from a bed
-        public IActionResult GetAllReferral([FromRoute] int clinicId, [FromQuery] int pageIndex, int PageSize)
+        public IActionResult GetAllReferral([FromRoute] int clinicId, [FromQuery] int pageIndex, [FromQuery]int PageSize, [FromQuery] string search, [FromQuery] FilterBy FilterBy)
         {
             if (!ModelState.IsValid)
             {
@@ -165,8 +165,7 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             }
             if (userRoleId == (int)MedicalRole.Nurse)
             {
-                var result = _service.GetAllReferral(clinicId, pageIndex, PageSize);
-
+                var result = _service.GetAllReferral(clinicId, pageIndex, PageSize,search, FilterBy);
                 return result.FormatResponse();
             }
             else
@@ -282,6 +281,21 @@ namespace MedicalRecordsApi.Controllers.ReferralsEndpoints
             for (int i = 1; i <= enumValues.Length; i++)
             {
                 var enumName = Enum.GetName(typeof(AcceptanceStatus), enumValues.GetValue(i - 1));
+                listTypes.Add(new { index = i, value = enumName });
+            }
+            // caling the service here
+            return new ServiceResponse<List<object>>
+                   (listTypes, InternalCode.Success, ServiceErrorMessages.Success)
+                   .FormatResponse();
+        }
+        [HttpGet("GetAllFilterBy")]
+        public IActionResult GetAllFilterBy()
+        {
+            var enumValues = Enum.GetValues(typeof(FilterBy));
+            var listTypes = new List<object>();
+            for (int i = 1; i <= enumValues.Length; i++)
+            {
+                var enumName = Enum.GetName(typeof(FilterBy), enumValues.GetValue(i - 1));
                 listTypes.Add(new { index = i, value = enumName });
             }
             // caling the service here

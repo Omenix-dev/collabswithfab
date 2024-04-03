@@ -16,8 +16,8 @@ namespace MedicalRecordsData.Entities.MedicalRecordsEntity
 			Treatments = new HashSet<Treatment>();
             PatientAssignmentHistory = new HashSet<PatientAssignmentHistory>();
         }
-
-		public string FirstName { get; set; }
+        public string? PictureUrl { get; set; }
+        public string FirstName { get; set; }
 		public string LastName { get; set; }
 		public string Gender { get; set; }
 		public DateTime DateOfBirth { get; set; }

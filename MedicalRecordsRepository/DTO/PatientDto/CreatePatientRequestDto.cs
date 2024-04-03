@@ -62,5 +62,7 @@ namespace MedicalRecordsRepository.DTO.PatientDto
         public string PlaceOfBirth { get; set; }
         public string MaritalStatus { get; set; }
         public string Nationality { get; set; }
+        public string PictureUrl { get; set; }
+
     }
 }

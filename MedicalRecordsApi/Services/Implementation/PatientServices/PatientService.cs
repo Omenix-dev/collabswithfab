@@ -1127,6 +1127,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
             EmailExist.Nationality = string.IsNullOrEmpty(updatePatientDto.Nationality) ? EmailExist.Nationality:updatePatientDto.Nationality;
             EmailExist.UpdatedAt = DateTime.UtcNow;
             EmailExist.ModifiedBy = userId;
+            EmailExist.PictureUrl = updatePatientDto.PictureUrl;
             await _patientRepository.UpdateAsync(EmailExist);
             return new ServiceResponse<object>(new { Messages = "The patient details have been updated", PatientId = EmailExist.Id }, InternalCode.Success, ServiceErrorMessages.Success);
         }

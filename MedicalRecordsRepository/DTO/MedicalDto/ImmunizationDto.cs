@@ -1,6 +1,7 @@
 ﻿
 using MedicalRecordsRepository.DTO.PatientDto;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace MedicalRecordsRepository.DTO.MedicalDto
@@ -46,5 +47,11 @@ namespace MedicalRecordsRepository.DTO.MedicalDto
         public string Notes { get; set; }
         public int? PatientId { get; set; }
         public int ImmunizationId { get; set; }
+        public List<ListOfDocument> ImmunizationDocuments { get; set; }
+    }
+    public class ListOfDocument
+    {
+        public string DocName { get; set; }
+        public string DocPath { get; set; }
     }
 }

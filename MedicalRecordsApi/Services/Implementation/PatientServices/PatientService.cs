@@ -812,7 +812,7 @@ namespace MedicalRecordsApi.Services.Implementation.PatientServices
         {
             try
             {
-                var allRecords = await _immunizationRepository.GetAll().Where(x => x.PatientId == patientId).ToListAsync();
+                var allRecords = await _immunizationRepository.GetAll().Include(x => x.ImmunizationDocuments).Where(x => x.PatientId == patientId).ToListAsync();
                 var reports = _mapper.Map<List<ResponseImmunizationDto>>(allRecords);
                 return new ServiceResponse<List<ResponseImmunizationDto>>(reports, InternalCode.Success);
             }

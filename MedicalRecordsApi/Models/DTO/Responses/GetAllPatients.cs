@@ -19,5 +19,6 @@ namespace MedicalRecordsApi.Models.DTO.Responses
         public string Nationality { get; set; }
         public int NurseId { get; set; }
         public int DoctorId { get; set; }
+        public string PictureUrl { get; set; }
     }
 }

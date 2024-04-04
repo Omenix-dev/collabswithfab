@@ -40,6 +40,7 @@ namespace MedicalRecordsApi.Services.Profiles
             CreateMap<Patient, AssignedPatientsDto>();
             CreateMap<ReferralDto, PatientReferrer>();
             CreateMap<PatientHMODto, PatientHmo>().ReverseMap();
+            CreateMap<ImmunizationDocument,ListOfDocument>();
         }
     }
 }

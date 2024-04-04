@@ -198,5 +198,105 @@ namespace MedicalRecordsApi.Controllers.FacilityEndpoints
         //        return value.FormatResponse();
         //    }
         //}
+
+        /// <summary>
+        /// get the total count of available beds
+        /// </summary>
+        /// <param name=""></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("Available-Beds-Count")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<int>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        // remove a patient from a bed
+        public async Task<IActionResult> AvailableBedsCount()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("id")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse)
+            {
+                ServiceResponse<int> result = _service.GetTotalAvailableBeds();
+
+                return result.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+        }
+
+        /// <summary>
+        /// get the total count of available beds
+        /// </summary>
+        /// <param name=""></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("Occupied-Beds-Count")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ServiceResponse<int>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest, Type = typeof(ProblemDetails))]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Json)]
+        // remove a patient from a bed
+        public async Task<IActionResult> OccupiedBedsCount()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Message = "Validation failed", Errors = ModelState });
+            }
+            string username = User.FindFirst("id")?.Value;
+            string userRole = User.FindFirst("RoleId")?.Value;
+            int UserId = 0;
+            int userRoleId = 0;
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(userRole))
+            {
+                var value = new ServiceResponse<string>("the user role is empty", InternalCode.Failed, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+            if (int.TryParse(username, out int convertedUserId))
+            {
+                UserId = convertedUserId;
+            }
+            if (int.TryParse(userRole, out int convertedUserRoleId))
+            {
+                userRoleId = convertedUserRoleId;
+            }
+            if (userRoleId == (int)MedicalRole.Nurse)
+            {
+                ServiceResponse<int> result = _service.GetTotalOccupiedBeds();
+
+                return result.FormatResponse();
+            }
+            else
+            {
+                var value = new ServiceResponse<string>("the user is not authorized", InternalCode.Unauthorized, ServiceErrorMessages.OperationFailed);
+                return value.FormatResponse();
+            }
+        }
     }
 }

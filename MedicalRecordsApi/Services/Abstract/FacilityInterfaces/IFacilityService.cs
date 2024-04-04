@@ -35,5 +35,7 @@ namespace MedicalRecordsApi.Services.Abstract.FacilityInterfaces
         ///// <param name="userId"></param>
         ///// <returns></returns>
         //Task<ServiceResponse<string>> FreeBedSpace(int patientBedSpace, int userId);
+        ServiceResponse<int> GetTotalAvailableBeds();
+        ServiceResponse<int> GetTotalOccupiedBeds();
     }
 }
